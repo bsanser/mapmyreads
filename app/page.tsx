@@ -23,6 +23,7 @@ type Book = {
 export default function Home() {
   const [books, setBooks] = useState<Book[]>([]);
   const [error, setError] = useState<string>("");
+  const [booksToShow, setBooksToShow] = useState<number>(10);
   // ❶ Build a Set of all countries from your books
   const highlighted = new Set<string>(books.flatMap((b) => b.countries));
 
@@ -166,7 +167,7 @@ export default function Home() {
                 </div>
               </div>
               <div className="space-y-4 max-h-96 overflow-y-auto custom-scrollbar">
-                {books.slice(0, 10).map((b, i) => (
+                {books.slice(0, booksToShow).map((b, i) => (
                   <div key={`${b.isbn13}-${i}`} className="flex items-start gap-4 p-4 rounded-2xl hover:bg-white/40 transition-all duration-300 group border border-transparent hover:border-white/30 hover:shadow-lg hover:shadow-black/5">
                     <div className="w-3 h-3 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full mt-2 flex-shrink-0 group-hover:scale-125 transition-transform duration-300"></div>
                     <div className="min-w-0 flex-1">
@@ -178,11 +179,14 @@ export default function Home() {
                     </div>
                   </div>
                 ))}
-                {books.length > 10 && (
+                {books.length > booksToShow && (
                   <div className="text-center py-4">
-                    <p className="text-gray-500 font-medium">
-                      +{books.length - 10} more books
-                    </p>
+                    <button
+                      onClick={() => setBooksToShow(prev => Math.min(prev + 10, books.length))}
+                      className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-2 rounded-full font-medium hover:from-indigo-700 hover:to-purple-700 transition-all duration-300 shadow-lg shadow-indigo-500/25 hover:shadow-xl hover:shadow-indigo-500/30 hover:scale-105"
+                    >
+                      Load More ({books.length - booksToShow} remaining)
+                    </button>
                   </div>
                 )}
               </div>
