@@ -27,9 +27,11 @@ fetch(TOPO_URL)
 
 type MapChartProps = {
   highlighted: Set<string>  // ISO Alpha-2 codes e.g. 'US', 'NG'
+  onHoverCountry?: (iso2: string) => void
+  onClickCountry?: (iso2: string) => void
 }
 
-export const MapChart = memo(({ highlighted }: MapChartProps) => {
+export const MapChart = memo(({ highlighted, onHoverCountry, onClickCountry }: MapChartProps) => {
   return (
     <div className="w-full h-full">
       <ComposableMap
