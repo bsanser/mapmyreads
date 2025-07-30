@@ -81,7 +81,7 @@ export default function Home() {
       <div 
         className="relative min-h-screen font-mono overflow-hidden"
         style={{
-          backgroundImage: "url('./../attached_assets/world map old_1753912995030.webp')",
+          backgroundImage: "url('/attached_assets/world map old_1753912995030.webp')",
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat'
