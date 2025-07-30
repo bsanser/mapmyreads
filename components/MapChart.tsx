@@ -25,13 +25,11 @@ export const MapChart = memo(function MapChart({
     >
       <Geographies geography={TOPO_URL}>
         {({ geographies }) => 
-         console.log(geographies)
-
           geographies.map((geo) => {
             const iso2 = (geo.properties as any).ISO_A2 as string;
             const isHighlighted = highlighted.has(iso2);
             const isSelected = iso2 === selectedCountry;
-            
+            console.log({geo, iso2, isHighlighted,isSelected})
             // 1) default grey, 2) amber-400 if highlighted, 3) amber-600 if selected
             let fill = "#E2E8F0"; // gray-200
             if (isHighlighted) fill = "#FACC15"; // amber-400
