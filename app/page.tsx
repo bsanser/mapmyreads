@@ -33,9 +33,10 @@ export default function Home() {
   console.log(highlighted);
 
   function getMockCountries(): string[] {
-    const rand =
-      TEST_COUNTRIES[Math.floor(Math.random() * TEST_COUNTRIES.length)];
-    return [rand];
+    // Ensure all test countries get represented by cycling through them
+    const bookIndex = books.length;
+    const countryIndex = bookIndex % TEST_COUNTRIES.length;
+    return [TEST_COUNTRIES[countryIndex]];
   }
 
   // Filter books based on selected country
