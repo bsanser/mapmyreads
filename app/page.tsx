@@ -79,9 +79,26 @@ export default function Home() {
       {/* Header */}
       <div className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-4">
-          <h1 className="text-2xl font-bold text-gray-900 font-mono">
-            📚 MapMyReads
+          <h1 className="text-2xl font-bold text-gray-900 font-mono text-center">
+            📚 Your Reading Map
           </h1>
+        </div>
+      </div>
+
+      {/* Map Section - Full viewport */}
+      <div className="h-[calc(100vh-64px)]">
+        <div className="bg-gray-50 rounded border border-gray-200 overflow-hidden h-full">
+          <MapChart highlighted={highlighted} />
+        </div>
+      </div>
+
+      {/* Floating Library Sidebar */}
+      <div className="fixed top-1/2 left-4 -translate-y-1/2 bg-white rounded-lg shadow-lg border border-gray-200 p-4 w-64">
+        <h2 className="text-lg font-bold text-gray-900 font-mono mb-2">
+          Your Library
+        </h2>
+        <div className="text-sm text-gray-600">
+          {books.length} books
         </div>
       </div>
 
