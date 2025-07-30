@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Papa from "papaparse";
 import ReactCountryFlag from "react-country-flag";
-import { MapChart } from "../components/MapChart";
+import { MapChart } from "./../components/MapChart";
 
 const ISBN_COUNTRY_TEST_DATA: Record<string, string[]> = {
   // Example ISBNs—replace these with a few books you know are in your CSV // e.g. Harry Potter and the Philosopher’s Stone
@@ -23,9 +23,7 @@ export default function Home() {
   const [books, setBooks] = useState<Book[]>([]);
   const [error, setError] = useState<string>("");
   // ❶ Build a Set of all countries from your books
-  const highlighted = new Set<string>(
-    books.flatMap(b => b.countries)
-  );
+  const highlighted = new Set<string>(books.flatMap((b) => b.countries));
 
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     setError("");
@@ -104,14 +102,12 @@ export default function Home() {
         </section>
       )}
       {/* World Map */}
-           {books.length > 0 && (
-             <>
-               <h2 className="text-2xl font-semibold mt-8">
-                 Your Reading Map
-               </h2>
-               <MapChart highlighted={highlighted} />
-             </>
-           )}
+      {books.length > 0 && (
+        <>
+          <h2 className="text-2xl font-semibold mt-8">Your Reading Map</h2>
+          <MapChart highlighted={highlighted} />
+        </>
+      )}
     </div>
   );
 }
