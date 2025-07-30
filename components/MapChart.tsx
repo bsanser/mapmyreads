@@ -1,3 +1,4 @@
+
 'use client'
 
 import { memo } from 'react'
@@ -30,11 +31,11 @@ type MapChartProps = {
 
 export const MapChart = memo(({ highlighted }: MapChartProps) => {
   return (
-    <div className="mt-8">
+    <div className="w-full h-full">
       <ComposableMap
         projection="geoEqualEarth"
-        projectionConfig={{ scale: 150 }}
-        style={{ width: '100%', height: 'auto' }}
+        projectionConfig={{ scale: 120 }}
+        style={{ width: '100%', height: '100%' }}
       >
         <Geographies geography={TOPO_URL}>
           {({ geographies }) =>
@@ -45,11 +46,12 @@ export const MapChart = memo(({ highlighted }: MapChartProps) => {
                 <Geography
                   key={geo.rsmKey}
                   geography={geo}
-                  fill={isHighlighted ? '#4ADE80' : '#E2E8F0'}
-                  stroke="#FFF"
+                  fill={isHighlighted ? '#10B981' : '#E5E7EB'}
+                  stroke="#FFFFFF"
+                  strokeWidth={0.5}
                   style={{
                     default:   { outline: 'none' },
-                    hover:     { fill: '#A7F3D0', outline: 'none' },
+                    hover:     { fill: isHighlighted ? '#059669' : '#D1D5DB', outline: 'none' },
                     pressed:   { outline: 'none' }
                   }}
                 />
