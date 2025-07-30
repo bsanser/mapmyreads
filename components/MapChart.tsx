@@ -40,18 +40,19 @@ export const MapChart = memo(({ highlighted }: MapChartProps) => {
         <Geographies geography={TOPO_URL}>
           {({ geographies }) =>
             geographies.map(geo => {
-              const isoA2 = geo.properties.ISO_A2 as string
-              const isHighlighted = highlighted.has(isoA2)
+              const iso2 = geo.properties.ISO_A2 as string
+              const isHighlighted = highlighted.has(iso2)
               return (
                 <Geography
                   key={geo.rsmKey}
                   geography={geo}
-                  fill={isHighlighted ? '#10B981' : '#E5E7EB'}
-                  stroke="#FFFFFF"
-                  strokeWidth={0.5}
+                  fill={isHighlighted ? '#FACC15' /* amber-400 */ : '#E2E8F0' /* gray-200 */}
+                  stroke="#FFF"
+                  onMouseEnter={() => onHoverCountry?.(iso2)}
+                  onClick={() => onClickCountry?.(iso2)}
                   style={{
                     default:   { outline: 'none' },
-                    hover:     { fill: isHighlighted ? '#059669' : '#D1D5DB', outline: 'none' },
+                    hover:     { fill: isHighlighted ? '#FBBF24' /* amber-300 */ : '#CBD5E1' /* gray-300 */ },
                     pressed:   { outline: 'none' }
                   }}
                 />
