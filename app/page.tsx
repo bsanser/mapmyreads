@@ -80,7 +80,7 @@ export default function Home() {
     return (
       <div className="relative min-h-screen bg-gray-50 font-mono overflow-hidden">
         {/* Background Map - Static and covering full viewport */}
-        <div className="absolute inset-0 opacity-20">
+        <div className="absolute inset-0 opacity-60">
           <MapChart highlighted={new Set()} />
         </div>
 

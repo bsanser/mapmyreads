@@ -34,7 +34,7 @@ export const MapChart = memo(({ highlighted }: MapChartProps) => {
     <div className="w-full h-full">
       <ComposableMap
         projection="geoEqualEarth"
-        projectionConfig={{ scale: 120 }}
+        projectionConfig={{ scale: 180 }}
         style={{ width: '100%', height: '100%' }}
       >
         <Geographies geography={TOPO_URL}>
