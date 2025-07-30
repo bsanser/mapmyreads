@@ -162,14 +162,43 @@ export default function Home() {
                 </div>
                 <div className="space-y-4 max-h-96 overflow-y-auto">
                   {books.slice(0, booksToShow).map((b, i) => (
-                    <div key={`${b.isbn13}-${i}`} className="bg-yellow-50 border border-yellow-200 rounded p-4 hover:bg-yellow-100 transition-colors group shadow-sm">
-                      <div className="border-b border-yellow-300 pb-2 mb-2">
-                        <p className="font-bold text-gray-900 font-mono text-sm leading-tight">{b.title}</p>
+                    <div key={`${b.isbn13}-${i}`} className="relative bg-white border border-gray-300 rounded p-4 hover:shadow-md transition-all group shadow-sm overflow-hidden" style={{
+                      backgroundImage: `
+                        linear-gradient(to right, #e2e8f0 1px, transparent 1px),
+                        repeating-linear-gradient(
+                          transparent,
+                          transparent 24px,
+                          #3b82f6 24px,
+                          #3b82f6 25px
+                        )
+                      `,
+                      backgroundSize: '100% 100%, 100% 25px',
+                      backgroundPosition: '0 0, 0 8px'
+                    }}>
+                      {/* Red margin line */}
+                      <div className="absolute left-8 top-0 bottom-0 w-px bg-red-400"></div>
+                      
+                      {/* Content with proper spacing from margin */}
+                      <div className="ml-6 relative z-10">
+                        <div className="mb-3">
+                          <p className="font-mono text-gray-900 text-sm leading-tight relative inline-block">
+                            {b.title}
+                            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-red-400"></span>
+                          </p>
+                        </div>
+                        <div className="space-y-1">
+                          <p className="font-mono text-gray-700 text-xs relative inline-block">
+                            by {b.author}
+                            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-400"></span>
+                          </p>
+                          {b.year && (
+                            <p className="font-mono text-gray-600 text-xs relative inline-block">
+                              {b.year}
+                              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-400"></span>
+                            </p>
+                          )}
+                        </div>
                       </div>
-                      <p className="text-gray-700 font-mono text-xs mb-1">by {b.author}</p>
-                      {b.year && (
-                        <p className="text-xs text-gray-500 font-mono">{b.year}</p>
-                      )}
                     </div>
                   ))}
                   {books.length > booksToShow && (
