@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -24,4 +25,64 @@ body {
       rgb(var(--background-end-rgb))
     )
     rgb(var(--background-start-rgb));
+}
+
+/* Custom scrollbar for liquid glass effect */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(45deg, rgba(99, 102, 241, 0.5), rgba(168, 85, 247, 0.5));
+  border-radius: 10px;
+  backdrop-filter: blur(10px);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(45deg, rgba(99, 102, 241, 0.7), rgba(168, 85, 247, 0.7));
+}
+
+/* Animation delays for staggered effects */
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+
+.animation-delay-4000 {
+  animation-delay: 4s;
+}
+
+/* Smooth glass morphism utilities */
+@layer utilities {
+  .glass {
+    backdrop-filter: blur(16px) saturate(180%);
+    background-color: rgba(255, 255, 255, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+  }
+  
+  .glass-hover {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .glass-hover:hover {
+    backdrop-filter: blur(20px) saturate(200%);
+    background-color: rgba(255, 255, 255, 0.35);
+    transform: translateY(-2px);
+  }
+}
+
+/* Enhanced focus states for accessibility */
+input:focus,
+button:focus {
+  outline: 2px solid rgba(99, 102, 241, 0.5);
+  outline-offset: 2px;
+}
+
+/* Smooth transitions for all interactive elements */
+* {
+  transition: backdrop-filter 0.3s ease;
 }
