@@ -52,7 +52,7 @@ export default function Home() {
             isbn13: book["ISBN13"]?.trim() || "",
             year: book["Year Published"]?.trim() || "",
             readDate: new Date(book["Date Read"] || ""),
-            countries: ISBN_COUNTRY_TEST_DATA[book.isbn13] || [],
+            countries: ISBN_COUNTRY_TEST_DATA[book["ISBN13"]] || [],
           }));
 
           // 3️⃣ Sort newest first
@@ -62,7 +62,7 @@ export default function Home() {
           console.table(
             enriched
               .slice(0, 5) // first five books
-              .map((b) => ({ Title: b.title, ISBN: b.isbn })),
+              .map((b) => ({ Title: b.title, ISBN: b.isbn13 })),
           );
         } catch (err) {
           console.error("Mapping error:", err);
@@ -71,7 +71,7 @@ export default function Home() {
       },
       error: (err) => {
         console.error("Parse error:", err);
-        setError("Failed to read file. Make sure it’s a valid CSV.");
+        setError("Failed to read file. Make sure it's a valid CSV.");
       },
     });
   };
@@ -102,16 +102,16 @@ export default function Home() {
             ))}
           </ul>
         </section>
-      {/* World Map */}
-      +     {books.length > 0 && (
-      +       <>
-      +         <h2 className="text-2xl font-semibold mt-8">
-      +           Your Reading Map
-      +         </h2>
-      +         <MapChart highlighted={highlighted} />
-      +       </>
-      +     )}
       )}
+      {/* World Map */}
+           {books.length > 0 && (
+             <>
+               <h2 className="text-2xl font-semibold mt-8">
+                 Your Reading Map
+               </h2>
+               <MapChart highlighted={highlighted} />
+             </>
+           )}
     </div>
   );
 }
