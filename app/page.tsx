@@ -78,12 +78,15 @@ export default function Home() {
   if (books.length === 0) {
     // Hero/Upload layout with background map
     return (
-      <div className="relative min-h-screen bg-gray-50 font-mono overflow-hidden">
-        {/* Background Map - Static and covering full viewport */}
-        <div className="absolute inset-0 opacity-60">
-          <MapChart highlighted={new Set()} />
-        </div>
-
+      <div 
+        className="relative min-h-screen font-mono overflow-hidden"
+        style={{
+          backgroundImage: "url('/vintage-world-map.png')",
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }}
+      >
         {/* Overlay content centered in viewport */}
         <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-6">
           {/* Hero Section */}
