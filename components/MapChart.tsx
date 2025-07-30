@@ -24,46 +24,44 @@ export const MapChart = memo(function MapChart({
       style={{ width: "100%", height: "100%" }}
     >
       <Geographies geography={TOPO_URL}>
-        {({ geographies }) => 
-          geographies.map((geo) => {
-            const iso2 = (geo.properties as any).ISO_A2 as string;
-            const isHighlighted = highlighted.has(iso2);
-            const isSelected = iso2 === selectedCountry;
-            console.log({geo, iso2, isHighlighted,isSelected})
-            // 1) default grey, 2) amber-400 if highlighted, 3) amber-600 if selected
-            let fill = "#E2E8F0"; // gray-200
-            if (isHighlighted) fill = "#FACC15"; // amber-400
-            if (isSelected) fill = "#CA8A04"; // amber-600
-        
+        {({ geographies }) => {
+          console.log(geographies[0]);
+
+          return geographies.map((geo) => {
+            const countryName = (geo.properties as any).name as string;
+            const isHighlighted = highlighted.has(countryName);
+            const isSelected = countryName === selectedCountry;
+
+            // Set fill color based on state
+            let fill = "#9CA3AF"; // gray-400 (default)
+            if (isHighlighted) fill = "#DC2626"; // red-600
+            if (isSelected) fill = "#B91C1C"; // red-700
+
             return (
               <Geography
                 key={geo.rsmKey}
                 geography={geo}
                 stroke="#CBD5E1"
-                onClick={() => onCountryClick(iso2)}
+                onClick={() => onCountryClick(countryName)}
                 style={{
                   default: {
-                    fill: isSelected
-                      ? "#D97706" // amber-500
-                      : isHighlighted
-                        ? "#FBBF24" // amber-300
-                        : "#CBD5E1", // gray-300
+                    fill: fill,
                     outline: "none",
                   },
                   hover: {
                     fill: isSelected
-                      ? "#D97706" // amber-500
+                      ? "#B91C1C" // red-700
                       : isHighlighted
-                        ? "#FBBF24" // amber-300
-                        : "#CBD5E1", // gray-300
+                        ? "#EF4444" // red-500 (lighter on hover)
+                        : "#6B7280", // gray-500 (darker on hover)
                     outline: "none",
                   },
                   pressed: { outline: "none" },
                 }}
               />
             );
-          })
-        }
+          });
+        }}
       </Geographies>
     </ComposableMap>
   );
