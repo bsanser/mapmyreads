@@ -113,31 +113,33 @@ export default function Home() {
           </div>
         )}
 
-        {/* File Upload */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 mb-8">
-          <label className="block">
-            <div className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-xl py-12 px-6 hover:border-blue-400 hover:bg-blue-50/50 transition-all duration-200 cursor-pointer group">
-              <svg className="w-12 h-12 text-gray-400 group-hover:text-blue-500 transition-colors mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-              </svg>
-              <p className="text-lg font-medium text-gray-700 group-hover:text-blue-600 transition-colors mb-2">
-                Upload your reading list
-              </p>
-              <p className="text-sm text-gray-500 mb-4">
-                CSV files from Goodreads, StoryGraph, or similar platforms
-              </p>
-              <div className="bg-blue-600 text-white px-6 py-2 rounded-full text-sm font-medium group-hover:bg-blue-700 transition-colors">
-                Choose File
+        {/* File Upload - Hidden after successful upload */}
+        {books.length === 0 && (
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 mb-8">
+            <label className="block">
+              <div className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-xl py-12 px-6 hover:border-blue-400 hover:bg-blue-50/50 transition-all duration-200 cursor-pointer group">
+                <svg className="w-12 h-12 text-gray-400 group-hover:text-blue-500 transition-colors mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                </svg>
+                <p className="text-lg font-medium text-gray-700 group-hover:text-blue-600 transition-colors mb-2">
+                  Upload your reading list
+                </p>
+                <p className="text-sm text-gray-500 mb-4">
+                  CSV files from Goodreads, StoryGraph, or similar platforms
+                </p>
+                <div className="bg-blue-600 text-white px-6 py-2 rounded-full text-sm font-medium group-hover:bg-blue-700 transition-colors">
+                  Choose File
+                </div>
               </div>
-            </div>
-            <input 
-              type="file" 
-              accept=".csv" 
-              onChange={handleFile} 
-              className="sr-only" 
-            />
-          </label>
-        </div>
+              <input 
+                type="file" 
+                accept=".csv" 
+                onChange={handleFile} 
+                className="sr-only" 
+              />
+            </label>
+          </div>
+        )}
 
         {/* Content Grid */}
         {books.length > 0 && (
