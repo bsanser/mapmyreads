@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -181,7 +180,7 @@ export default function Home() {
                     }}>
                       {/* Red margin line */}
                       <div className="absolute left-8 top-0 bottom-0 w-px bg-red-400"></div>
-                      
+
                       {/* Content with proper spacing from margin */}
                       <div className="ml-6 relative z-10">
                         <div className="mb-3">
