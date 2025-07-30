@@ -1,17 +1,10 @@
-
 // components/MapChart.tsx
 "use client";
 
 import { memo } from "react";
-import { ComposableMap, Geographies, Geography, Sphere, Graticule } from "react-simple-maps";
-import { scaleLinear } from "d3-scale";
+import { ComposableMap, Geographies, Geography } from "react-simple-maps";
 
 const TOPO_URL = "https://unpkg.com/world-atlas@2.0.2/countries-110m.json";
-
-// Create a gradient color scale from light amber to deep red
-const colorScale = scaleLinear()
-  .domain([0, 1])
-  .range(["#FEF3C7", "#DC2626"]); // light amber to red
 
 export type MapChartProps = {
   highlighted: Set<string>;
@@ -30,8 +23,6 @@ export const MapChart = memo(function MapChart({
       projectionConfig={{ scale: 150 }}
       style={{ width: "100%", height: "100%" }}
     >
-      <Sphere stroke="#E4E5E6" strokeWidth={0.5} />
-      <Graticule stroke="#E4E5E6" strokeWidth={0.5} />
       <Geographies geography={TOPO_URL}>
         {({ geographies }) =>
           geographies.map((geo) => {
@@ -39,18 +30,10 @@ export const MapChart = memo(function MapChart({
             const isHighlighted = highlighted.has(iso2);
             const isSelected = iso2 === selectedCountry;
 
-            let fill = "#F5F4F6"; // default light gray
-            
-            if (isHighlighted) {
-              // Use gradient scale - could be enhanced to show different intensities
-              // For now, all highlighted countries get the mid-range color
-              fill = colorScale(0.6);
-            }
-            
-            if (isSelected) {
-              // Selected country gets the deepest red
-              fill = colorScale(1);
-            }
+            // 1) default grey, 2) amber-400 if highlighted, 3) amber-600 if selected
+            let fill = "#E2E8F0"; // gray-200
+            if (isHighlighted) fill = "#FACC15"; // amber-400
+            if (isSelected) fill = "#CA8A04"; // amber-600
 
             return (
               <Geography
@@ -63,10 +46,10 @@ export const MapChart = memo(function MapChart({
                   default: { outline: "none" },
                   hover: {
                     fill: isSelected
-                      ? colorScale(0.9) // slightly lighter red
+                      ? "#D97706" // amber-500
                       : isHighlighted
-                        ? colorScale(0.8) // lighter version of highlight
-                        : "#E5E7EB", // light gray
+                        ? "#FBBF24" // amber-300
+                        : "#CBD5E1", // gray-300
                     outline: "none",
                   },
                   pressed: { outline: "none" },
