@@ -26,18 +26,21 @@ export default function Home() {
   const [booksToShow, setBooksToShow] = useState<number>(10);
   // State for filtering books by country
   const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
-  
+
   // ❶ Build a Set of all countries from your books
   const highlighted = new Set<string>(books.flatMap((b) => b.countries));
 
+  console.log(highlighted);
+
   function getMockCountries(): string[] {
-    const rand = TEST_COUNTRIES[Math.floor(Math.random() * TEST_COUNTRIES.length)];
+    const rand =
+      TEST_COUNTRIES[Math.floor(Math.random() * TEST_COUNTRIES.length)];
     return [rand];
   }
-  
+
   // Filter books based on selected country
-  const filteredBooks = selectedCountry 
-    ? books.filter(book => book.countries.includes(selectedCountry))
+  const filteredBooks = selectedCountry
+    ? books.filter((book) => book.countries.includes(selectedCountry))
     : books;
 
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -207,8 +210,8 @@ export default function Home() {
       {/* Map Section - Full viewport */}
       <div className="h-[calc(100vh-64px)]">
         <div className="bg-gray-50 rounded border border-gray-200 overflow-hidden h-full">
-          <MapChart 
-            highlighted={highlighted} 
+          <MapChart
+            highlighted={highlighted}
             onCountryClick={setSelectedCountry}
             selectedCountry={selectedCountry}
           />
@@ -221,8 +224,8 @@ export default function Home() {
           Your Library
         </h2>
         <div className="text-sm text-gray-600 mb-4">
-          {selectedCountry 
-            ? `${filteredBooks.length} books from ${selectedCountry}` 
+          {selectedCountry
+            ? `${filteredBooks.length} books from ${selectedCountry}`
             : `${books.length} books`}
           {selectedCountry && (
             <button
@@ -286,7 +289,9 @@ export default function Home() {
             <div className="text-center py-4">
               <button
                 onClick={() =>
-                  setBooksToShow((prev) => Math.min(prev + 10, filteredBooks.length))
+                  setBooksToShow((prev) =>
+                    Math.min(prev + 10, filteredBooks.length),
+                  )
                 }
                 className="bg-gray-900 text-white px-4 py-2 rounded font-medium hover:bg-gray-800 transition-colors font-mono text-sm"
               >
