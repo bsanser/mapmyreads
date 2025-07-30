@@ -27,11 +27,9 @@ fetch(TOPO_URL)
 
 type MapChartProps = {
   highlighted: Set<string>  // ISO Alpha-2 codes e.g. 'US', 'NG'
-  onHoverCountry?: (iso2: string) => void
-  onClickCountry?: (iso2: string) => void
 }
 
-export const MapChart = memo(({ highlighted, onHoverCountry, onClickCountry }: MapChartProps) => {
+export const MapChart = memo(({ highlighted }: MapChartProps) => {
   return (
     <div className="w-full h-full">
       <ComposableMap
@@ -42,19 +40,18 @@ export const MapChart = memo(({ highlighted, onHoverCountry, onClickCountry }: M
         <Geographies geography={TOPO_URL}>
           {({ geographies }) =>
             geographies.map(geo => {
-              const iso2 = geo.properties.ISO_A2 as string
-              const isHighlighted = highlighted.has(iso2)
+              const isoA2 = geo.properties.ISO_A2 as string
+              const isHighlighted = highlighted.has(isoA2)
               return (
                 <Geography
                   key={geo.rsmKey}
                   geography={geo}
-                  fill={isHighlighted ? '#FACC15' /* amber-400 */ : '#E2E8F0' /* gray-200 */}
-                  stroke="#FFF"
-                  onMouseEnter={() => onHoverCountry?.(iso2)}
-                  onClick={() => onClickCountry?.(iso2)}
+                  fill={isHighlighted ? '#10B981' : '#E5E7EB'}
+                  stroke="#FFFFFF"
+                  strokeWidth={0.5}
                   style={{
                     default:   { outline: 'none' },
-                    hover:     { fill: isHighlighted ? '#FBBF24' /* amber-300 */ : '#CBD5E1' /* gray-300 */ },
+                    hover:     { fill: isHighlighted ? '#059669' : '#D1D5DB', outline: 'none' },
                     pressed:   { outline: 'none' }
                   }}
                 />
