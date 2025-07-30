@@ -9,7 +9,7 @@ const ISBN_COUNTRY_TEST_DATA: Record<string, string[]> = {
   "9789681311889": ["ES"], // e.g. Los renglones torcidos de Dios
 };
 
-const TEST_COUNTRIES = ["US", "GB", "NG"];
+const TEST_COUNTRIES = ["Egypt", "Spain", "Brazil"];
 
 type Book = {
   title: string;
