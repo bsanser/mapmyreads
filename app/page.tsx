@@ -33,6 +33,14 @@ export default function Home() {
     return [rand];
   }
 
+  // State for filtering books by country
+  const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
+  
+  // Filter books based on selected country
+  const filteredBooks = selectedCountry 
+    ? books.filter(book => book.countries.includes(selectedCountry))
+    : books;
+
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     setError("");
     const file = e.target.files?.[0];
@@ -200,7 +208,11 @@ export default function Home() {
       {/* Map Section - Full viewport */}
       <div className="h-[calc(100vh-64px)]">
         <div className="bg-gray-50 rounded border border-gray-200 overflow-hidden h-full">
-          <MapChart highlighted={highlighted} />
+          <MapChart 
+            highlighted={highlighted} 
+            onCountryClick={setSelectedCountry}
+            selectedCountry={selectedCountry}
+          />
         </div>
       </div>
 
@@ -209,9 +221,21 @@ export default function Home() {
         <h2 className="text-lg font-bold text-gray-900 font-mono mb-2">
           Your Library
         </h2>
-        <div className="text-sm text-gray-600 mb-4">{books.length} books</div>
+        <div className="text-sm text-gray-600 mb-4">
+          {selectedCountry 
+            ? `${filteredBooks.length} books from ${selectedCountry}` 
+            : `${books.length} books`}
+          {selectedCountry && (
+            <button
+              onClick={() => setSelectedCountry(null)}
+              className="ml-2 text-blue-600 hover:text-blue-800 underline text-xs"
+            >
+              Show all
+            </button>
+          )}
+        </div>
         <div className="space-y-4 max-h-[60vh] overflow-y-auto">
-          {books.slice(0, booksToShow).map((b, i) => (
+          {filteredBooks.slice(0, booksToShow).map((b, i) => (
             <div
               key={`${b.isbn13}-${i}`}
               className="relative bg-white border border-gray-300 rounded p-4 hover:shadow-md transition-all group shadow-sm overflow-hidden"
@@ -259,15 +283,15 @@ export default function Home() {
               </div>
             </div>
           ))}
-          {books.length > booksToShow && (
+          {filteredBooks.length > booksToShow && (
             <div className="text-center py-4">
               <button
                 onClick={() =>
-                  setBooksToShow((prev) => Math.min(prev + 10, books.length))
+                  setBooksToShow((prev) => Math.min(prev + 10, filteredBooks.length))
                 }
                 className="bg-gray-900 text-white px-4 py-2 rounded font-medium hover:bg-gray-800 transition-colors font-mono text-sm"
               >
-                Load More ({books.length - booksToShow} remaining)
+                Load More ({filteredBooks.length - booksToShow} remaining)
               </button>
             </div>
           )}

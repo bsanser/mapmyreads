@@ -27,9 +27,11 @@ fetch(TOPO_URL)
 
 type MapChartProps = {
   highlighted: Set<string>  // ISO Alpha-2 codes e.g. 'US', 'NG'
+  onCountryClick: (countryCode: string) => void
+  selectedCountry: string | null
 }
 
-export const MapChart = memo(({ highlighted }: MapChartProps) => {
+export const MapChart = memo(({ highlighted, onCountryClick, selectedCountry }: MapChartProps) => {
   return (
     <div className="w-full h-full">
       <ComposableMap
@@ -42,17 +44,47 @@ export const MapChart = memo(({ highlighted }: MapChartProps) => {
             geographies.map(geo => {
               const isoA2 = geo.properties.ISO_A2 as string
               const isHighlighted = highlighted.has(isoA2)
+              const isSelected = selectedCountry === isoA2
+              
+              // Vintage map colors inspired by old parchment
+              const getCountryFill = () => {
+                if (isSelected) return '#8B4513' // Dark brown for selected
+                if (isHighlighted) return '#D2B48C' // Tan/beige for countries with books
+                return '#F5F5DC' // Light beige for countries without books
+              }
+              
+              const getHoverFill = () => {
+                if (isSelected) return '#654321' // Darker brown on hover
+                if (isHighlighted) return '#CD853F' // Peru color on hover
+                return '#E6E6E6' // Light gray on hover for empty countries
+              }
+              
               return (
                 <Geography
                   key={geo.rsmKey}
                   geography={geo}
-                  fill={isHighlighted ? '#10B981' : '#E5E7EB'}
-                  stroke="#FFFFFF"
-                  strokeWidth={0.5}
+                  fill={getCountryFill()}
+                  stroke="#8B4513"
+                  strokeWidth={0.3}
                   style={{
-                    default:   { outline: 'none' },
-                    hover:     { fill: isHighlighted ? '#059669' : '#D1D5DB', outline: 'none' },
-                    pressed:   { outline: 'none' }
+                    default: { 
+                      outline: 'none',
+                      cursor: isHighlighted ? 'pointer' : 'default'
+                    },
+                    hover: { 
+                      fill: getHoverFill(), 
+                      outline: 'none',
+                      cursor: isHighlighted ? 'pointer' : 'default'
+                    },
+                    pressed: { 
+                      outline: 'none',
+                      fill: isHighlighted ? '#A0522D' : getCountryFill()
+                    }
+                  }}
+                  onClick={() => {
+                    if (isHighlighted) {
+                      onCountryClick(isoA2)
+                    }
                   }}
                 />
               )
