@@ -169,10 +169,14 @@ export default function Home() {
                           transparent,
                           transparent 24px,
                           #3b82f6 24px,
-                          #3b82f6 25px
+                          #3b82f6 25px,
+                          transparent 25px,
+                          transparent 49px,
+                          #dc2626 49px,
+                          #dc2626 50px
                         )
                       `,
-                      backgroundSize: '100% 100%, 100% 25px',
+                      backgroundSize: '100% 100%, 100% 50px',
                       backgroundPosition: '0 0, 0 8px'
                     }}>
                       {/* Red margin line */}
@@ -181,20 +185,17 @@ export default function Home() {
                       {/* Content with proper spacing from margin */}
                       <div className="ml-6 relative z-10">
                         <div className="mb-3">
-                          <p className="font-mono text-gray-900 text-sm leading-tight relative inline-block">
+                          <p className="font-mono text-gray-900 text-sm leading-tight">
                             {b.title}
-                            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-red-400"></span>
                           </p>
                         </div>
                         <div className="space-y-1">
-                          <p className="font-mono text-gray-700 text-xs relative inline-block">
+                          <p className="font-mono text-gray-700 text-xs">
                             by {b.author}
-                            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-400"></span>
                           </p>
                           {b.year && (
-                            <p className="font-mono text-gray-600 text-xs relative inline-block">
+                            <p className="font-mono text-gray-600 text-xs">
                               {b.year}
-                              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-400"></span>
                             </p>
                           )}
                         </div>
