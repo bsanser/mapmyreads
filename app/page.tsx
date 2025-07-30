@@ -74,6 +74,78 @@ export default function Home() {
     });
   };
 
+  // Show different layouts based on whether books are loaded
+  if (books.length === 0) {
+    // Hero/Upload layout with background map
+    return (
+      <div className="relative min-h-screen bg-gray-50 font-mono overflow-hidden">
+        {/* Background Map - Static and covering full viewport */}
+        <div className="absolute inset-0 opacity-20">
+          <MapChart highlighted={new Set()} />
+        </div>
+
+        {/* Overlay content centered in viewport */}
+        <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-6">
+          {/* Hero Section */}
+          <div className="text-center max-w-2xl">
+            <div className="w-32 h-32 bg-white/80 backdrop-blur-sm rounded-lg flex items-center justify-center mx-auto mb-8 border border-gray-300 shadow-lg">
+              <svg className="w-16 h-16 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+              </svg>
+            </div>
+            <h1 className="text-4xl font-bold text-gray-900 mb-6 font-mono">
+              📚 Map Your Reading Journey
+            </h1>
+            <p className="text-xl text-gray-600 mb-12 leading-relaxed font-mono">
+              Upload your reading list to visualize the countries and cultures you've explored through literature
+            </p>
+
+            {/* Error Banner */}
+            {error && (
+              <div className="bg-red-50/90 backdrop-blur-sm border border-red-200 text-red-700 px-6 py-4 rounded-lg mb-8 flex items-center gap-4 font-mono">
+                <div className="w-8 h-8 bg-red-200 rounded-full flex items-center justify-center flex-shrink-0">
+                  <svg className="w-4 h-4 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <span className="font-medium">{error}</span>
+              </div>
+            )}
+
+            {/* File Upload */}
+            <div className="bg-white/90 backdrop-blur-sm rounded-lg shadow-lg border border-gray-200 p-10 hover:bg-white/95 transition-all">
+              <label className="block cursor-pointer">
+                <div className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg py-16 px-8 hover:border-gray-400 transition-colors group">
+                  <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center mb-6 group-hover:bg-gray-200 transition-colors">
+                    <svg className="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                  </div>
+                  <p className="text-xl font-semibold text-gray-800 mb-3 font-mono">
+                    Upload your reading list
+                  </p>
+                  <p className="text-gray-600 mb-8 text-center max-w-md font-mono">
+                    CSV files from Goodreads, StoryGraph, or similar platforms
+                  </p>
+                  <div className="bg-gray-900 text-white px-8 py-3 rounded font-medium hover:bg-gray-800 transition-colors font-mono">
+                    Choose File
+                  </div>
+                </div>
+                <input 
+                  type="file" 
+                  accept=".csv" 
+                  onChange={handleFile} 
+                  className="sr-only" 
+                />
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Books loaded layout - show the app interface
   return (
     <div className="min-h-screen bg-gray-50 font-mono">
       {/* Header */}
@@ -93,168 +165,66 @@ export default function Home() {
       </div>
 
       {/* Floating Library Sidebar */}
-      <div className="fixed top-1/2 left-4 -translate-y-1/2 bg-white rounded-lg shadow-lg border border-gray-200 p-4 w-64">
+      <div className="fixed top-1/2 left-4 -translate-y-1/2 bg-white rounded-lg shadow-lg border border-gray-200 p-4 w-64 max-h-[80vh] overflow-hidden">
         <h2 className="text-lg font-bold text-gray-900 font-mono mb-2">
           Your Library
         </h2>
-        <div className="text-sm text-gray-600">
+        <div className="text-sm text-gray-600 mb-4">
           {books.length} books
         </div>
-      </div>
+        <div className="space-y-4 max-h-[60vh] overflow-y-auto">
+          {books.slice(0, booksToShow).map((b, i) => (
+            <div key={`${b.isbn13}-${i}`} className="relative bg-white border border-gray-300 rounded p-4 hover:shadow-md transition-all group shadow-sm overflow-hidden" style={{
+              backgroundImage: `
+                linear-gradient(to right, #e2e8f0 1px, transparent 1px),
+                repeating-linear-gradient(
+                  transparent,
+                  transparent 24px,
+                  #3b82f6 24px,
+                  #3b82f6 25px,
+                  transparent 25px,
+                  transparent 49px,
+                  #dc2626 49px,
+                  #dc2626 50px
+                )
+              `,
+              backgroundSize: '100% 100%, 100% 50px',
+              backgroundPosition: '0 0, 0 8px'
+            }}>
+              {/* Red margin line */}
+              <div className="absolute left-8 top-0 bottom-0 w-px bg-red-400"></div>
 
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        {/* Hero Section */}
-        {books.length === 0 && (
-          <div className="text-center py-20">
-            <div className="w-32 h-32 bg-gray-200 rounded-lg flex items-center justify-center mx-auto mb-8 border border-gray-300">
-              <svg className="w-16 h-16 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-              </svg>
-            </div>
-            <h2 className="text-4xl font-bold text-gray-900 mb-6 font-mono">
-              Map Your Reading Journey
-            </h2>
-            <p className="text-xl text-gray-600 mb-12 max-w-2xl mx-auto leading-relaxed font-mono">
-              Upload your reading list to visualize the countries and cultures you've explored through literature
-            </p>
-          </div>
-        )}
-
-        {/* Error Banner */}
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-lg mb-8 flex items-center gap-4 font-mono">
-            <div className="w-8 h-8 bg-red-200 rounded-full flex items-center justify-center flex-shrink-0">
-              <svg className="w-4 h-4 text-red-600" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <span className="font-medium">{error}</span>
-          </div>
-        )}
-
-        {/* File Upload - Hidden after successful upload */}
-        {books.length === 0 && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-10 mb-8 hover:shadow-md transition-shadow">
-            <label className="block cursor-pointer">
-              <div className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg py-16 px-8 hover:border-gray-400 transition-colors group">
-                <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center mb-6 group-hover:bg-gray-200 transition-colors">
-                  <svg className="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                  </svg>
+              {/* Content with proper spacing from margin */}
+              <div className="ml-6 relative z-10">
+                <div className="mb-3">
+                  <p className="font-mono text-gray-900 text-sm leading-tight">
+                    {b.title}
+                  </p>
                 </div>
-                <p className="text-xl font-semibold text-gray-800 mb-3 font-mono">
-                  Upload your reading list
-                </p>
-                <p className="text-gray-600 mb-8 text-center max-w-md font-mono">
-                  CSV files from Goodreads, StoryGraph, or similar platforms
-                </p>
-                <div className="bg-gray-900 text-white px-8 py-3 rounded font-medium hover:bg-gray-800 transition-colors font-mono">
-                  Choose File
-                </div>
-              </div>
-              <input 
-                type="file" 
-                accept=".csv" 
-                onChange={handleFile} 
-                className="sr-only" 
-              />
-            </label>
-          </div>
-        )}
-
-        {/* Content Grid */}
-        {books.length > 0 && (
-          <div className="grid lg:grid-cols-3 gap-8">
-            {/* Book List - Taking 1/3 of space */}
-            <div className="lg:col-span-1">
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-bold text-gray-900 font-mono">
-                    Your Library
-                  </h2>
-                  <div className="bg-gray-100 text-gray-700 font-semibold px-3 py-1 rounded text-sm font-mono">
-                    {books.length} books
-                  </div>
-                </div>
-                <div className="space-y-4 max-h-96 overflow-y-auto">
-                  {books.slice(0, booksToShow).map((b, i) => (
-                    <div key={`${b.isbn13}-${i}`} className="relative bg-white border border-gray-300 rounded p-4 hover:shadow-md transition-all group shadow-sm overflow-hidden" style={{
-                      backgroundImage: `
-                        linear-gradient(to right, #e2e8f0 1px, transparent 1px),
-                        repeating-linear-gradient(
-                          transparent,
-                          transparent 24px,
-                          #3b82f6 24px,
-                          #3b82f6 25px,
-                          transparent 25px,
-                          transparent 49px,
-                          #dc2626 49px,
-                          #dc2626 50px
-                        )
-                      `,
-                      backgroundSize: '100% 100%, 100% 50px',
-                      backgroundPosition: '0 0, 0 8px'
-                    }}>
-                      {/* Red margin line */}
-                      <div className="absolute left-8 top-0 bottom-0 w-px bg-red-400"></div>
-
-                      {/* Content with proper spacing from margin */}
-                      <div className="ml-6 relative z-10">
-                        <div className="mb-3">
-                          <p className="font-mono text-gray-900 text-sm leading-tight">
-                            {b.title}
-                          </p>
-                        </div>
-                        <div className="space-y-1">
-                          <p className="font-mono text-gray-700 text-xs">
-                            by {b.author}
-                          </p>
-                          {b.year && (
-                            <p className="font-mono text-gray-600 text-xs">
-                              {b.year}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                  {books.length > booksToShow && (
-                    <div className="text-center py-4">
-                      <button
-                        onClick={() => setBooksToShow(prev => Math.min(prev + 10, books.length))}
-                        className="bg-gray-900 text-white px-4 py-2 rounded font-medium hover:bg-gray-800 transition-colors font-mono text-sm"
-                      >
-                        Load More ({books.length - booksToShow} remaining)
-                      </button>
-                    </div>
+                <div className="space-y-1">
+                  <p className="font-mono text-gray-700 text-xs">
+                    by {b.author}
+                  </p>
+                  {b.year && (
+                    <p className="font-mono text-gray-600 text-xs">
+                      {b.year}
+                    </p>
                   )}
                 </div>
               </div>
             </div>
-
-            {/* Map Section - Taking 2/3 of space */}
-            <div className="lg:col-span-2">
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 h-full">
-                <h2 className="text-xl font-bold text-gray-900 mb-6 font-mono">
-                  Your Reading Map
-                </h2>
-                <div className="bg-gray-50 rounded border border-gray-200 overflow-hidden h-96">
-                  <MapChart highlighted={highlighted} />
-                </div>
-                <div className="mt-4 flex items-center gap-6 text-sm font-mono">
-                  <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 bg-green-400 rounded border border-gray-300"></div>
-                    <span className="text-gray-700">Countries explored</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 bg-gray-200 rounded border border-gray-300"></div>
-                    <span className="text-gray-700">Unexplored</span>
-                  </div>
-                </div>
-              </div>
+          ))}
+          {books.length > booksToShow && (
+            <div className="text-center py-4">
+              <button
+                onClick={() => setBooksToShow(prev => Math.min(prev + 10, books.length))}
+                className="bg-gray-900 text-white px-4 py-2 rounded font-medium hover:bg-gray-800 transition-colors font-mono text-sm"
+              >
+                Load More ({books.length - booksToShow} remaining)
+              </button>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );
