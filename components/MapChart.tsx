@@ -46,17 +46,17 @@ export const MapChart = memo(({ highlighted, onCountryClick, selectedCountry }: 
               const isHighlighted = highlighted.has(isoA2)
               const isSelected = selectedCountry === isoA2
               
-              // Vintage map colors inspired by old parchment
+              // Vintage map colors with better contrast
               const getCountryFill = () => {
                 if (isSelected) return '#8B4513' // Dark brown for selected
-                if (isHighlighted) return '#D2B48C' // Tan/beige for countries with books
+                if (isHighlighted) return '#CD853F' // Peru/darker tan for countries with books
                 return '#F5F5DC' // Light beige for countries without books
               }
               
               const getHoverFill = () => {
                 if (isSelected) return '#654321' // Darker brown on hover
-                if (isHighlighted) return '#CD853F' // Peru color on hover
-                return '#E6E6E6' // Light gray on hover for empty countries
+                if (isHighlighted) return '#A0522D' // Sienna on hover for highlighted
+                return '#DDD' // Light gray on hover for empty countries
               }
               
               return (
@@ -64,8 +64,8 @@ export const MapChart = memo(({ highlighted, onCountryClick, selectedCountry }: 
                   key={geo.rsmKey}
                   geography={geo}
                   fill={getCountryFill()}
-                  stroke="#8B4513"
-                  strokeWidth={0.3}
+                  stroke="#654321"
+                  strokeWidth={0.5}
                   style={{
                     default: { 
                       outline: 'none',

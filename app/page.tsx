@@ -24,17 +24,16 @@ export default function Home() {
   const [books, setBooks] = useState<Book[]>([]);
   const [error, setError] = useState<string>("");
   const [booksToShow, setBooksToShow] = useState<number>(10);
+  // State for filtering books by country
+  const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
+  
   // ❶ Build a Set of all countries from your books
   const highlighted = new Set<string>(books.flatMap((b) => b.countries));
 
   function getMockCountries(): string[] {
-    const rand =
-      TEST_COUNTRIES[Math.floor(Math.random() * TEST_COUNTRIES.length)];
+    const rand = TEST_COUNTRIES[Math.floor(Math.random() * TEST_COUNTRIES.length)];
     return [rand];
   }
-
-  // State for filtering books by country
-  const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
   
   // Filter books based on selected country
   const filteredBooks = selectedCountry 
