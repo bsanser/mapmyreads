@@ -33,8 +33,8 @@ export const MapChart = memo(function MapChart({
             const isSelected = countryName === selectedCountry;
 
             // Set fill color based on state
-            let fill = "#9CA3AF"; // gray-400 (default)
-            if (isHighlighted) fill = "#DC2626"; // red-600
+            let fill = "#FFFBEB"; // gray-400 (default)
+            if (isHighlighted) fill = "#FCD34D"; // red-600
             if (isSelected) fill = "#B91C1C"; // red-700
 
             return (
@@ -50,10 +50,10 @@ export const MapChart = memo(function MapChart({
                   },
                   hover: {
                     fill: isSelected
-                      ? "#B91C1C" // red-700
+                      ? "#FACC15" // red-700
                       : isHighlighted
-                        ? "#EF4444" // red-500 (lighter on hover)
-                        : "#6B7280", // gray-500 (darker on hover)
+                        ? "#FEEBA7" // red-500 (lighter on hover)
+                        : "#CBD5E1", // gray-500 (darker on hover)
                     outline: "none",
                   },
                   pressed: { outline: "none" },
