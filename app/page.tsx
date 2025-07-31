@@ -204,19 +204,16 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Map Section - Full viewport */}
-      <div className="h-[calc(100vh-64px)]">
-        <div className="bg-gray-50 rounded border border-gray-200 overflow-hidden h-full">
-          <MapChart 
-            highlighted={highlighted} 
-            onCountryClick={setSelectedCountry}
-            selectedCountry={selectedCountry}
-          />
-        </div>
-      </div>
-
-      {/* Floating Library Sidebar */}
-      <div className="fixed top-1/2 left-4 -translate-y-1/2 bg-white rounded-lg shadow-lg border border-gray-200 p-4 w-64 max-h-[80vh] overflow-hidden">
+      {/* Map Section - Full viewport minus header */}
+      <div className="h-[calc(100vh-80px)] relative">
+        <MapChart 
+          highlighted={highlighted} 
+          onCountryClick={setSelectedCountry}
+          selectedCountry={selectedCountry}
+        />
+        
+        {/* Floating Library Sidebar - positioned over the map */}
+        <div className="absolute top-4 left-4 bg-white rounded-lg shadow-lg border border-gray-200 p-4 w-64 max-h-[calc(100vh-120px)] overflow-hidden z-10">
         <h2 className="text-lg font-bold text-gray-900 font-mono mb-2">
           Your Library
         </h2>
