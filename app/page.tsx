@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Papa from 'papaparse'
-import { MapLibreMap } from '../components/MapLibreMap';
+import { MapLibreMap, assignMockCountriesToBooks } from '../components/MapLibreMap';
 import { ShareButton } from '../components/ShareButton'
 import { FeedbackButton } from '../components/FeedbackButton'
 import { BuyMeACoffee } from '../components/BuyMeACoffee'
@@ -310,6 +310,16 @@ export default function Home() {
             // Parse books
             let parsedBooks = parseCSVData(data, format)
             console.log(`Parsed ${parsedBooks.length} books`)
+
+            // Assign mock countries to all books
+            parsedBooks = assignMockCountriesToBooks(parsedBooks)
+            console.log('🌍 Mock countries assigned to all books')
+            
+            // Log some examples of assigned countries
+            const sampleBooks = parsedBooks.slice(0, 3)
+            sampleBooks.forEach(book => {
+              console.log(`📚 "${book.title}" → Book countries: ${book.bookCountries.join(', ')}, Author countries: ${book.authorCountries.join(', ')}`)
+            })
 
             // Separate read and unread books
             const readBooks = parsedBooks.filter(book => book.readStatus === 'read')
