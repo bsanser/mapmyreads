@@ -339,18 +339,58 @@ export const MapLibreMap = ({
     themeControl.appendChild(themeDropdown);
     mapContainer.current?.appendChild(themeControl);
 
-    // Add a simple popup on click with secure content
-    map.on('click', (e) => {
-      const coordinates = e.lngLat;
-      const popup = new maplibregl.Popup({
-        closeButton: true,
-        closeOnClick: false
-      });
-      
-      popup
-        .setLngLat(coordinates)
-        .setHTML(`<div>Coordinates: ${coordinates.lng.toFixed(4)}, ${coordinates.lat.toFixed(4)}</div>`)
-        .addTo(map);
+    // Create hover tooltip for country names
+    const tooltip = document.createElement('div');
+    tooltip.style.cssText = `
+      position: absolute;
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      pointer-events: none;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+      backdrop-filter: blur(4px);
+    `;
+    mapContainer.current?.appendChild(tooltip);
+
+    // Add hover events for countries
+    map.on('mousemove', 'countries-fill', (e) => {
+      if (e.features && e.features[0]) {
+        const properties = e.features[0].properties;
+        
+        // Try different possible property names for country names
+        const countryName = properties?.ADMIN || 
+                           properties?.NAME || 
+                           properties?.name || 
+                           properties?.Name ||
+                           properties?.COUNTRY ||
+                           properties?.country ||
+                           'Unknown Country';
+        
+        tooltip.textContent = countryName;
+        tooltip.style.opacity = '1';
+        tooltip.style.visibility = 'visible';
+        
+        // Position tooltip above the mouse cursor
+        const canvas = map.getCanvas();
+        const rect = canvas.getBoundingClientRect();
+        const x = e.point.x + rect.left;
+        const y = e.point.y + rect.top - 40; // 40px above cursor
+        
+        tooltip.style.left = `${x}px`;
+        tooltip.style.top = `${y}px`;
+      }
+    });
+
+    map.on('mouseleave', 'countries-fill', () => {
+      tooltip.style.opacity = '0';
+      tooltip.style.visibility = 'hidden';
     });
 
     // Add error event listener
