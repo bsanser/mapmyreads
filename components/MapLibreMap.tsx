@@ -39,20 +39,144 @@ const THEMES = {
   }
 };
 
+// Available countries for mock data (ISO2 codes)
+const AVAILABLE_COUNTRIES = {
+  'ES': 'Spain',
+  'FR': 'France', 
+  'DE': 'Germany',
+  'IT': 'Italy',
+  'US': 'United States',
+  'CA': 'Canada',
+  'BR': 'Brazil',
+  'AR': 'Argentina',
+  'JP': 'Japan',
+  'AU': 'Australia',
+  'GB': 'United Kingdom',
+  'MX': 'Mexico',
+  'IN': 'India',
+  'CN': 'China',
+  'RU': 'Russia'
+};
+
+// Function to automatically assign mock countries to books
+export const assignMockCountriesToBooks = (books: any[]) => {
+  const countryCodes = Object.keys(AVAILABLE_COUNTRIES);
+  
+  return books.map(book => {
+    // Assign 1-2 book countries (where the book is set)
+    const bookCountryCount = Math.random() > 0.6 ? 1 : 2;
+    const bookCountries = [];
+    for (let i = 0; i < bookCountryCount; i++) {
+      const randomCountry = countryCodes[Math.floor(Math.random() * countryCodes.length)];
+      if (!bookCountries.includes(randomCountry)) {
+        bookCountries.push(randomCountry);
+      }
+    }
+    
+    // Assign 1-2 author countries (where authors are from)
+    const authorCountryCount = Math.random() > 0.6 ? 1 : 2;
+    const authorCountries = [];
+    for (let i = 0; i < authorCountryCount; i++) {
+      const randomCountry = countryCodes[Math.floor(Math.random() * countryCodes.length)];
+      if (!authorCountries.includes(randomCountry)) {
+        authorCountries.push(randomCountry);
+      }
+    }
+    
+    return {
+      ...book,
+      bookCountries: bookCountries,
+      authorCountries: authorCountries
+    };
+  });
+};
+
 export type MapLibreMapProps = {
   highlighted?: Set<string>;
   selectedCountry?: string | null;
   onCountryClick?: (countryName: string) => void;
+  books?: any[]; // Add books prop for heatmap logic
 };
 
 export const MapLibreMap = ({
   highlighted = new Set(),
   selectedCountry = null,
-  onCountryClick
+  onCountryClick,
+  books = []
 }: MapLibreMapProps) => {
   const mapContainer = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<maplibregl.Map | null>(null);
   const [mapStatus, setMapStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [currentTheme, setCurrentTheme] = useState<keyof typeof THEMES>('blue');
+
+  // Calculate country book counts for heatmap
+  const getCountryBookCounts = () => {
+    const countryCounts: Record<string, number> = {};
+    
+    // Initialize all available countries with 0
+    Object.keys(AVAILABLE_COUNTRIES).forEach(countryCode => {
+      countryCounts[countryCode] = 0;
+    });
+    
+    // Count books for each country
+    books.forEach(book => {
+      // Count book countries (where the book is set)
+      book.bookCountries?.forEach((countryCode: string) => {
+        if (countryCounts.hasOwnProperty(countryCode)) {
+          countryCounts[countryCode]++;
+        }
+      });
+      
+      // Count author countries (where authors are from)
+      book.authorCountries?.forEach((countryCode: string) => {
+        if (countryCounts.hasOwnProperty(countryCode)) {
+          countryCounts[countryCode]++;
+        }
+      });
+    });
+    
+    return countryCounts;
+  };
+
+  // Generate the complete heatmap style based on current data
+  const generateHeatmapStyle = () => {
+    const countryCounts = getCountryBookCounts();
+    const baseColor = THEMES[currentTheme].fill;
+    const outlineColor = THEMES[currentTheme].outline;
+    
+    // Create a proper heatmap with 3 shades based on book count
+    // Darkest color (3+ books) = outline color, others are lighter versions of fill color
+    return [
+      "match",
+      ["get", "ISO3166-1-Alpha-2"],
+      "ES", countryCounts.ES === 0 ? "#ffffff" : (countryCounts.ES === 1 ? baseColor : (countryCounts.ES <= 3 ? darkenColor(baseColor, 0.15) : outlineColor)),
+      "FR", countryCounts.FR === 0 ? "#ffffff" : (countryCounts.FR === 1 ? baseColor : (countryCounts.FR <= 3 ? darkenColor(baseColor, 0.15) : outlineColor)),
+      "DE", countryCounts.DE === 0 ? "#ffffff" : (countryCounts.DE === 1 ? baseColor : (countryCounts.DE <= 3 ? darkenColor(baseColor, 0.15) : outlineColor)),
+      "IT", countryCounts.IT === 0 ? "#ffffff" : (countryCounts.IT === 1 ? baseColor : (countryCounts.IT <= 3 ? darkenColor(baseColor, 0.15) : outlineColor)),
+      "US", countryCounts.US === 0 ? "#ffffff" : (countryCounts.US === 1 ? baseColor : (countryCounts.US <= 3 ? darkenColor(baseColor, 0.15) : outlineColor)),
+      "CA", countryCounts.CA === 0 ? "#ffffff" : (countryCounts.CA === 1 ? baseColor : (countryCounts.CA <= 3 ? darkenColor(baseColor, 0.15) : outlineColor)),
+      "BR", countryCounts.BR === 0 ? "#ffffff" : (countryCounts.BR === 1 ? baseColor : (countryCounts.BR <= 3 ? darkenColor(baseColor, 0.15) : outlineColor)),
+      "AR", countryCounts.AR === 0 ? "#ffffff" : (countryCounts.AR === 1 ? baseColor : (countryCounts.AR <= 3 ? darkenColor(baseColor, 0.15) : outlineColor)),
+      "JP", countryCounts.JP === 0 ? "#ffffff" : (countryCounts.JP === 1 ? baseColor : (countryCounts.JP <= 3 ? darkenColor(baseColor, 0.15) : outlineColor)),
+      "AU", countryCounts.AU === 0 ? "#ffffff" : (countryCounts.AU === 1 ? baseColor : (countryCounts.AU <= 3 ? darkenColor(baseColor, 0.15) : outlineColor)),
+      "GB", countryCounts.GB === 0 ? "#ffffff" : (countryCounts.GB === 1 ? baseColor : (countryCounts.GB <= 3 ? darkenColor(baseColor, 0.15) : outlineColor)),
+      "MX", countryCounts.MX === 0 ? "#ffffff" : (countryCounts.MX === 1 ? baseColor : (countryCounts.MX <= 3 ? darkenColor(baseColor, 0.15) : outlineColor)),
+      "IN", countryCounts.IN === 0 ? "#ffffff" : (countryCounts.IN === 1 ? baseColor : (countryCounts.IN <= 3 ? darkenColor(baseColor, 0.15) : outlineColor)),
+      "CN", countryCounts.CN === 0 ? "#ffffff" : (countryCounts.CN === 1 ? baseColor : (countryCounts.CN <= 3 ? darkenColor(baseColor, 0.15) : outlineColor)),
+      "RU", countryCounts.RU === 0 ? "#ffffff" : (countryCounts.RU === 1 ? baseColor : (countryCounts.RU <= 3 ? darkenColor(baseColor, 0.15) : outlineColor)),
+      "#ffffff" // Default white for all other countries
+    ];
+  };
+
+  // Helper function to darken a color
+  const darkenColor = (color: string, factor: number) => {
+    // Simple color darkening for hex colors
+    const hex = color.replace('#', '');
+    const r = Math.max(0, Math.min(255, Math.round(parseInt(hex.substr(0, 2), 16) * (1 - factor))));
+    const g = Math.max(0, Math.min(255, Math.round(parseInt(hex.substr(2, 2), 16) * (1 - factor))));
+    const b = Math.max(0, Math.min(255, Math.round(parseInt(hex.substr(4, 2), 16) * (1 - factor))));
+    return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+  };
 
   // Calculate appropriate zoom level based on screen size
   const getOptimalZoom = () => {
@@ -68,19 +192,16 @@ export const MapLibreMap = ({
     }
   };
 
+
+
   useEffect(() => {
     // Only run on client side
     if (typeof window === 'undefined') return;
 
-    console.log("MapLibreMap useEffect running, container:", mapContainer.current);
-    
     if (!mapContainer.current) {
-      console.log("Map container not found");
       setMapStatus('error');
       return;
     }
-
-    console.log("Creating map...");
     
     // Create custom wave pattern SVG for ocean background
     const wavePatternSVG = `
@@ -132,7 +253,9 @@ export const MapLibreMap = ({
             id: "countries-fill",
             type: "fill",
             source: "countries",
-            paint: { "fill-color": THEMES[currentTheme].fill }
+            paint: { 
+              "fill-color": "#ffffff" // Start with white, will be updated after map loads
+            }
           },
           {
             id: "countries-outline",
@@ -163,23 +286,41 @@ export const MapLibreMap = ({
       attributionControl: { compact: false }
     });
 
+    // Store map reference
+    mapRef.current = map;
+
     // Add the wave pattern image to the map
     map.on('load', () => {
-      console.log("Map loaded successfully!");
       setMapStatus('ready');
       
       // Add custom wave pattern
       const img = new Image();
       img.onload = () => {
-        map.addImage('waves', img);
+        mapRef.current?.addImage('waves', img);
       };
       img.src = wavePatternDataURL;
+      
+      // Update heatmap colors after map loads
+      updateHeatmapColors();
     });
+    
+    // Function to update heatmap colors
+    const updateHeatmapColors = () => {
+      if (mapRef.current?.isStyleLoaded()) {
+        // Generate the complete heatmap style
+        const heatmapStyle = generateHeatmapStyle();
+        
+        mapRef.current.setPaintProperty('countries-fill', 'fill-color', heatmapStyle);
+        
+        // Force a repaint
+        mapRef.current.triggerRepaint();
+      }
+    };
 
-    console.log("Map created, adding controls...");
+
 
     // Add basic controls
-    map.addControl(new maplibregl.NavigationControl(), 'top-right');
+    mapRef.current?.addControl(new maplibregl.NavigationControl(), 'top-right');
 
     // Add custom theme selector control
     const themeControl = document.createElement('div');
@@ -296,10 +437,11 @@ export const MapLibreMap = ({
         setCurrentTheme(key as keyof typeof THEMES);
         
         // Update map colors immediately
-        if (map.isStyleLoaded()) {
-          map.setPaintProperty('background', 'background-color', THEMES[key].background);
-          map.setPaintProperty('countries-fill', 'fill-color', THEMES[key].fill);
-          map.setPaintProperty('countries-outline', 'line-color', THEMES[key].outline);
+        if (mapRef.current?.isStyleLoaded()) {
+          mapRef.current.setPaintProperty('background', 'background-color', THEMES[key].background);
+          // Update countries-fill with new heatmap colors
+          applyHeatmapColors();
+          mapRef.current.setPaintProperty('countries-outline', 'line-color', THEMES[key].outline);
         }
         
         // Hide dropdown
@@ -360,7 +502,7 @@ export const MapLibreMap = ({
     mapContainer.current?.appendChild(tooltip);
 
     // Add hover events for countries
-    map.on('mousemove', 'countries-fill', (e) => {
+    mapRef.current?.on('mousemove', 'countries-fill', (e) => {
       if (e.features && e.features[0]) {
         const properties = e.features[0].properties;
         
@@ -378,23 +520,25 @@ export const MapLibreMap = ({
         tooltip.style.visibility = 'visible';
         
         // Position tooltip above the mouse cursor
-        const canvas = map.getCanvas();
-        const rect = canvas.getBoundingClientRect();
-        const x = e.point.x + rect.left;
-        const y = e.point.y + rect.top - 40; // 40px above cursor
-        
-        tooltip.style.left = `${x}px`;
-        tooltip.style.top = `${y}px`;
+        const canvas = mapRef.current?.getCanvas();
+        if (canvas) {
+          const rect = canvas.getBoundingClientRect();
+          const x = e.point.x + rect.left;
+          const y = e.point.y + rect.top - 40; // 40px above cursor
+          
+          tooltip.style.left = `${x}px`;
+          tooltip.style.top = `${y}px`;
+        }
       }
     });
 
-    map.on('mouseleave', 'countries-fill', () => {
+    mapRef.current?.on('mouseleave', 'countries-fill', () => {
       tooltip.style.opacity = '0';
       tooltip.style.visibility = 'hidden';
     });
 
     // Add error event listener
-    map.on('error', (e) => {
+    mapRef.current?.on('error', (e) => {
       console.error("Map error:", e);
       setMapStatus('error');
     });
@@ -402,20 +546,47 @@ export const MapLibreMap = ({
     // Handle window resize to adjust zoom
     const handleResize = () => {
       const newZoom = getOptimalZoom();
-      if (Math.abs(map.getZoom() - newZoom) > 0.5) {
-        map.setZoom(newZoom);
+      if (mapRef.current && Math.abs(mapRef.current.getZoom() - newZoom) > 0.5) {
+        mapRef.current.setZoom(newZoom);
       }
     };
     window.addEventListener('resize', handleResize);
 
     return () => {
-      if (map) {
-        console.log("Cleaning up map...");
-        map.remove();
+      if (mapRef.current) {
+        mapRef.current.remove();
       }
       window.removeEventListener('resize', handleResize);
     };
   }, []);
+
+  // Update heatmap colors when books change
+  useEffect(() => {
+    if (mapRef.current && mapRef.current.isStyleLoaded()) {
+      // Apply heatmap colors immediately
+      applyHeatmapColors();
+      
+      // Also apply after a delay to ensure they stick
+      setTimeout(() => {
+        if (mapRef.current?.isStyleLoaded()) {
+          applyHeatmapColors();
+        }
+      }, 500);
+    }
+  }, [books, currentTheme]);
+  
+  // Function to apply heatmap colors
+  const applyHeatmapColors = () => {
+    if (mapRef.current?.isStyleLoaded()) {
+      // Generate the complete heatmap style
+      const heatmapStyle = generateHeatmapStyle();
+      
+      mapRef.current.setPaintProperty('countries-fill', 'fill-color', heatmapStyle);
+      
+      // Force a repaint
+      mapRef.current.triggerRepaint();
+    }
+  };
 
   return (
     <div className="w-full h-full">

@@ -251,7 +251,6 @@ export default function Home() {
     try {
       // Check for shareable data first
       if (hasShareableData()) {
-        console.log('📤 Loading shareable data from URL...')
         logMapEvent('loading_shareable_data')
         saveShareableData()
       }
@@ -259,7 +258,6 @@ export default function Home() {
       // Load from localStorage
       const processedBooks = loadProcessedBooks()
       if (processedBooks && processedBooks.length > 0) {
-        console.log(`📚 Loaded ${processedBooks.length} books from storage`)
         logMapEvent('books_loaded_from_storage', { 
           bookCount: processedBooks.length,
           hasCountries: processedBooks.some(book => book.bookCountries.length > 0)
@@ -305,34 +303,22 @@ export default function Home() {
           try {
             // Detect CSV format
             const format = detectCSVFormat(meta.fields || [])
-            console.log(`Detected format: ${format}`)
 
             // Parse books
             let parsedBooks = parseCSVData(data, format)
-            console.log(`Parsed ${parsedBooks.length} books`)
 
             // Assign mock countries to all books
             parsedBooks = assignMockCountriesToBooks(parsedBooks)
-            console.log('🌍 Mock countries assigned to all books')
             
-            // Log some examples of assigned countries
-            const sampleBooks = parsedBooks.slice(0, 3)
-            sampleBooks.forEach(book => {
-              console.log(`📚 "${book.title}" → Book countries: ${book.bookCountries.join(', ')}, Author countries: ${book.authorCountries.join(', ')}`)
-            })
-
             // Separate read and unread books
             const readBooks = parsedBooks.filter(book => book.readStatus === 'read')
             const unreadBooks = parsedBooks.filter(book => book.readStatus === 'to_read')
-            
-            console.log(`📖 Read books: ${readBooks.length}, 📚 To-read books: ${unreadBooks.length}`)
             
             // IMPORTANT: Only read books are processed for the map
             // Unread books are ignored as they don't represent your reading journey
 
             // Process read books first to get countries for the map
             if (readBooks.length > 0) {
-              console.log('🚀 Processing read books for map display...')
               logMapEvent('read_books_processing_start', { readBookCount: readBooks.length })
               
               const enrichedReadBooks = await fillMissingDataForBooks(readBooks)
@@ -353,28 +339,10 @@ export default function Home() {
                 note: 'Only read books included in map'
               })
               
-              console.log(`✅ ${readBooks.length} read books processed and map ready!`)
-              if (unreadBooks.length > 0) {
-                console.log(`📖 ${unreadBooks.length} unread books ignored (not part of reading journey)`)
-              }
             }
 
             // Note: Only processing read books for the map
             // Unread books are not included as they don't represent your reading journey
-            console.log(`📚 Map will show ${readBooks.length} read books only`)
-
-            console.log('✅ Initial processing complete!')
-            console.table(
-              readBooks
-                .slice(0, 5)
-                .map((b) => ({ 
-                  Title: b.title, 
-                  Authors: b.authors, 
-                  ISBN: b.isbn13,
-                  Year: b.yearPublished,
-                  ReadStatus: b.readStatus
-                }))
-            )
           } catch (err) {
             console.error('Processing error:', err)
             setError('Could not process CSV—please check its format.')
@@ -553,6 +521,7 @@ export default function Home() {
               highlighted={highlighted}
               selectedCountry={selectedCountry ? mapCountryNameForDisplay(selectedCountry) : null}
               onCountryClick={(countryName) => setSelectedCountry(mapDisplayNameToCountry(countryName))}
+              books={books}
             />
           </div>
 
