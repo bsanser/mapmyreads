@@ -356,11 +356,13 @@ export default function Home() {
               }
             }}
           >
-            <h2 className="text-lg font-bold mb-4 text-gray-900">Your Read Books</h2>
+            <h2 className="text-lg font-bold mb-4 text-gray-900">
+              {countryViewMode === 'author' ? 'Your Read Authors' : 'Your Read Books'}
+            </h2>
             <div className="text-sm text-gray-600 mb-4">
               {selectedCountry
-                ? `${filteredBooks.filter(b => b.readStatus === 'read').length} books from ${getCountryFlag(selectedCountry)} ${mapCountryNameForDisplay(selectedCountry)}`
-                : `${books.filter(b => b.readStatus === 'read').length} read books`}
+                ? `${filteredBooks.filter(b => b.readStatus === 'read').length} ${countryViewMode === 'author' ? 'authors from' : 'books from'} ${getCountryFlag(selectedCountry)} ${mapCountryNameForDisplay(selectedCountry)}`
+                : `${books.filter(b => b.readStatus === 'read').length} ${countryViewMode === 'author' ? 'read authors' : 'read books'}`}
               {selectedCountry && (
                 <button
                   onClick={() => setSelectedCountry(null)}
@@ -425,11 +427,11 @@ export default function Home() {
                       )}
                     </p>
                     {b.yearPublished && <p className="font-mono text-gray-600 text-xs mb-2" style={{ textShadow: '0 1px 2px rgba(255,255,255,0.8)' }}>{b.yearPublished}</p>}
-                    {b.bookCountries.length > 0 && (
+                    {(countryViewMode === 'author' ? b.authorCountries : b.bookCountries).length > 0 && (
                       <div className="font-mono text-gray-600 text-xs" style={{ textShadow: '0 1px 2px rgba(255,255,255,0.8)' }}>
-                        <span className="font-medium">Countries:</span>
+                        <span className="font-medium">{countryViewMode === 'author' ? 'Author Countries:' : 'Countries:'}</span>
                         <div className="mt-1 flex flex-wrap gap-1">
-                          {b.bookCountries.map((country) => (
+                          {(countryViewMode === 'author' ? b.authorCountries : b.bookCountries).map((country) => (
                             <button
                               key={country}
                               onClick={() => onCountryClick(country)}
@@ -513,11 +515,13 @@ export default function Home() {
               <div className="px-4 py-3 border-b border-gray-200 bg-white sticky top-0 z-10 cursor-pointer" onClick={() => setShowBottomSheet(!showBottomSheet)}>
                 <div className="flex items-center justify-between">
                   <div>
-                    <h2 className="text-lg font-semibold text-gray-900">Your Read Books</h2>
+                    <h2 className="text-lg font-semibold text-gray-900">
+                      {countryViewMode === 'author' ? 'Your Read Authors' : 'Your Read Books'}
+                    </h2>
                     <div className="text-sm text-gray-600">
                       {selectedCountry
-                        ? `${filteredBooks.filter(b => b.readStatus === 'read').length} books from ${getCountryFlag(selectedCountry)} ${mapCountryNameForDisplay(selectedCountry)}`
-                        : `${books.filter(b => b.readStatus === 'read').length} read books`}
+                        ? `${filteredBooks.filter(b => b.readStatus === 'read').length} ${countryViewMode === 'author' ? 'authors from' : 'books from'} ${getCountryFlag(selectedCountry)} ${mapCountryNameForDisplay(selectedCountry)}`
+                        : `${books.filter(b => b.readStatus === 'read').length} ${countryViewMode === 'author' ? 'read authors' : 'read books'}`}
                     </div>
                   </div>
                   <svg className={`w-5 h-5 text-gray-500 transition-transform duration-300 ${showBottomSheet ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -597,11 +601,11 @@ export default function Home() {
                           )}
                         </p>
                         {b.yearPublished && <p className="font-mono text-gray-600 text-xs mb-2" style={{ textShadow: '0 1px 2px rgba(255,255,255,0.8)' }}>{b.yearPublished}</p>}
-                        {b.bookCountries.length > 0 && (
+                        {(countryViewMode === 'author' ? b.authorCountries : b.bookCountries).length > 0 && (
                           <div className="font-mono text-gray-600 text-xs" style={{ textShadow: '0 1px 2px rgba(255,255,255,0.8)' }}>
-                            <span className="font-medium">Countries:</span>
+                            <span className="font-medium">{countryViewMode === 'author' ? 'Author Countries:' : 'Countries:'}</span>
                             <div className="mt-1 flex flex-wrap gap-1">
-                              {b.bookCountries.map((country) => (
+                              {(countryViewMode === 'author' ? b.authorCountries : b.bookCountries).map((country) => (
                                 <button
                                   key={country}
                                   onClick={() => onCountryClick(country)}

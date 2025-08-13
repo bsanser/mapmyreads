@@ -139,27 +139,38 @@ export const MapLibreMap = ({
     const baseColor = THEMES[currentTheme].fill;
     const outlineColor = THEMES[currentTheme].outline;
     
-    console.log('🎨 Debug: Country counts for heatmap:', countryCounts);
-    console.log('🎨 Debug: Italy count:', countryCounts.IT, 'should be white if 0');
+    console.log('🔍 DEBUG: Country counts:', countryCounts);
+    console.log('🔍 DEBUG: Current theme:', currentTheme);
+    console.log('🔍 DEBUG: Base color:', baseColor);
+    console.log('🔍 DEBUG: Outline color:', outlineColor);
     
-    // Use MapLibre's match expression with dynamic country iteration
-    // This scales automatically to any number of countries and follows best practices
-    const matchArray = [
-      "match",
-      ["get", "ISO3166-1-Alpha-2"],
-      // For each available country, get its book count and apply appropriate color
-      ...Object.entries(countryCounts).flatMap(([iso2, count]) => [
-        iso2,
-        count === 0 ? "#ffffff" :           // 0 books = white
-        count === 1 ? baseColor :           // 1 book = light theme color
-        count === 2 ? darkenColor(baseColor, 0.15) : // 2 books = medium shade
-        outlineColor                         // 3+ books = darkest theme color
-      ]),
+    // Create a simpler approach: use case expression with specific country codes
+    // This is more reliable than the complex match expression
+    const heatmapStyle = [
+      "case",
+      // For each country with books, define its color based on count
+      ...Object.entries(countryCounts).flatMap(([iso2, count]) => {
+        if (count === 0) return []; // Skip countries with 0 books (they'll be white by default)
+        
+        let color;
+        if (count === 1) {
+          color = baseColor;
+        } else if (count === 2) {
+          color = darkenColor(baseColor, 0.15);
+        } else {
+          color = outlineColor;
+        }
+        
+        return [
+          ["==", ["get", "ISO3166-1-Alpha-2"], iso2],
+          color
+        ];
+      }),
       "#ffffff" // Default white for all other countries
     ];
     
-    console.log('🎨 Debug: Generated match array:', matchArray);
-    return matchArray;
+    console.log('🔍 DEBUG: Generated heatmap style:', heatmapStyle);
+    return heatmapStyle;
   };
 
   // Helper function to darken a color
@@ -500,6 +511,9 @@ export const MapLibreMap = ({
       if (e.features && e.features[0]) {
         const properties = e.features[0].properties;
         
+        // Debug: Log all available properties
+        console.log('🔍 DEBUG: All GeoJSON properties:', properties);
+        
         // Try different possible property names for country names
         const countryName = properties?.ADMIN || 
                            properties?.NAME || 
@@ -588,18 +602,24 @@ export const MapLibreMap = ({
         }
       }, 500);
     }
-  }, [books, currentTheme]);
+  }, [books, currentTheme, countryViewMode]);
   
   // Function to apply heatmap colors
   const applyHeatmapColors = () => {
     if (mapRef.current?.isStyleLoaded()) {
+      console.log('🎨 DEBUG: Applying heatmap colors...');
+      
       // Generate the complete heatmap style
       const heatmapStyle = generateHeatmapStyle();
       
+      console.log('🎨 DEBUG: Setting paint property with:', heatmapStyle);
       mapRef.current.setPaintProperty('countries-fill', 'fill-color', heatmapStyle);
       
       // Force a repaint
       mapRef.current.triggerRepaint();
+      console.log('🎨 DEBUG: Heatmap colors applied and repaint triggered');
+    } else {
+      console.log('🎨 DEBUG: Map not ready, cannot apply heatmap colors');
     }
   };
 
