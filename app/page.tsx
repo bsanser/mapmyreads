@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Papa from 'papaparse'
-import { MapLibreMap, assignMockCountriesToBooks } from '../components/MapLibreMap';
+import { MapLibreMap, assignMockCountriesToBooks, mapDisplayNameToISO2, mapISO2ToDisplayName } from '../components/MapLibreMap';
+import { getCountryFlag as getCentralizedFlag } from '../lib/countries';
 import { ShareButton } from '../components/ShareButton'
 import { FeedbackButton } from '../components/FeedbackButton'
 import { BuyMeACoffee } from '../components/BuyMeACoffee'
@@ -28,198 +29,10 @@ function getMockCountries(): string[] {
   return [rand]
 }
 
-// Add country to flag emoji mapping
-const COUNTRY_FLAGS: Record<string, string> = {
-  'Spain': '🇪🇸',
-  'Brazil': '🇧🇷',
-  'Egypt': '🇪🇬',
-  'United States': '🇺🇸',
-  'United Kingdom': '🇬🇧',
-  'France': '🇫🇷',
-  'Germany': '🇩🇪',
-  'Italy': '🇮🇹',
-  'Japan': '🇯🇵',
-  'China': '🇨🇳',
-  'India': '🇮🇳',
-  'Canada': '🇨🇦',
-  'Australia': '🇦🇺',
-  'Mexico': '🇲🇽',
-  'Argentina': '🇦🇷',
-  'Chile': '🇨🇱',
-  'Colombia': '🇨🇴',
-  'Peru': '🇵🇪',
-  'Venezuela': '🇻🇪',
-  'Uruguay': '🇺🇾',
-  'Paraguay': '🇵🇾',
-  'Bolivia': '🇧🇴',
-  'Ecuador': '🇪🇨',
-  'Guyana': '🇬🇾',
-  'Suriname': '🇸🇷',
-  'French Guiana': '🇬🇫',
-  'Portugal': '🇵🇹',
-  'Netherlands': '🇳🇱',
-  'Belgium': '🇧🇪',
-  'Switzerland': '🇨🇭',
-  'Austria': '🇦🇹',
-  'Sweden': '🇸🇪',
-  'Norway': '🇳🇴',
-  'Denmark': '🇩🇰',
-  'Finland': '🇫🇮',
-  'Iceland': '🇮🇸',
-  'Ireland': '🇮🇪',
-  'Poland': '🇵🇱',
-  'Czech Republic': '🇨🇿',
-  'Slovakia': '🇸🇰',
-  'Hungary': '🇭🇺',
-  'Romania': '🇷🇴',
-  'Bulgaria': '🇧🇬',
-  'Greece': '🇬🇷',
-  'Croatia': '🇭🇷',
-  'Slovenia': '🇸🇮',
-  'Serbia': '🇷🇸',
-  'Bosnia and Herzegovina': '🇧🇦',
-  'Montenegro': '🇲🇪',
-  'Albania': '🇦🇱',
-  'North Macedonia': '🇲🇰',
-  'Kosovo': '🇽🇰',
-  'Moldova': '🇲🇩',
-  'Ukraine': '🇺🇦',
-  'Belarus': '🇧🇾',
-  'Lithuania': '🇱🇹',
-  'Latvia': '🇱🇻',
-  'Estonia': '🇪🇪',
-  'Russia': '🇷🇺',
-  'Turkey': '🇹🇷',
-  'Georgia': '🇬🇪',
-  'Armenia': '🇦🇲',
-  'Azerbaijan': '🇦🇿',
-  'Iran': '🇮🇷',
-  'Iraq': '🇮🇶',
-  'Syria': '🇸🇾',
-  'Lebanon': '🇱🇧',
-  'Israel': '🇮🇱',
-  'Palestine': '🇵🇸',
-  'Jordan': '🇯🇴',
-  'Saudi Arabia': '🇸🇦',
-  'Yemen': '🇾🇪',
-  'Oman': '🇴🇲',
-  'United Arab Emirates': '🇦🇪',
-  'Qatar': '🇶🇦',
-  'Kuwait': '🇰🇼',
-  'Bahrain': '🇧🇭',
-  'Kazakhstan': '🇰🇿',
-  'Uzbekistan': '🇺🇿',
-  'Turkmenistan': '🇹🇲',
-  'Kyrgyzstan': '🇰🇬',
-  'Tajikistan': '🇹🇯',
-  'Afghanistan': '🇦🇫',
-  'Pakistan': '🇵🇰',
-  'Bangladesh': '🇧🇩',
-  'Sri Lanka': '🇱🇰',
-  'Nepal': '🇳🇵',
-  'Bhutan': '🇧🇹',
-  'Myanmar': '🇲🇲',
-  'Thailand': '🇹🇭',
-  'Laos': '🇱🇦',
-  'Cambodia': '🇰🇭',
-  'Vietnam': '🇻🇳',
-  'Malaysia': '🇲🇾',
-  'Singapore': '🇸🇬',
-  'Indonesia': '🇮🇩',
-  'Philippines': '🇵🇭',
-  'Brunei': '🇧🇳',
-  'East Timor': '🇹🇱',
-  'Papua New Guinea': '🇵🇬',
-  'Fiji': '🇫🇯',
-  'New Zealand': '🇳🇿',
-  'South Africa': '🇿🇦',
-  'Nigeria': '🇳🇬',
-  'Kenya': '🇰🇪',
-  'Ethiopia': '🇪🇹',
-  'Tanzania': '🇹🇿',
-  'Uganda': '🇺🇬',
-  'Ghana': '🇬🇭',
-  'Morocco': '🇲🇦',
-  'Algeria': '🇩🇿',
-  'Tunisia': '🇹🇳',
-  'Libya': '🇱🇾',
-  'Sudan': '🇸🇩',
-  'South Sudan': '🇸🇸',
-  'Chad': '🇹🇩',
-  'Niger': '🇳🇪',
-  'Mali': '🇲🇱',
-  'Burkina Faso': '🇧🇫',
-  'Senegal': '🇸🇳',
-  'Guinea': '🇬🇳',
-  'Sierra Leone': '🇸🇱',
-  'Liberia': '🇱🇷',
-  'Ivory Coast': '🇨🇮',
-  'Togo': '🇹🇬',
-  'Benin': '🇧🇯',
-  'Cameroon': '🇨🇲',
-  'Central African Republic': '🇨🇫',
-  'Gabon': '🇬🇦',
-  'Congo': '🇨🇬',
-  'Democratic Republic of the Congo': '🇨🇩',
-  'Angola': '🇦🇴',
-  'Zambia': '🇿🇲',
-  'Zimbabwe': '🇿🇼',
-  'Botswana': '🇧🇼',
-  'Namibia': '🇳🇦',
-  'Lesotho': '🇱🇸',
-  'Eswatini': '🇸🇿',
-  'Madagascar': '🇲🇬',
-  'Mauritius': '🇲🇺',
-  'Seychelles': '🇸🇨',
-  'Comoros': '🇰🇲',
-  'Cape Verde': '🇨🇻',
-  'São Tomé and Príncipe': '🇸🇹',
-  'Equatorial Guinea': '🇬🇶',
-  'Guinea-Bissau': '🇬🇼',
-  'The Gambia': '🇬🇲',
-  'Mauritania': '🇲🇷',
-  'Djibouti': '🇩🇯',
-  'Eritrea': '🇪🇷',
-  'Somalia': '🇸🇴',
-  'Burundi': '🇧🇮',
-  'Rwanda': '🇷🇼',
-  'Malawi': '🇲🇼',
-  'Mozambique': '🇲🇿',
-  'Cuba': '🇨🇺',
-  'Jamaica': '🇯🇲',
-  'Haiti': '🇭🇹',
-  'Dominican Republic': '🇩🇴',
-  'Puerto Rico': '🇵🇷',
-  'Trinidad and Tobago': '🇹🇹',
-  'Barbados': '🇧🇧',
-  'Grenada': '🇬🇩',
-  'Saint Vincent and the Grenadines': '🇻🇨',
-  'Saint Lucia': '🇱🇨',
-  'Dominica': '🇩🇲',
-  'Antigua and Barbuda': '🇦🇬',
-  'Saint Kitts and Nevis': '🇰🇳',
-  'Bahamas': '🇧🇸',
-  'Belize': '🇧🇿',
-  'Guatemala': '🇬🇹',
-  'El Salvador': '🇸🇻',
-  'Honduras': '🇭🇳',
-  'Nicaragua': '🇳🇮',
-  'Costa Rica': '🇨🇷',
-  'Panama': '🇵🇦',
-  'Greenland': '🇬🇱',
-  'Faroe Islands': '🇫🇴',
-  'Andorra': '🇦🇩',
-  'Liechtenstein': '🇱🇮',
-  'Monaco': '🇲🇨',
-  'San Marino': '🇸🇲',
-  'Vatican City': '🇻��',
-  'Malta': '🇲🇹',
-  'Cyprus': '🇨🇾',
-  'Luxembourg': '🇱🇺',
-}
+
 
 function getCountryFlag(country: string): string {
-  return COUNTRY_FLAGS[country] || '🏳️'
+  return getCentralizedFlag(country);
 }
 
 
@@ -519,9 +332,10 @@ export default function Home() {
           <div className="w-full h-full relative z-0">
             <MapLibreMap
               highlighted={highlighted}
-              selectedCountry={selectedCountry ? mapCountryNameForDisplay(selectedCountry) : null}
-              onCountryClick={(countryName) => setSelectedCountry(mapDisplayNameToCountry(countryName))}
+              selectedCountry={selectedCountry ? mapISO2ToDisplayName(selectedCountry) : null}
+              onCountryClick={(countryName) => setSelectedCountry(mapDisplayNameToISO2(countryName))}
               books={books}
+              countryViewMode={countryViewMode}
             />
           </div>
 
@@ -621,7 +435,7 @@ export default function Home() {
                               onClick={() => onCountryClick(country)}
                               className="text-blue-600 hover:text-blue-800 underline hover:no-underline transition-colors text-xs px-1 py-0.5 rounded hover:bg-blue-50"
                             >
-                              {country}
+                              {mapISO2ToDisplayName(country)}
                             </button>
                           ))}
                         </div>
@@ -793,7 +607,7 @@ export default function Home() {
                                   onClick={() => onCountryClick(country)}
                                   className="text-blue-600 hover:text-blue-800 underline hover:no-underline transition-colors text-xs px-1 py-0.5 rounded hover:bg-blue-50"
                                 >
-                                  {country}
+                                  {mapISO2ToDisplayName(country)}
                                 </button>
                               ))}
                             </div>

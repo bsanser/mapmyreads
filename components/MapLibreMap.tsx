@@ -2,6 +2,7 @@
 import "maplibre-gl/dist/maplibre-gl.css";
 import maplibregl from "maplibre-gl";
 import { useEffect, useRef, useState } from "react";
+import { COUNTRIES, toISO2, toDisplayName } from "../lib/countries";
 
 // Apple-inspired theme system with carefully balanced colors
 const THEMES = {
@@ -40,22 +41,16 @@ const THEMES = {
 };
 
 // Available countries for mock data (ISO2 codes)
-const AVAILABLE_COUNTRIES = {
-  'ES': 'Spain',
-  'FR': 'France', 
-  'DE': 'Germany',
-  'IT': 'Italy',
-  'US': 'United States',
-  'CA': 'Canada',
-  'BR': 'Brazil',
-  'AR': 'Argentina',
-  'JP': 'Japan',
-  'AU': 'Australia',
-  'GB': 'United Kingdom',
-  'MX': 'Mexico',
-  'IN': 'India',
-  'CN': 'China',
-  'RU': 'Russia'
+const AVAILABLE_COUNTRIES = COUNTRIES;
+
+// Function to map display names back to ISO2 codes
+export const mapDisplayNameToISO2 = (displayName: string): string => {
+  return toISO2(displayName) || displayName;
+};
+
+// Function to map ISO2 codes to display names
+export const mapISO2ToDisplayName = (iso2: string): string => {
+  return toDisplayName(iso2) || iso2;
 };
 
 // Function to automatically assign mock countries to books
@@ -63,7 +58,7 @@ export const assignMockCountriesToBooks = (books: any[]) => {
   const countryCodes = Object.keys(AVAILABLE_COUNTRIES);
   
   return books.map(book => {
-    // Assign 1-2 book countries (where the book is set)
+    // Assign 1-2 book countries (where the book is set) - always ISO2 codes
     const bookCountryCount = Math.random() > 0.6 ? 1 : 2;
     const bookCountries = [];
     for (let i = 0; i < bookCountryCount; i++) {
@@ -73,7 +68,7 @@ export const assignMockCountriesToBooks = (books: any[]) => {
       }
     }
     
-    // Assign 1-2 author countries (where authors are from)
+    // Assign 1-2 author countries (where authors are from) - always ISO2 codes
     const authorCountryCount = Math.random() > 0.6 ? 1 : 2;
     const authorCountries = [];
     for (let i = 0; i < authorCountryCount; i++) {
@@ -85,8 +80,8 @@ export const assignMockCountriesToBooks = (books: any[]) => {
     
     return {
       ...book,
-      bookCountries: bookCountries,
-      authorCountries: authorCountries
+      bookCountries: bookCountries, // ISO2 codes
+      authorCountries: authorCountries // ISO2 codes
     };
   });
 };
@@ -96,13 +91,15 @@ export type MapLibreMapProps = {
   selectedCountry?: string | null;
   onCountryClick?: (countryName: string) => void;
   books?: any[]; // Add books prop for heatmap logic
+  countryViewMode?: 'author' | 'book'; // Add view mode prop for correct counting
 };
 
 export const MapLibreMap = ({
   highlighted = new Set(),
   selectedCountry = null,
   onCountryClick,
-  books = []
+  books = [],
+  countryViewMode = 'book'
 }: MapLibreMapProps) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
@@ -118,17 +115,15 @@ export const MapLibreMap = ({
       countryCounts[countryCode] = 0;
     });
     
-    // Count books for each country
+    // Count books for each country based on current view mode
+    // Default to 'book' countries (where books are set), not author countries
+    const viewMode = countryViewMode || 'book';
+    
     books.forEach(book => {
-      // Count book countries (where the book is set)
-      book.bookCountries?.forEach((countryCode: string) => {
-        if (countryCounts.hasOwnProperty(countryCode)) {
-          countryCounts[countryCode]++;
-        }
-      });
+      // Only count countries based on the current view mode
+      const countriesToCount = viewMode === 'author' ? book.authorCountries : book.bookCountries;
       
-      // Count author countries (where authors are from)
-      book.authorCountries?.forEach((countryCode: string) => {
+      countriesToCount?.forEach((countryCode: string) => {
         if (countryCounts.hasOwnProperty(countryCode)) {
           countryCounts[countryCode]++;
         }
@@ -144,28 +139,27 @@ export const MapLibreMap = ({
     const baseColor = THEMES[currentTheme].fill;
     const outlineColor = THEMES[currentTheme].outline;
     
-    // Create a proper heatmap with 3 shades based on book count
-    // Darkest color (3+ books) = outline color, others are lighter versions of fill color
-    return [
+    console.log('🎨 Debug: Country counts for heatmap:', countryCounts);
+    console.log('🎨 Debug: Italy count:', countryCounts.IT, 'should be white if 0');
+    
+    // Use MapLibre's match expression with dynamic country iteration
+    // This scales automatically to any number of countries and follows best practices
+    const matchArray = [
       "match",
       ["get", "ISO3166-1-Alpha-2"],
-      "ES", countryCounts.ES === 0 ? "#ffffff" : (countryCounts.ES === 1 ? baseColor : (countryCounts.ES <= 3 ? darkenColor(baseColor, 0.15) : outlineColor)),
-      "FR", countryCounts.FR === 0 ? "#ffffff" : (countryCounts.FR === 1 ? baseColor : (countryCounts.FR <= 3 ? darkenColor(baseColor, 0.15) : outlineColor)),
-      "DE", countryCounts.DE === 0 ? "#ffffff" : (countryCounts.DE === 1 ? baseColor : (countryCounts.DE <= 3 ? darkenColor(baseColor, 0.15) : outlineColor)),
-      "IT", countryCounts.IT === 0 ? "#ffffff" : (countryCounts.IT === 1 ? baseColor : (countryCounts.IT <= 3 ? darkenColor(baseColor, 0.15) : outlineColor)),
-      "US", countryCounts.US === 0 ? "#ffffff" : (countryCounts.US === 1 ? baseColor : (countryCounts.US <= 3 ? darkenColor(baseColor, 0.15) : outlineColor)),
-      "CA", countryCounts.CA === 0 ? "#ffffff" : (countryCounts.CA === 1 ? baseColor : (countryCounts.CA <= 3 ? darkenColor(baseColor, 0.15) : outlineColor)),
-      "BR", countryCounts.BR === 0 ? "#ffffff" : (countryCounts.BR === 1 ? baseColor : (countryCounts.BR <= 3 ? darkenColor(baseColor, 0.15) : outlineColor)),
-      "AR", countryCounts.AR === 0 ? "#ffffff" : (countryCounts.AR === 1 ? baseColor : (countryCounts.AR <= 3 ? darkenColor(baseColor, 0.15) : outlineColor)),
-      "JP", countryCounts.JP === 0 ? "#ffffff" : (countryCounts.JP === 1 ? baseColor : (countryCounts.JP <= 3 ? darkenColor(baseColor, 0.15) : outlineColor)),
-      "AU", countryCounts.AU === 0 ? "#ffffff" : (countryCounts.AU === 1 ? baseColor : (countryCounts.AU <= 3 ? darkenColor(baseColor, 0.15) : outlineColor)),
-      "GB", countryCounts.GB === 0 ? "#ffffff" : (countryCounts.GB === 1 ? baseColor : (countryCounts.GB <= 3 ? darkenColor(baseColor, 0.15) : outlineColor)),
-      "MX", countryCounts.MX === 0 ? "#ffffff" : (countryCounts.MX === 1 ? baseColor : (countryCounts.MX <= 3 ? darkenColor(baseColor, 0.15) : outlineColor)),
-      "IN", countryCounts.IN === 0 ? "#ffffff" : (countryCounts.IN === 1 ? baseColor : (countryCounts.IN <= 3 ? darkenColor(baseColor, 0.15) : outlineColor)),
-      "CN", countryCounts.CN === 0 ? "#ffffff" : (countryCounts.CN === 1 ? baseColor : (countryCounts.CN <= 3 ? darkenColor(baseColor, 0.15) : outlineColor)),
-      "RU", countryCounts.RU === 0 ? "#ffffff" : (countryCounts.RU === 1 ? baseColor : (countryCounts.RU <= 3 ? darkenColor(baseColor, 0.15) : outlineColor)),
+      // For each available country, get its book count and apply appropriate color
+      ...Object.entries(countryCounts).flatMap(([iso2, count]) => [
+        iso2,
+        count === 0 ? "#ffffff" :           // 0 books = white
+        count === 1 ? baseColor :           // 1 book = light theme color
+        count === 2 ? darkenColor(baseColor, 0.15) : // 2 books = medium shade
+        outlineColor                         // 3+ books = darkest theme color
+      ]),
       "#ffffff" // Default white for all other countries
     ];
+    
+    console.log('🎨 Debug: Generated match array:', matchArray);
+    return matchArray;
   };
 
   // Helper function to darken a color
@@ -535,6 +529,27 @@ export const MapLibreMap = ({
     mapRef.current?.on('mouseleave', 'countries-fill', () => {
       tooltip.style.opacity = '0';
       tooltip.style.visibility = 'hidden';
+    });
+
+    // Add click event listener for country selection
+    mapRef.current?.on('click', 'countries-fill', (e) => {
+      if (e.features && e.features[0]) {
+        const properties = e.features[0].properties;
+        
+        // Get country name using the same logic as hover
+        const countryName = properties?.ADMIN || 
+                           properties?.NAME || 
+                           properties?.name || 
+                           properties?.Name ||
+                           properties?.COUNTRY ||
+                           properties?.country ||
+                           'Unknown Country';
+        
+        // Call the onCountryClick callback if provided
+        if (onCountryClick && countryName !== 'Unknown Country') {
+          onCountryClick(countryName);
+        }
+      }
     });
 
     // Add error event listener
