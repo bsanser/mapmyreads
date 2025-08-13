@@ -16,6 +16,44 @@ import { startMapLoadTimer, endMapLoadTimer, logMapEvent, savePerformanceLogs } 
 import { testCountryDetection } from '../lib/testCountryDetection'
 import { mapCountryNameForDisplay, mapDisplayNameToCountry } from '../lib/countryDetection'
 
+// Apple-inspired theme system with carefully balanced colors
+const THEMES = {
+  blue: {
+    name: "Ocean Blue",
+    fill: "#B3D9E5",      // Light blue (your current)
+    outline: "#0A6A89",   // Dark blue (your current)
+    hover: "#7FB3C7",     // Medium blue
+    selected: "#E8F4F8",  // Very light blue with subtle glow
+    background: "#eef3f5" // Light blue-gray background
+  },
+  yellow: {
+    name: "Golden Hour",
+    fill: "#F4E4BC",      // Light warm yellow
+    outline: "#D4A574",   // Rich golden brown
+    hover: "#E8D4A8",     // Medium warm yellow
+    selected: "#FDF8E8",  // Very light cream with subtle glow
+    background: "#fefbf3" // Warm off-white background
+  },
+  purple: {
+    name: "Royal Purple",
+    fill: "#E8D4F0",      // Light lavender
+    outline: "#8B5A96",   // Rich purple
+    hover: "#D4B8E0",     // Medium lavender
+    selected: "#F8F0FC",  // Very light lavender with subtle glow
+    background: "#f9f6fc" // Light purple-tinted background
+  },
+  pink: {
+    name: "Rose Garden",
+    fill: "#F4D4E0",      // Light rose pink
+    outline: "#C85A7B",   // Rich rose
+    hover: "#E8B8CC",     // Medium rose pink
+    selected: "#FDF0F5",  // Very light rose with subtle glow
+    background: "#fef8fa" // Light pink-tinted background
+  }
+};
+
+type ThemeKey = keyof typeof THEMES;
+
 const ISBN_COUNTRY_TEST_DATA: Record<string, string[]> = {
   '9789681311889': ['ES'], // e.g. Los renglones torcidos de Dios
 }
@@ -47,6 +85,14 @@ export default function Home() {
   const [selectedCountry, setSelectedCountry] = useState<string | null>(null)
   const [showBottomSheet, setShowBottomSheet] = useState(false)
   const [countryViewMode, setCountryViewMode] = useState<'author' | 'book'>('book')
+  const [currentTheme, setCurrentTheme] = useState<ThemeKey>('blue')
+  
+  // Debug theme changes
+  const handleThemeChange = (theme: ThemeKey) => {
+    console.log('🏠 Parent: Theme change requested from', currentTheme, 'to', theme);
+    setCurrentTheme(theme);
+    console.log('🏠 Parent: Theme state updated to', theme);
+  };
   const [isProcessing, setIsProcessing] = useState(false)
   const booksLoadedRef = useRef(false)
 
@@ -295,28 +341,6 @@ export default function Home() {
           <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <h1 className="text-xl font-bold text-gray-900">Your Reading Map</h1>
-              <div className="hidden lg:flex items-center gap-2">
-                <button
-                  onClick={() => setCountryViewMode('book')}
-                  className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                    countryViewMode === 'book'
-                      ? 'bg-blue-600 text-white shadow-sm'
-                      : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
-                  }`}
-                >
-                  Book Settings
-                </button>
-                <button
-                  onClick={() => setCountryViewMode('author')}
-                  className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                    countryViewMode === 'author'
-                      ? 'bg-blue-600 text-white shadow-sm'
-                      : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
-                  }`}
-                >
-                  Author Origins
-                </button>
-              </div>
             </div>
             <div className="flex items-center gap-2">
               <ShareButton books={books} />
@@ -328,14 +352,18 @@ export default function Home() {
 
         {/* Map Container - Full viewport height */}
         <div className="relative w-full h-[calc(100vh-80px)] lg:h-[calc(100vh-80px)]">
-          {/* Map takes full space */}
-          <div className="w-full h-full relative z-0">
+          {/* Map */}
+          <div className="w-full h-full relative">
             <MapLibreMap
               highlighted={highlighted}
               selectedCountry={selectedCountry ? mapISO2ToDisplayName(selectedCountry) : null}
               onCountryClick={(countryName) => setSelectedCountry(mapDisplayNameToISO2(countryName))}
               books={books}
               countryViewMode={countryViewMode}
+              onViewModeChange={setCountryViewMode}
+              currentTheme={currentTheme}
+              onThemeChange={handleThemeChange}
+              themes={THEMES}
             />
           </div>
 

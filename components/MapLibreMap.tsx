@@ -92,6 +92,10 @@ export type MapLibreMapProps = {
   onCountryClick?: (countryName: string) => void;
   books?: any[]; // Add books prop for heatmap logic
   countryViewMode?: 'author' | 'book'; // Add view mode prop for correct counting
+  onViewModeChange?: (mode: 'author' | 'book') => void; // Add callback for view mode changes
+  currentTheme?: keyof typeof THEMES; // Theme from parent component
+  onThemeChange?: (theme: keyof typeof THEMES) => void; // Theme change callback
+  themes?: typeof THEMES; // Themes object from parent component
 };
 
 export const MapLibreMap = ({
@@ -99,12 +103,61 @@ export const MapLibreMap = ({
   selectedCountry = null,
   onCountryClick,
   books = [],
-  countryViewMode = 'book'
+  countryViewMode = 'book',
+  onViewModeChange,
+  currentTheme: propCurrentTheme = 'blue', // Destructure prop with default
+  onThemeChange, // Destructure prop
+  themes: propThemes = THEMES // Destructure prop with default
 }: MapLibreMapProps) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const [mapStatus, setMapStatus] = useState<'loading' | 'ready' | 'error'>('loading');
-  const [currentTheme, setCurrentTheme] = useState<keyof typeof THEMES>('blue');
+
+  // Debug theme props
+  console.log('🗺️ MapLibreMap: Received theme props:', {
+    currentTheme: propCurrentTheme,
+    hasOnThemeChange: !!onThemeChange,
+    themesKeys: Object.keys(propThemes),
+    themes: propThemes
+  });
+
+  // Function to update control colors based on current theme and view mode
+  const updateControlColors = () => {
+    const bookLocationsControl = document.getElementById('book-locations-control');
+    const authorCountriesControl = document.getElementById('author-countries-control');
+    
+    if (bookLocationsControl && authorCountriesControl) {
+      console.log('🎨 updateControlColors called for theme:', propCurrentTheme, 'view mode:', countryViewMode);
+      console.log('🎨 Available themes:', Object.keys(propThemes));
+      console.log('🎨 Current theme outline color:', propThemes[propCurrentTheme]?.outline);
+      
+      // Only update if we have valid theme data
+      if (propThemes[propCurrentTheme]?.outline) {
+        const activeColor = propThemes[propCurrentTheme].outline;
+        
+        if (countryViewMode === 'book') {
+          bookLocationsControl.style.color = activeColor;
+          bookLocationsControl.style.border = `1px solid ${activeColor}`;
+          authorCountriesControl.style.color = '#666';
+          authorCountriesControl.style.border = '1px solid rgba(0, 0, 0, 0.1)';
+          console.log('🎨 Book Locations control updated with color:', activeColor);
+        } else {
+          authorCountriesControl.style.color = activeColor;
+          authorCountriesControl.style.border = `1px solid ${activeColor}`;
+          bookLocationsControl.style.color = '#666';
+          bookLocationsControl.style.border = '1px solid rgba(0, 0, 0, 0.1)';
+          console.log('🎨 Author Countries control updated with color:', activeColor);
+        }
+      } else {
+        console.log('🎨 Invalid theme data, skipping control update');
+      }
+    } else {
+      console.log('🎨 Controls not found, cannot update colors');
+    }
+  };
+
+  // Function to get current theme dynamically (avoids closure issues)
+  const getCurrentTheme = () => propCurrentTheme;
 
   // Calculate country book counts for heatmap
   const getCountryBookCounts = () => {
@@ -136,13 +189,14 @@ export const MapLibreMap = ({
   // Generate the complete heatmap style based on current data
   const generateHeatmapStyle = () => {
     const countryCounts = getCountryBookCounts();
-    const baseColor = THEMES[currentTheme].fill;
-    const outlineColor = THEMES[currentTheme].outline;
+    const baseColor = propThemes[propCurrentTheme].fill;
+    const outlineColor = propThemes[propCurrentTheme].outline;
     
     console.log('🔍 DEBUG: Country counts:', countryCounts);
-    console.log('🔍 DEBUG: Current theme:', currentTheme);
+    console.log('🔍 DEBUG: Current theme:', propCurrentTheme);
     console.log('🔍 DEBUG: Base color:', baseColor);
     console.log('🔍 DEBUG: Outline color:', outlineColor);
+    console.log('🔍 DEBUG: Available themes:', Object.keys(propThemes));
     
     // Create a simpler approach: use case expression with specific country codes
     // This is more reliable than the complex match expression
@@ -160,6 +214,8 @@ export const MapLibreMap = ({
         } else {
           color = outlineColor;
         }
+        
+        console.log(`🔍 DEBUG: Country ${iso2} with ${count} books gets color:`, color);
         
         return [
           ["==", ["get", "ISO3166-1-Alpha-2"], iso2],
@@ -215,7 +271,7 @@ export const MapLibreMap = ({
           <pattern id="waves" width="16" height="8" patternUnits="userSpaceOnUse">
             <path d="M0 4 Q2 0 4 4 T8 4 T12 4 T16 4"
                   fill="none"
-                  stroke="${THEMES[currentTheme].outline}"
+                  stroke="${propThemes[propCurrentTheme].outline}"
                   stroke-width="1"
                   stroke-linecap="round"
                   stroke-linejoin="round"
@@ -250,7 +306,7 @@ export const MapLibreMap = ({
             id: "background",
             type: "background",
             paint: { 
-              "background-color": THEMES[currentTheme].background,
+              "background-color": propThemes[propCurrentTheme].background,
               "background-pattern": "waves"
             }
           },
@@ -266,7 +322,7 @@ export const MapLibreMap = ({
             id: "countries-outline",
             type: "line",
             source: "countries",
-            paint: { "line-color": THEMES[currentTheme].outline, "line-width": 2 }
+            paint: { "line-color": propThemes[propCurrentTheme].outline, "line-width": 2 }
           },
           {
             id: "country-labels",
@@ -327,13 +383,140 @@ export const MapLibreMap = ({
     // Add basic controls
     mapRef.current?.addControl(new maplibregl.NavigationControl(), 'top-right');
 
+    // Add Book Locations control
+    const bookLocationsControl = document.createElement('div');
+    bookLocationsControl.id = 'book-locations-control';
+    bookLocationsControl.style.cssText = `
+      position: absolute;
+      top: 10px;
+      right: 245px;
+      z-index: 1000;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 8px;
+      border: 1px solid ${countryViewMode === 'book' ? propThemes[propCurrentTheme].outline : 'rgba(0, 0, 0, 0.1)'};
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      padding: 8px 12px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 13px;
+      min-width: 90px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: center;
+      color: ${countryViewMode === 'book' ? propThemes[propCurrentTheme].outline : '#666'};
+      font-weight: ${countryViewMode === 'book' ? '600' : '500'};
+    `;
+    bookLocationsControl.textContent = 'Book Locations';
+    bookLocationsControl.title = 'Show countries where books are set';
+
+    console.log('Created Book Locations control:', bookLocationsControl);
+
+    // Add hover effect for Book Locations
+    bookLocationsControl.addEventListener('mouseenter', () => {
+      bookLocationsControl.style.background = 'rgba(255, 255, 255, 0.98)';
+      bookLocationsControl.style.transform = 'translateY(-1px)';
+      bookLocationsControl.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+    });
+
+    bookLocationsControl.addEventListener('mouseleave', () => {
+      bookLocationsControl.style.background = 'rgba(255, 255, 255, 0.95)';
+      bookLocationsControl.style.transform = 'translateY(0)';
+      bookLocationsControl.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)';
+    });
+
+    // Add Author Countries control
+    const authorCountriesControl = document.createElement('div');
+    authorCountriesControl.id = 'author-countries-control';
+    authorCountriesControl.style.cssText = `
+      position: absolute;
+      top: 10px;
+      right: 100px;
+      z-index: 1000;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 8px;
+      border: 1px solid ${countryViewMode === 'author' ? propThemes[propCurrentTheme].outline : 'rgba(0, 0, 0, 0.1)'};
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      padding: 8px 12px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 13px;
+      min-width: 90px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: center;
+      color: ${countryViewMode === 'author' ? propThemes[propCurrentTheme].outline : '#666'};
+      font-weight: ${countryViewMode === 'author' ? '600' : '500'};
+    `;
+    authorCountriesControl.textContent = 'Author Countries';
+    authorCountriesControl.title = 'Show countries where authors are from';
+
+    console.log('Created Author Countries control:', authorCountriesControl);
+
+    // Add hover effect for Author Countries
+    authorCountriesControl.addEventListener('mouseenter', () => {
+      authorCountriesControl.style.background = 'rgba(255, 255, 255, 0.98)';
+      authorCountriesControl.style.transform = 'translateY(-1px)';
+      authorCountriesControl.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+    });
+
+    authorCountriesControl.addEventListener('mouseleave', () => {
+      authorCountriesControl.style.background = 'rgba(255, 255, 255, 0.95)';
+      authorCountriesControl.style.transform = 'translateY(0)';
+      authorCountriesControl.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)';
+    });
+
+    // Add click handlers for view mode controls
+    bookLocationsControl.addEventListener('click', () => {
+      console.log('Book Locations clicked');
+      // Get current theme value dynamically
+      const currentThemeValue = getCurrentTheme();
+      const currentThemeOutline = propThemes[currentThemeValue].outline;
+      
+      console.log('🎨 Book Locations clicked, using theme:', currentThemeValue, 'with color:', currentThemeOutline);
+      
+      // Update the visual state - ONLY change view mode, don't interfere with theme
+      bookLocationsControl.style.color = currentThemeOutline;
+      bookLocationsControl.style.fontWeight = '600';
+      bookLocationsControl.style.border = `1px solid ${currentThemeOutline}`;
+      authorCountriesControl.style.color = '#666';
+      authorCountriesControl.style.fontWeight = '500';
+      authorCountriesControl.style.border = '1px solid rgba(0, 0, 0, 0.1)';
+      
+      console.log('🎨 Controls updated - Book Locations active with color:', currentThemeOutline);
+      
+      // Call the callback AFTER updating the visual state
+      onViewModeChange?.('book');
+    });
+
+    authorCountriesControl.addEventListener('click', () => {
+      console.log('Author Countries clicked');
+      // Get current theme value dynamically
+      const currentThemeValue = getCurrentTheme();
+      const currentThemeOutline = propThemes[currentThemeValue].outline;
+      
+      console.log('🎨 Author Countries clicked, using theme:', currentThemeValue, 'with color:', currentThemeOutline);
+      
+      // Update the visual state - ONLY change view mode, don't interfere with theme
+      authorCountriesControl.style.color = currentThemeOutline;
+      authorCountriesControl.style.fontWeight = '600';
+      authorCountriesControl.style.border = `1px solid ${currentThemeOutline}`;
+      bookLocationsControl.style.color = '#666';
+      bookLocationsControl.style.fontWeight = '500';
+      bookLocationsControl.style.border = '1px solid rgba(0, 0, 0, 0.1)';
+      
+      console.log('🎨 Controls updated - Author Countries active with color:', currentThemeOutline);
+      
+      // Call the callback AFTER updating the visual state
+      onViewModeChange?.('author');
+    });
+
     // Add custom theme selector control
     const themeControl = document.createElement('div');
     themeControl.className = 'maplibregl-ctrl maplibregl-ctrl-group';
     themeControl.style.cssText = `
       position: absolute;
       top: 10px;
-      right: 70px;
+      right: 50px;
       z-index: 1000;
       background: rgba(255, 255, 255, 0.95);
       backdrop-filter: blur(10px);
@@ -398,7 +581,7 @@ export const MapLibreMap = ({
     `;
 
     // Add theme options
-    Object.entries(THEMES).forEach(([key, theme]) => {
+    Object.entries(propThemes).forEach(([key, theme]) => {
       const themeOption = document.createElement('div');
       themeOption.style.cssText = `
         padding: 8px 16px;
@@ -439,14 +622,82 @@ export const MapLibreMap = ({
 
       // Add click handler
       themeOption.addEventListener('click', () => {
-        setCurrentTheme(key as keyof typeof THEMES);
+        console.log('🎨 Theme clicked:', key, 'Current theme before:', propCurrentTheme);
+        onThemeChange?.(key as keyof typeof propThemes);
+        console.log('🎨 Theme change callback called with:', key);
         
         // Update map colors immediately
         if (mapRef.current?.isStyleLoaded()) {
-          mapRef.current.setPaintProperty('background', 'background-color', THEMES[key].background);
-          // Update countries-fill with new heatmap colors
-          applyHeatmapColors();
-          mapRef.current.setPaintProperty('countries-outline', 'line-color', THEMES[key].outline);
+          console.log('🎨 Updating map colors for theme:', key);
+          
+          // 1. Update background color
+          mapRef.current.setPaintProperty('background', 'background-color', propThemes[key].background);
+          
+          // 2. Update country outline colors
+          mapRef.current.setPaintProperty('countries-outline', 'line-color', propThemes[key].outline);
+          
+          // 3. Update country fill colors (heatmap) with new theme
+          const newTheme = key as keyof typeof propThemes;
+          const baseColor = propThemes[newTheme].fill;
+          const outlineColor = propThemes[newTheme].outline;
+          
+          // Generate new heatmap style with new theme colors
+          const countryCounts = getCountryBookCounts();
+          const newHeatmapStyle = [
+            "case",
+            ...Object.entries(countryCounts).flatMap(([iso2, count]) => {
+              if (count === 0) return [];
+              
+              let color;
+              if (count === 1) {
+                color = baseColor;
+              } else if (count === 2) {
+                color = darkenColor(baseColor, 0.15);
+              } else {
+                color = outlineColor;
+              }
+              
+              return [
+                ["==", ["get", "ISO3166-1-Alpha-2"], iso2],
+                color
+              ];
+            }),
+            "#ffffff"
+          ];
+          
+          console.log('🎨 Setting new heatmap colors:', newHeatmapStyle);
+          mapRef.current.setPaintProperty('countries-fill', 'fill-color', newHeatmapStyle);
+          
+          // Force repaint
+          mapRef.current.triggerRepaint();
+          
+          console.log('🎨 Map colors updated for theme:', key);
+        } else {
+          console.log('🎨 Map not ready, cannot update colors yet');
+        }
+        
+        // Update control colors immediately with the NEW theme
+        const bookLocationsControl = document.getElementById('book-locations-control');
+        const authorCountriesControl = document.getElementById('author-countries-control');
+        
+        if (bookLocationsControl && authorCountriesControl) {
+          console.log('🎨 Immediate control color update for NEW theme:', key);
+          const newThemeOutline = propThemes[key].outline;
+          
+          // Update controls based on CURRENT view mode (not changing it)
+          if (countryViewMode === 'book') {
+            bookLocationsControl.style.color = newThemeOutline;
+            bookLocationsControl.style.border = `1px solid ${newThemeOutline}`;
+            authorCountriesControl.style.color = '#666';
+            authorCountriesControl.style.border = '1px solid rgba(0, 0, 0, 0.1)';
+            console.log('🎨 Book Locations control immediately updated with NEW theme color:', newThemeOutline);
+          } else {
+            authorCountriesControl.style.color = newThemeOutline;
+            authorCountriesControl.style.border = `1px solid ${newThemeOutline}`;
+            bookLocationsControl.style.color = '#666';
+            bookLocationsControl.style.border = '1px solid rgba(0, 0, 0, 0.1)';
+            console.log('🎨 Author Countries control immediately updated with NEW theme color:', newThemeOutline);
+          }
         }
         
         // Hide dropdown
@@ -482,9 +733,49 @@ export const MapLibreMap = ({
       }
     });
 
-    themeControl.appendChild(themeIcon);
-    themeControl.appendChild(themeDropdown);
-    mapContainer.current?.appendChild(themeControl);
+    // Add controls to the map container
+    console.log('Adding Book Locations control to DOM...');
+    
+    // Check if control already exists to prevent duplicates
+    if (!document.getElementById('book-locations-control')) {
+      mapContainer.current?.appendChild(bookLocationsControl);
+      console.log('Book Locations control added to DOM');
+    } else {
+      console.log('Book Locations control already exists, skipping');
+    }
+    
+    console.log('Adding Author Countries control to DOM...');
+    if (!document.getElementById('author-countries-control')) {
+      mapContainer.current?.appendChild(authorCountriesControl);
+      console.log('Author Countries control added to DOM');
+    } else {
+      console.log('Author Countries control already exists, skipping');
+    }
+    
+    // Set initial control colors
+    setTimeout(() => {
+      console.log('🎨 Setting initial control colors for theme:', propCurrentTheme);
+      updateControlColors();
+    }, 100);
+    
+    console.log('Adding Theme control to DOM...');
+    if (!document.querySelector('.theme-control')) {
+      themeControl.classList.add('theme-control');
+      themeControl.appendChild(themeIcon);
+      themeControl.appendChild(themeDropdown);
+      mapContainer.current?.appendChild(themeControl);
+      console.log('Theme control added to DOM');
+    } else {
+      console.log('Theme control already exists, skipping');
+    }
+    
+    // Debug: Check what's actually in the DOM
+    setTimeout(() => {
+      console.log('DOM check - Book Locations control:', document.getElementById('book-locations-control'));
+      console.log('DOM check - Author Countries control:', document.getElementById('author-countries-control'));
+      console.log('DOM check - Theme control:', document.querySelector('.theme-control'));
+      console.log('DOM check - Map container children:', mapContainer.current?.children);
+    }, 1000);
 
     // Create hover tooltip for country names
     const tooltip = document.createElement('div');
@@ -591,19 +882,86 @@ export const MapLibreMap = ({
 
   // Update heatmap colors when books change
   useEffect(() => {
+    console.log('🎨 useEffect triggered with theme:', propCurrentTheme, 'countryViewMode:', countryViewMode);
     if (mapRef.current && mapRef.current.isStyleLoaded()) {
+      console.log('🎨 Map is ready, applying heatmap colors for theme:', propCurrentTheme);
       // Apply heatmap colors immediately
       applyHeatmapColors();
+      
+      // Update control colors to match current theme
+      updateControlColors();
       
       // Also apply after a delay to ensure they stick
       setTimeout(() => {
         if (mapRef.current?.isStyleLoaded()) {
+          console.log('🎨 Delayed heatmap color application for theme:', propCurrentTheme);
           applyHeatmapColors();
+          updateControlColors();
         }
       }, 500);
+    } else {
+      console.log('🎨 Map not ready yet, cannot apply heatmap colors');
     }
-  }, [books, currentTheme, countryViewMode]);
+  }, [books, propCurrentTheme, countryViewMode]);
   
+  // Update control colors when view mode changes
+  useEffect(() => {
+    console.log('🎨 View mode changed to:', countryViewMode, 'updating control colors');
+    updateControlColors();
+  }, [countryViewMode]);
+  
+  // Dedicated effect for theme changes - ensure ALL colors update
+  useEffect(() => {
+    console.log('🎨 Theme changed to:', propCurrentTheme, 'updating ALL colors');
+    
+    if (mapRef.current?.isStyleLoaded()) {
+      // Update map colors
+      const baseColor = propThemes[propCurrentTheme].fill;
+      const outlineColor = propThemes[propCurrentTheme].outline;
+      
+      // Update background
+      mapRef.current.setPaintProperty('background', 'background-color', propThemes[propCurrentTheme].background);
+      
+      // Update country outlines
+      mapRef.current.setPaintProperty('countries-outline', 'line-color', outlineColor);
+      
+      // Update country fills (heatmap)
+      const countryCounts = getCountryBookCounts();
+      const newHeatmapStyle = [
+        "case",
+        ...Object.entries(countryCounts).flatMap(([iso2, count]) => {
+          if (count === 0) return [];
+          
+          let color;
+          if (count === 1) {
+            color = baseColor;
+          } else if (count === 2) {
+            color = darkenColor(baseColor, 0.15);
+          } else {
+            color = outlineColor;
+          }
+          
+          return [
+            ["==", ["get", "ISO3166-1-Alpha-2"], iso2],
+            color
+          ];
+        }),
+        "#ffffff"
+      ];
+      
+      mapRef.current.setPaintProperty('countries-fill', 'fill-color', newHeatmapStyle);
+      mapRef.current.triggerRepaint();
+      
+      console.log('🎨 All map colors updated for theme:', propCurrentTheme);
+    }
+    
+    // Update control colors - but only if they exist and we're not in the middle of a theme change
+    setTimeout(() => {
+      updateControlColors();
+    }, 50);
+    
+  }, [propCurrentTheme]);
+
   // Function to apply heatmap colors
   const applyHeatmapColors = () => {
     if (mapRef.current?.isStyleLoaded()) {
