@@ -8,6 +8,11 @@ interface PerformanceLog {
   readBookCount?: number
   unreadBookCount?: number
   hasCountries?: boolean
+  error?: string
+  fileName?: string
+  fileSize?: number
+  totalBookCount?: number
+  note?: string
 }
 
 class PerformanceLogger {

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Papa from 'papaparse'
-import { MapChart } from '../components/MapChart'
+import { LeafletMap } from '../components/LeafletMap';
 import { ShareButton } from '../components/ShareButton'
 import { FeedbackButton } from '../components/FeedbackButton'
 import { BuyMeACoffee } from '../components/BuyMeACoffee'
@@ -212,7 +212,7 @@ const COUNTRY_FLAGS: Record<string, string> = {
   'Liechtenstein': '🇱🇮',
   'Monaco': '🇲🇨',
   'San Marino': '🇸🇲',
-  'Vatican City': '🇻🇦',
+  'Vatican City': '🇻��',
   'Malta': '🇲🇹',
   'Cyprus': '🇨🇾',
   'Luxembourg': '🇱🇺',
@@ -236,6 +236,11 @@ export default function Home() {
   const [countryViewMode, setCountryViewMode] = useState<'author' | 'book'>('book')
   const [isProcessing, setIsProcessing] = useState(false)
   const booksLoadedRef = useRef(false)
+
+  // Temporary function for country clicks while testing MapLibre
+  const onCountryClick = (country: string) => {
+    setSelectedCountry(country)
+  }
 
   // Load processed books on component mount
   useEffect(() => {
@@ -311,6 +316,9 @@ export default function Home() {
             const unreadBooks = parsedBooks.filter(book => book.readStatus === 'to_read')
             
             console.log(`📖 Read books: ${readBooks.length}, 📚 To-read books: ${unreadBooks.length}`)
+            
+            // IMPORTANT: Only read books are processed for the map
+            // Unread books are ignored as they don't represent your reading journey
 
             // Process read books first to get countries for the map
             if (readBooks.length > 0) {
@@ -326,45 +334,24 @@ export default function Home() {
               endMapLoadTimer({ 
                 bookCount: enrichedReadBooks.length,
                 readBookCount: readBooks.length,
-                unreadBookCount: unreadBooks.length,
+                unreadBookCount: 0, // No unread books processed
                 hasCountries: enrichedReadBooks.some(book => book.bookCountries.length > 0)
               })
               logMapEvent('map_ready', { 
                 bookCount: enrichedReadBooks.length,
-                readBookCount: readBooks.length
+                readBookCount: readBooks.length,
+                note: 'Only read books included in map'
               })
               
-              console.log('✅ Read books processed and map ready!')
+              console.log(`✅ ${readBooks.length} read books processed and map ready!`)
+              if (unreadBooks.length > 0) {
+                console.log(`📖 ${unreadBooks.length} unread books ignored (not part of reading journey)`)
+              }
             }
 
-            // Process unread books silently in background (if any)
-            if (unreadBooks.length > 0) {
-              console.log('🔄 Processing unread books silently...')
-              setTimeout(async () => {
-                try {
-                  const allBooks = [...readBooks, ...unreadBooks]
-                  const enrichedBooks = await fillMissingDataForBooks(allBooks)
-                  
-                  // Sort by read date (most recent first)
-                  enrichedBooks.sort((a, b) => {
-                    if (!a.readDate && !b.readDate) return 0
-                    if (!a.readDate) return 1
-                    if (!b.readDate) return -1
-                    return b.readDate.getTime() - a.readDate.getTime()
-                  })
-                  
-                  setBooks(enrichedBooks)
-                  saveProcessedBooks(enrichedBooks)
-                  logMapEvent('all_books_processed', { 
-                    totalBookCount: enrichedBooks.length,
-                    unreadBookCount: unreadBooks.length
-                  })
-                  console.log('✅ All books processed and saved!')
-                } catch (err) {
-                  console.error('❌ Error processing unread books:', err)
-                }
-              }, 100)
-            }
+            // Note: Only processing read books for the map
+            // Unread books are not included as they don't represent your reading journey
+            console.log(`📚 Map will show ${readBooks.length} read books only`)
 
             console.log('✅ Initial processing complete!')
             console.table(
@@ -509,117 +496,93 @@ export default function Home() {
   )
 }
 
-  // Books loaded layout
-  return (
-    <div className="min-h-screen bg-gray-50 font-mono">
-      {/* Header - Overlay on mobile, normal on desktop */}
-      <div className="lg:bg-white lg:border-b lg:border-gray-200 lg:sticky lg:top-0 lg:z-50 lg:shadow-sm">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold text-gray-900">
-              Your Reading Map
-            </h1>
-
-          </div>
-          {books.length > 0 && (
+    // Books loaded layout
+    return (
+      <div className="h-screen relative w-full bg-gray-50 overflow-hidden">
+        {/* Header - Overlay on mobile, normal on desktop */}
+        <div className="lg:bg-white lg:border-b lg:border-gray-200 lg:sticky lg:top-0 lg:z-50 lg:shadow-sm">
+          <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              {/* Country View Toggle - Desktop only */}
-              <div className="hidden lg:flex items-center bg-gray-100 rounded-lg p-1">
+              <h1 className="text-xl font-bold text-gray-900">Your Reading Map</h1>
+              <div className="hidden lg:flex items-center gap-2">
                 <button
                   onClick={() => setCountryViewMode('book')}
-                  className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
+                  className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
                     countryViewMode === 'book'
-                      ? 'bg-white text-gray-900 shadow-sm'
-                      : 'text-gray-600 hover:text-gray-900'
+                      ? 'bg-blue-600 text-white shadow-sm'
+                      : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
                   }`}
                 >
                   Book Settings
                 </button>
                 <button
                   onClick={() => setCountryViewMode('author')}
-                  className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
+                  className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
                     countryViewMode === 'author'
-                      ? 'bg-white text-gray-900 shadow-sm'
-                      : 'text-gray-600 hover:text-gray-900'
+                      ? 'bg-blue-600 text-white shadow-sm'
+                      : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
                   }`}
                 >
                   Author Origins
                 </button>
               </div>
-
+            </div>
+            <div className="flex items-center gap-2">
               <ShareButton books={books} />
               <FeedbackButton />
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Map Container - Full screen on mobile/tablet, with sidebar on desktop */}
-      <div className="h-screen relative w-full overflow-hidden bg-gray-50">
-        <div className="w-full h-full">
-          <MapChart
-            highlighted={highlighted}
-            onCountryClick={(displayName) => setSelectedCountry(mapDisplayNameToCountry(displayName))}
-            selectedCountry={selectedCountry ? mapCountryNameForDisplay(selectedCountry) : null}
-          />
-        </div>
-
-        {/* Mobile: Floating Header Overlay */}
-        <div className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-white/90 backdrop-blur-sm border-b border-gray-200">
-          <div className="px-4 py-3 flex items-center justify-between">
-            <h1 className="text-lg font-semibold text-gray-900">Your Reading Map</h1>
-            <div className="flex items-center gap-2">
-              <ShareButton books={books} className="text-gray-900 bg-white/80 hover:bg-white" />
-              <FeedbackButton className="text-gray-900 bg-white/80 hover:bg-white" />
-            </div>
-          </div>
-          
-          {/* Mobile: Floating Navigation Toggle */}
-          <div className="px-4 pb-3">
-            <div className="bg-white/80 backdrop-blur-sm rounded-lg p-1 flex border border-gray-200/50">
-              <button
-                onClick={() => setCountryViewMode('book')}
-                className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors ${
-                  countryViewMode === 'book'
-                    ? 'bg-blue-600 text-white shadow-sm'
-                    : 'text-gray-700 hover:text-gray-900'
-                }`}
-              >
-                Book Settings
-              </button>
-              <button
-                onClick={() => setCountryViewMode('author')}
-                className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors ${
-                  countryViewMode === 'author'
-                    ? 'bg-blue-600 text-white shadow-sm'
-                    : 'text-gray-700 hover:text-gray-900'
-                }`}
-              >
-                Author Origins
-              </button>
+              <BuyMeACoffee />
             </div>
           </div>
         </div>
 
-        {/* Desktop: Floating Library Sidebar (hidden on mobile/tablet) */}
-        <div className="hidden lg:block absolute top-4 left-4 bg-white rounded-lg shadow-lg border border-gray-200 p-6 w-80 max-h-[calc(100vh-120px)] overflow-auto z-10">
-          <h2 className="text-lg font-bold mb-2">Your Library</h2>
-          <div className="text-sm text-gray-600 mb-4">
-            {selectedCountry
-              ? `${filteredBooks.length} books from ${getCountryFlag(selectedCountry)} ${mapCountryNameForDisplay(selectedCountry)}`
-              : `${books.length} books`}
-            {selectedCountry && (
-              <button
-                onClick={() => setSelectedCountry(null)}
-                className="ml-2 text-blue-600 hover:text-blue-800 underline text-xs"
-              >
-                Show all
-              </button>
-            )}
+        {/* Map Container - Full viewport height */}
+        <div className="relative w-full h-[calc(100vh-80px)] lg:h-[calc(100vh-80px)]">
+          {/* Map takes full space */}
+          <div className="w-full h-full relative z-0">
+            <LeafletMap
+              highlighted={highlighted}
+              selectedCountry={selectedCountry ? mapCountryNameForDisplay(selectedCountry) : null}
+              onCountryClick={(countryName) => setSelectedCountry(mapDisplayNameToCountry(countryName))}
+            />
           </div>
-          <div className="space-y-4">
-            {filteredBooks.slice(0, booksToShow).map((b, i) => (
-                                              <div
+
+          {/* Desktop: Reading List Overlay - Left side, overlaying map */}
+          <div 
+            className="hidden lg:block absolute top-4 left-4 bg-white/95 backdrop-blur-sm rounded-lg shadow-xl border border-gray-200/50 p-6 w-80 max-h-[calc(100vh-120px)] overflow-auto z-50"
+            style={{ zIndex: 50 }}
+            onScroll={(e) => {
+              const target = e.target as HTMLDivElement;
+              const { scrollTop, scrollHeight, clientHeight } = target;
+              
+              // Load more when user is near bottom (within 100px)
+              if (scrollHeight - scrollTop - clientHeight < 100) {
+                const readBooksCount = filteredBooks.filter(b => b.readStatus === 'read').length;
+                if (booksToShow < readBooksCount) {
+                  setBooksToShow(prev => Math.min(prev + 10, readBooksCount));
+                }
+              }
+            }}
+          >
+            <h2 className="text-lg font-bold mb-4 text-gray-900">Your Read Books</h2>
+            <div className="text-sm text-gray-600 mb-4">
+              {selectedCountry
+                ? `${filteredBooks.filter(b => b.readStatus === 'read').length} books from ${getCountryFlag(selectedCountry)} ${mapCountryNameForDisplay(selectedCountry)}`
+                : `${books.filter(b => b.readStatus === 'read').length} read books`}
+              {selectedCountry && (
+                <button
+                  onClick={() => setSelectedCountry(null)}
+                  className="ml-2 text-blue-600 hover:text-blue-800 underline text-xs"
+                >
+                  Show all
+                </button>
+              )}
+            </div>
+            <div className="space-y-4">
+              {filteredBooks
+                .filter(b => b.readStatus === 'read')
+                .slice(0, booksToShow)
+                .map((b, i) => (
+                <div
                   key={`${b.isbn13}-${i}`}
                   className="relative bg-white border border-gray-300 rounded p-4 hover:shadow-md transition-all min-h-[120px] flex"
                   style={{
@@ -686,20 +649,56 @@ export default function Home() {
                       </div>
                     )}
                   </div>
-              </div>
-            ))}
-            {filteredBooks.length > booksToShow && (
-              <div className="text-center py-4">
-                <button
-                  onClick={() =>
-                    setBooksToShow((prev) => Math.min(prev + 10, filteredBooks.length))
-                  }
-                  className="bg-gray-900 text-white px-4 py-2 rounded font-medium hover:bg-gray-800 transition-colors text-sm"
-                >
-                  Load More ({filteredBooks.length - booksToShow} remaining)
-                </button>
-              </div>
-            )}
+                </div>
+              ))}
+              
+              {/* Loading indicator for infinite scroll */}
+              {booksToShow < filteredBooks.filter(b => b.readStatus === 'read').length && (
+                <div className="text-center py-4">
+                  <div className="inline-flex items-center text-gray-500 text-sm">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-400 mr-2"></div>
+                    Loading more books...
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile: Floating Header Overlay */}
+        <div className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-white/90 backdrop-blur-sm border-b border-gray-200">
+          <div className="px-4 py-3 flex items-center justify-between">
+            <h1 className="text-lg font-semibold text-gray-900">Your Reading Map</h1>
+            <div className="flex items-center gap-2">
+              <ShareButton books={books} className="text-gray-900 bg-white/80 hover:bg-white" />
+              <FeedbackButton className="text-gray-900 bg-white/80 hover:bg-white" />
+            </div>
+          </div>
+          
+          {/* Mobile: Floating Navigation Toggle */}
+          <div className="px-4 pb-3">
+            <div className="bg-white/80 backdrop-blur-sm rounded-lg p-1 flex border border-gray-200/50">
+              <button
+                onClick={() => setCountryViewMode('book')}
+                className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors ${
+                  countryViewMode === 'book'
+                    ? 'bg-blue-600 text-white shadow-sm'
+                    : 'text-gray-700 hover:text-gray-900'
+                }`}
+              >
+                Book Settings
+              </button>
+              <button
+                onClick={() => setCountryViewMode('author')}
+                className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors ${
+                  countryViewMode === 'author'
+                    ? 'bg-blue-600 text-white shadow-sm'
+                    : 'text-gray-700 hover:text-gray-900'
+                }`}
+              >
+                Author Origins
+              </button>
+            </div>
           </div>
         </div>
 
@@ -721,11 +720,11 @@ export default function Home() {
               <div className="px-4 py-3 border-b border-gray-200 bg-white sticky top-0 z-10 cursor-pointer" onClick={() => setShowBottomSheet(!showBottomSheet)}>
                 <div className="flex items-center justify-between">
                   <div>
-                    <h2 className="text-lg font-semibold text-gray-900">Your Library</h2>
+                    <h2 className="text-lg font-semibold text-gray-900">Your Read Books</h2>
                     <div className="text-sm text-gray-600">
                       {selectedCountry
-                        ? `${filteredBooks.length} books from ${getCountryFlag(selectedCountry)} ${mapCountryNameForDisplay(selectedCountry)}`
-                        : `${books.length} books`}
+                        ? `${filteredBooks.filter(b => b.readStatus === 'read').length} books from ${getCountryFlag(selectedCountry)} ${mapCountryNameForDisplay(selectedCountry)}`
+                        : `${books.filter(b => b.readStatus === 'read').length} read books`}
                     </div>
                   </div>
                   <svg className={`w-5 h-5 text-gray-500 transition-transform duration-300 ${showBottomSheet ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -735,94 +734,110 @@ export default function Home() {
               </div>
 
               {/* Book List - Scrollable when expanded */}
-              <div className="px-6 py-4 space-y-3">
-                {filteredBooks.slice(0, booksToShow).map((b, i) => (
-                                                        <div
-                    key={`${b.isbn13}-${i}`}
-                    className="relative bg-white border border-gray-300 rounded-lg p-4 hover:shadow-md transition-all min-h-[120px] flex"
-                    style={{
-                      backgroundImage: `
-                        linear-gradient(to right, rgba(226, 232, 240, 0.3) 1px, transparent 1px),
-                        repeating-linear-gradient(
-                          transparent, transparent 24px,
-                          rgba(59, 130, 246, 0.2) 24px, rgba(59, 130, 246, 0.2) 25px,
-                          transparent 25px, transparent 49px,
-                          rgba(220, 38, 38, 0.2) 49px, rgba(220, 38, 38, 0.2) 50px
-                        )
-                      `,
-                      backgroundSize: '100% 100%, 100% 50px',
-                      backgroundPosition: '0 0, 0 8px',
-                    }}
-                  >
-                    {/* Book cover with paper clip - proper clipping effect */}
-                    {b.coverImage && (
-                      <div className="absolute top-3 left-3 z-20">
-                        <div className="relative">
-                          {/* Book cover as the "card" */}
-                          <img 
-                            src={b.coverImage} 
-                            alt={`Cover of ${b.title}`}
-                            className="block w-20 h-24 object-cover rounded shadow-md border border-gray-200 relative z-10"
-                          />
-                          
-                          {/* Paper clip - positioned to go over the top edge of the card */}
-                          <img 
-                            src="/paperclip.svg" 
-                            alt=""
-                            className="absolute -top-10 -left-4 w-14 h-28 z-30 pointer-events-none"
-                            style={{
-                              transform: 'rotate(-20deg)'
-                            }}
-                          />
-                        </div>
-                      </div>
-                    )}
-                    <div className="absolute left-8 top-0 bottom-0 w-px bg-red-400"></div>
-                    <div className="ml-6 relative z-10 flex-1 min-w-0" style={{ marginLeft: b.coverImage ? '6rem' : '1.5rem' }}>
-                      <p className="font-mono text-gray-900 text-sm leading-tight mb-2" style={{ textShadow: '0 1px 2px rgba(255,255,255,0.8)' }}>{b.title}</p>
-                      <p className="font-mono text-gray-700 text-xs mb-1" style={{ textShadow: '0 1px 2px rgba(255,255,255,0.8)' }}>
-                        by {b.authors}
-                        {b.authorCountries.length > 0 && (
-                          <span className="ml-1">{b.authorCountries.map(getCountryFlag).join(' ')}</span>
-                        )}
-                      </p>
-                      {b.yearPublished && <p className="font-mono text-gray-600 text-xs mb-2" style={{ textShadow: '0 1px 2px rgba(255,255,255,0.8)' }}>{b.yearPublished}</p>}
-                      {b.bookCountries.length > 0 && (
-                        <div className="font-mono text-gray-600 text-xs" style={{ textShadow: '0 1px 2px rgba(255,255,255,0.8)' }}>
-                          <span className="font-medium">Countries:</span>
-                          <div className="mt-1 flex flex-wrap gap-1">
-                            {b.bookCountries.map((country) => (
-                              <button
-                                key={country}
-                                onClick={() => onCountryClick(country)}
-                                className="text-blue-600 hover:text-blue-800 underline hover:no-underline transition-colors text-xs px-1 py-0.5 rounded hover:bg-blue-50"
-                              >
-                                {country}
-                              </button>
-                            ))}
+              <div 
+                className="px-6 py-4 space-y-3"
+                onScroll={(e) => {
+                  const target = e.target as HTMLDivElement;
+                  const { scrollTop, scrollHeight, clientHeight } = target;
+                  
+                  // Load more when user is near bottom (within 100px)
+                  if (scrollHeight - scrollTop - clientHeight < 100) {
+                    const readBooksCount = filteredBooks.filter(b => b.readStatus === 'read').length;
+                    if (booksToShow < readBooksCount) {
+                      setBooksToShow(prev => Math.min(prev + 10, readBooksCount));
+                    }
+                  }
+                }}
+              >
+                <div className="space-y-4">
+                  {filteredBooks
+                    .filter(b => b.readStatus === 'read')
+                    .slice(0, booksToShow)
+                    .map((b, i) => (
+                    <div
+                      key={`${b.isbn13}-${i}`}
+                      className="relative bg-white border border-gray-300 rounded-lg p-4 hover:shadow-md transition-all min-h-[120px] flex"
+                      style={{
+                        backgroundImage: `
+                          linear-gradient(to right, rgba(226, 232, 240, 0.3) 1px, transparent 1px),
+                          repeating-linear-gradient(
+                            transparent, transparent 24px,
+                            rgba(59, 130, 246, 0.2) 24px, rgba(59, 130, 246, 0.2) 25px,
+                            transparent 25px, transparent 49px,
+                            rgba(220, 38, 38, 0.2) 49px, rgba(220, 38, 38, 0.2) 50px
+                          )
+                        `,
+                        backgroundSize: '100% 100%, 100% 50px',
+                        backgroundPosition: '0 0, 0 8px',
+                      }}
+                    >
+                      {/* Book cover with paper clip - proper clipping effect */}
+                      {b.coverImage && (
+                        <div className="absolute top-3 left-3 z-20">
+                          <div className="relative">
+                            {/* Book cover as the "card" */}
+                            <img 
+                              src={b.coverImage} 
+                              alt={`Cover of ${b.title}`}
+                              className="block w-20 h-24 object-cover rounded shadow-md border border-gray-200 relative z-10"
+                            />
+                            
+                            {/* Paper clip - positioned to go over the top edge of the card */}
+                            <img 
+                              src="/paperclip.svg" 
+                              alt=""
+                              className="absolute -top-10 -left-4 w-14 h-28 z-30 pointer-events-none"
+                              style={{
+                                transform: 'rotate(-20deg)'
+                              }}
+                            />
                           </div>
                         </div>
                       )}
+                      <div className="absolute left-8 top-0 bottom-0 w-px bg-red-400"></div>
+                      <div className="ml-6 relative z-10 flex-1 min-w-0" style={{ marginLeft: b.coverImage ? '6rem' : '1.5rem' }}>
+                        <p className="font-mono text-gray-900 text-sm leading-tight mb-2" style={{ textShadow: '0 1px 2px rgba(255,255,255,0.8)' }}>{b.title}</p>
+                        <p className="font-mono text-gray-700 text-xs mb-1" style={{ textShadow: '0 1px 2px rgba(255,255,255,0.8)' }}>
+                          by {b.authors}
+                          {b.authorCountries.length > 0 && (
+                            <span className="ml-1">{b.authorCountries.map(getCountryFlag).join(' ')}</span>
+                          )}
+                        </p>
+                        {b.yearPublished && <p className="font-mono text-gray-600 text-xs mb-2" style={{ textShadow: '0 1px 2px rgba(255,255,255,0.8)' }}>{b.yearPublished}</p>}
+                        {b.bookCountries.length > 0 && (
+                          <div className="font-mono text-gray-600 text-xs" style={{ textShadow: '0 1px 2px rgba(255,255,255,0.8)' }}>
+                            <span className="font-medium">Countries:</span>
+                            <div className="mt-1 flex flex-wrap gap-1">
+                              {b.bookCountries.map((country) => (
+                                <button
+                                  key={country}
+                                  onClick={() => onCountryClick(country)}
+                                  className="text-blue-600 hover:text-blue-800 underline hover:no-underline transition-colors text-xs px-1 py-0.5 rounded hover:bg-blue-50"
+                                >
+                                  {country}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
-                {filteredBooks.length > booksToShow && (
-                  <div className="text-center py-4">
-                    <button
-                      onClick={() =>
-                        setBooksToShow((prev) => Math.min(prev + 10, filteredBooks.length))
-                      }
-                      className="bg-gray-900 text-white px-4 py-2 rounded-lg font-medium hover:bg-gray-800 transition-colors text-sm"
-                    >
-                      Load More ({filteredBooks.length - booksToShow} remaining)
-                    </button>
-                  </div>
-                )}
+                  ))}
+                  
+                  {/* Loading indicator for infinite scroll */}
+                  {booksToShow < filteredBooks.filter(b => b.readStatus === 'read').length && (
+                    <div className="text-center py-4">
+                      <div className="inline-flex items-center text-gray-500 text-sm">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-400 mr-2"></div>
+                        Loading more books...
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
       {/* Developer Tools Panel */}
       {showDeveloperMode && (

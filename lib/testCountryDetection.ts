@@ -17,6 +17,11 @@ const testBooks: Book[] = [
     myRating: 4,
     numberOfPages: 336,
     bookshelves: [],
+    coverImage: null,
+    language: null,
+    subtitle: null,
+    description: null,
+    publisher: null,
     source: 'goodreads',
     originalData: {}
   },
@@ -33,6 +38,11 @@ const testBooks: Book[] = [
     myRating: 5,
     numberOfPages: 417,
     bookshelves: [],
+    coverImage: null,
+    language: null,
+    subtitle: null,
+    description: null,
+    publisher: null,
     source: 'goodreads',
     originalData: {}
   },
@@ -49,6 +59,11 @@ const testBooks: Book[] = [
     myRating: 4,
     numberOfPages: 371,
     bookshelves: [],
+    coverImage: null,
+    language: null,
+    subtitle: null,
+    description: null,
+    publisher: null,
     source: 'goodreads',
     originalData: {}
   },
@@ -65,6 +80,11 @@ const testBooks: Book[] = [
     myRating: 4,
     numberOfPages: 296,
     bookshelves: [],
+    coverImage: null,
+    language: null,
+    subtitle: null,
+    description: null,
+    publisher: null,
     source: 'goodreads',
     originalData: {}
   }

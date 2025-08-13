@@ -73,6 +73,13 @@ const parseStoryGraphRow = (row: Record<string, string>): Book => {
     numberOfPages: null, // StoryGraph doesn't have this
     bookshelves: [],
     
+    // Enhanced metadata (will be filled by Google Books API)
+    coverImage: null,
+    language: null,
+    subtitle: null,
+    description: null,
+    publisher: null,
+    
     // Metadata
     source: 'storygraph',
     originalData: row

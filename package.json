@@ -7,15 +7,21 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "clean-isbns": "tsx scripts/cleanISBNs.ts"
+    "clean-isbns": "tsx scripts/cleanISBNs.ts",
+    "generate-countries": "tsx scripts/generate-countries.ts"
   },
   "dependencies": {
+    "@react-spring/web": "^10.0.1",
+    "@types/leaflet": "^1.9.20",
+    "country-code-lookup": "^0.1.3",
     "d3": "^7.8.5",
+    "leaflet": "^1.9.4",
     "next": "14.0.4",
     "papaparse": "^5.3.2",
     "react": "^18",
     "react-country-flag": "^3.0.6",
     "react-dom": "^18",
+    "react-leaflet": "^4.2.1",
     "react-simple-maps": "^3.0.0",
     "topojson-client": "^3.1.0"
   },
