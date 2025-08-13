@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Papa from 'papaparse'
-import { LeafletMap } from '../components/LeafletMap';
+import { MapLibreMap } from '../components/MapLibreMap';
 import { ShareButton } from '../components/ShareButton'
 import { FeedbackButton } from '../components/FeedbackButton'
 import { BuyMeACoffee } from '../components/BuyMeACoffee'
@@ -539,7 +539,7 @@ export default function Home() {
         <div className="relative w-full h-[calc(100vh-80px)] lg:h-[calc(100vh-80px)]">
           {/* Map takes full space */}
           <div className="w-full h-full relative z-0">
-            <LeafletMap
+            <MapLibreMap
               highlighted={highlighted}
               selectedCountry={selectedCountry ? mapCountryNameForDisplay(selectedCountry) : null}
               onCountryClick={(countryName) => setSelectedCountry(mapDisplayNameToCountry(countryName))}
