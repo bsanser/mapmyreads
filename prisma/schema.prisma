@@ -1,0 +1,89 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  books     Book[]
+  sessions  Session[]
+  feedback  Feedback[]
+  
+  @@map("users")
+}
+
+model Book {
+  id              String   @id @default(cuid())
+  title           String
+  author          String
+  isbn13          String?
+  year            String?
+  readDate        DateTime
+  author_countries String[] // Countries where authors are from
+  book_countries   String[] // Countries where the book is set/takes place
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  // Relations
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessions        SessionBook[]
+  
+  @@map("books")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  sessionId String   @unique
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+  isShared  Boolean  @default(false)
+  
+  // Relations
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  books     SessionBook[]
+  
+  @@map("sessions")
+}
+
+model SessionBook {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  
+  // Relations
+  sessionId String
+  session   Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  bookId    String
+  book      Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  
+  @@unique([sessionId, bookId])
+  @@map("session_books")
+}
+
+model Feedback {
+  id        String   @id @default(cuid())
+  type      String   // 'bug', 'feature', 'general'
+  message   String
+  userAgent String?
+  createdAt DateTime @default(now())
+  
+  // Relations
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  
+  @@map("feedback")
+} 

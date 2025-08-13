@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-60 -60 320 520" preserveAspectRatio="xMidYMid meet">
+
+  <defs>
+    <!-- Metallic black gradient -->
+    <radialGradient id="blackGrad" cx="25%" cy="25%" r="85%" fx="20%" fy="20%">
+      <stop offset="0%" stop-color="#404040" stop-opacity="1"></stop>
+      <stop offset="20%" stop-color="#303030" stop-opacity="0.95"></stop>
+      <stop offset="40%" stop-color="#202020" stop-opacity="0.9"></stop>
+      <stop offset="70%" stop-color="#101010" stop-opacity="0.85"></stop>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0.8"></stop>
+    </radialGradient>
+
+    <!-- Metallic highlight gradient -->
+    <linearGradient id="highlightGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#808080" stop-opacity="0.6"></stop>
+      <stop offset="50%" stop-color="#606060" stop-opacity="0.3"></stop>
+      <stop offset="100%" stop-color="#404040" stop-opacity="0"></stop>
+    </linearGradient>
+
+    <!-- Enhanced shadow filter -->
+    <filter id="clipShadow" x="-200%" y="-200%" width="400%" height="400%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="2" result="blur"></feGaussianBlur>
+      <feOffset in="blur" dx="1" dy="2" result="offsetBlur"></feOffset>
+      <feComposite in="offsetBlur" in2="SourceAlpha" operator="out" result="innerShadow"></feComposite>
+      <feMerge>
+        <feMergeNode in="innerShadow"></feMergeNode>
+        <feMergeNode in="SourceGraphic"></feMergeNode>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <g filter="url(#clipShadow)" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Top semicircle (kept) -->
+    <path d="
+        M40,20
+        A60,60 0 0 1 160,20
+        L160,100
+        A40,40 0 0 1 140,100
+        L40,100
+        Z
+      " fill="none" stroke="url(#blackGrad)" stroke-width="24"></path>
+
+    <!-- Inner loop (kept) -->
+    <path d="
+        M40,100
+        A40,40 0 0 1 140,100
+        L140,200
+        A40,40 0 0 1 40,200
+        Z
+      " fill="none" stroke="url(#blackGrad)" stroke-width="24"></path>
+
+    <!-- Metallic highlights for top semicircle -->
+    <path d="
+        M42,22
+        A58,58 0 0 1 158,22
+        L158,102
+        A38,38 0 0 1 138,102
+        L42,102
+      " fill="none" stroke="url(#highlightGrad)" stroke-width="6" opacity="0.4"></path>
+
+    <!-- Metallic highlights for inner loop -->
+    <path d="
+        M42,102
+        A38,38 0 0 1 138,102
+        L138,198
+        A38,38 0 0 1 42,198
+      " fill="none" stroke="url(#highlightGrad)" stroke-width="6" opacity="0.4"></path>
+
+    <!-- Additional highlight for extra shine -->
+    <path d="
+        M44,24
+        A56,56 0 0 1 156,24
+        L156,104
+        A36,36 0 0 1 136,104
+        L44,104
+      " fill="none" stroke="#606060" stroke-width="2" opacity="0.6"></path>
+
+    <path d="
+        M44,104
+        A36,36 0 0 1 136,104
+        L136,196
+        A36,36 0 0 1 44,196
+      " fill="none" stroke="#606060" stroke-width="2" opacity="0.6"></path>
+  </g>
+</svg> 
