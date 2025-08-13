@@ -2,8 +2,10 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Papa from 'papaparse'
-import { MapLibreMap, assignMockCountriesToBooks, mapDisplayNameToISO2, mapISO2ToDisplayName } from '../components/MapLibreMap';
+import { MapLibreMap } from '../components/MapLibreMap';
+import { assignMockCountriesToBooks, mapDisplayNameToISO2, mapISO2ToDisplayName } from '../lib/mapUtilities';
 import { getCountryFlag as getCentralizedFlag } from '../lib/countries';
+import { THEMES, ThemeKey } from '../lib/themeManager';
 import { ShareButton } from '../components/ShareButton'
 import { FeedbackButton } from '../components/FeedbackButton'
 import { BuyMeACoffee } from '../components/BuyMeACoffee'
@@ -15,44 +17,6 @@ import { saveProcessedBooks, loadProcessedBooks, hasShareableData, saveShareable
 import { startMapLoadTimer, endMapLoadTimer, logMapEvent, savePerformanceLogs } from '../lib/performanceLogger'
 import { testCountryDetection } from '../lib/testCountryDetection'
 import { mapCountryNameForDisplay, mapDisplayNameToCountry } from '../lib/countryDetection'
-
-// Apple-inspired theme system with carefully balanced colors
-const THEMES = {
-  blue: {
-    name: "Ocean Blue",
-    fill: "#B3D9E5",      // Light blue (your current)
-    outline: "#0A6A89",   // Dark blue (your current)
-    hover: "#7FB3C7",     // Medium blue
-    selected: "#E8F4F8",  // Very light blue with subtle glow
-    background: "#eef3f5" // Light blue-gray background
-  },
-  yellow: {
-    name: "Golden Hour",
-    fill: "#F4E4BC",      // Light warm yellow
-    outline: "#D4A574",   // Rich golden brown
-    hover: "#E8D4A8",     // Medium warm yellow
-    selected: "#FDF8E8",  // Very light cream with subtle glow
-    background: "#fefbf3" // Warm off-white background
-  },
-  purple: {
-    name: "Royal Purple",
-    fill: "#E8D4F0",      // Light lavender
-    outline: "#8B5A96",   // Rich purple
-    hover: "#D4B8E0",     // Medium lavender
-    selected: "#F8F0FC",  // Very light lavender with subtle glow
-    background: "#f9f6fc" // Light purple-tinted background
-  },
-  pink: {
-    name: "Rose Garden",
-    fill: "#F4D4E0",      // Light rose pink
-    outline: "#C85A7B",   // Rich rose
-    hover: "#E8B8CC",     // Medium rose pink
-    selected: "#FDF0F5",  // Very light rose with subtle glow
-    background: "#fef8fa" // Light pink-tinted background
-  }
-};
-
-type ThemeKey = keyof typeof THEMES;
 
 const ISBN_COUNTRY_TEST_DATA: Record<string, string[]> = {
   '9789681311889': ['ES'], // e.g. Los renglones torcidos de Dios
@@ -90,6 +54,8 @@ export default function Home() {
   // Debug theme changes
   const handleThemeChange = (theme: ThemeKey) => {
     console.log('🏠 Parent: Theme change requested from', currentTheme, 'to', theme);
+    console.log('🏠 Parent: Available themes:', Object.keys(THEMES));
+    console.log('🏠 Parent: New theme data:', THEMES[theme]);
     setCurrentTheme(theme);
     console.log('🏠 Parent: Theme state updated to', theme);
   };
