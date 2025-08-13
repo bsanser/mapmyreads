@@ -59,6 +59,12 @@ export default function Home() {
     setCurrentTheme(theme);
     console.log('🏠 Parent: Theme state updated to', theme);
   };
+
+  // Handle view mode change and clear selected country
+  const handleViewModeChange = (mode: 'author' | 'book') => {
+    setCountryViewMode(mode);
+    setSelectedCountry(null); // Clear selected country when view mode changes
+  };
   const [isProcessing, setIsProcessing] = useState(false)
   const booksLoadedRef = useRef(false)
 
@@ -326,7 +332,7 @@ export default function Home() {
               onCountryClick={(countryName) => setSelectedCountry(mapDisplayNameToISO2(countryName))}
               books={books}
               countryViewMode={countryViewMode}
-              onViewModeChange={setCountryViewMode}
+              onViewModeChange={handleViewModeChange}
               currentTheme={currentTheme}
               onThemeChange={handleThemeChange}
               themes={THEMES}
