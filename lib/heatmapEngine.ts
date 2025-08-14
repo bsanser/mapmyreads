@@ -35,24 +35,39 @@ export const getCountryBookCounts = (books: any[], countryViewMode: 'author' | '
 export const generateHeatmapStyle = (books: any[], countryViewMode: 'author' | 'book', currentTheme: any) => {
   const countryCounts = getCountryBookCounts(books, countryViewMode);
   const baseColor = currentTheme.fill;
+  const outlineColor = currentTheme.outline;
   
-  // For now, use a simple approach: color countries that have books
-  const countriesWithBooks = Object.entries(countryCounts)
-    .filter(([iso2, count]) => count > 0)
-    .map(([iso2]) => iso2);
+  // Find the maximum book count to normalize the heatmap
+  const maxCount = Math.max(...Object.values(countryCounts));
   
-  if (countriesWithBooks.length === 0) {
+  if (maxCount === 0) {
     return "#ffffff"; // Default white if no books
   }
   
-  // Create a simple case expression
+  // Create a heatmap with different shades based on book count
   const heatmapStyle = [
     "case",
-    ...countriesWithBooks.flatMap(iso2 => [
-      ["==", ["get", "ISO3166-1-Alpha-2"], iso2],
-      baseColor
-    ]),
-    "#ffffff" // Default white for all other countries
+    // For each country with books, create a color based on count
+    ...Object.entries(countryCounts).flatMap(([iso2, count]) => {
+      if (count === 0) return [];
+      
+      let color;
+      if (count === 0) {
+        color = "#ffffff"; // 0 books = white
+      } else if (count === 1) {
+        color = baseColor; // 1 book = light theme color
+      } else if (count === 2) {
+        color = darkenColor(baseColor, 0.15); // 2 books = medium shade
+      } else {
+        color = outlineColor; // 3+ books = darkest theme color
+      }
+      
+      return [
+        ["==", ["get", "ISO3166-1-Alpha-2"], iso2],
+        color
+      ];
+    }),
+    "#ffffff" // Default white for countries with no books
   ];
   
   return heatmapStyle;
