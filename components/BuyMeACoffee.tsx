@@ -10,12 +10,14 @@ export const BuyMeACoffee = ({ className = '' }: { className?: string }) => {
   return (
     <button
       onClick={handleBuyCoffee}
-      className={`bg-amber-500 text-white px-4 py-2 rounded-lg hover:bg-amber-600 transition-colors flex items-center gap-2 ${className}`}
+      className={`text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md transition-all duration-200 flex items-center gap-2 hover:bg-gray-50 border border-gray-200 ${className}`}
+      title="Buy me a coffee"
+
     >
       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z" />
       </svg>
-      Buy me a coffee ☕
+      <span className="hidden lg:inline text-sm font-medium">Buy me a coffee</span>
     </button>
   )
 } 

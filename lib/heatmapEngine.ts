@@ -35,41 +35,25 @@ export const getCountryBookCounts = (books: any[], countryViewMode: 'author' | '
 export const generateHeatmapStyle = (books: any[], countryViewMode: 'author' | 'book', currentTheme: any) => {
   const countryCounts = getCountryBookCounts(books, countryViewMode);
   const baseColor = currentTheme.fill;
-  const outlineColor = currentTheme.outline;
   
-  console.log('🔍 DEBUG: Country counts:', countryCounts);
-  console.log('🔍 DEBUG: Current theme:', currentTheme);
-  console.log('🔍 DEBUG: Base color:', baseColor);
-  console.log('🔍 DEBUG: Outline color:', outlineColor);
-  console.log('🔍 DEBUG: Available themes:', Object.keys(currentTheme));
+  // For now, use a simple approach: color countries that have books
+  const countriesWithBooks = Object.entries(countryCounts)
+    .filter(([iso2, count]) => count > 0)
+    .map(([iso2]) => iso2);
   
-  // Create a simpler approach: use case expression with specific country codes
-  // This is more reliable than the complex match expression
+  if (countriesWithBooks.length === 0) {
+    return "#ffffff"; // Default white if no books
+  }
+  
+  // Create a simple case expression
   const heatmapStyle = [
     "case",
-    // For each country with books, define its color based on count
-    ...Object.entries(countryCounts).flatMap(([iso2, count]) => {
-      if (count === 0) return []; // Skip countries with 0 books (they'll be white by default)
-      
-      let color;
-      if (count === 1) {
-        color = baseColor;
-      } else if (count === 2) {
-        color = darkenColor(baseColor, 0.15);
-      } else {
-        color = outlineColor;
-      }
-      
-      console.log(`🔍 DEBUG: Country ${iso2} with ${count} books gets color:`, color);
-      
-      return [
-        ["==", ["get", "ISO3166-1-Alpha-2"], iso2],
-        color
-      ];
-    }),
+    ...countriesWithBooks.flatMap(iso2 => [
+      ["==", ["get", "ISO3166-1-Alpha-2"], iso2],
+      baseColor
+    ]),
     "#ffffff" // Default white for all other countries
   ];
   
-  console.log('🔍 DEBUG: Generated heatmap style:', heatmapStyle);
   return heatmapStyle;
 };

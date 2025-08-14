@@ -1,7 +1,7 @@
 import { COUNTRIES, toISO2, toDisplayName } from './countries';
 
 // Available countries for mock data (ISO2 codes)
-export const AVAILABLE_COUNTRIES = COUNTRIES;
+export const AVAILABLE_COUNTRIES = Object.values(COUNTRIES);
 
 // Function to map display names back to ISO2 codes
 export const mapDisplayNameToISO2 = (displayName: string): string => {
@@ -27,8 +27,8 @@ export const assignMockCountriesToBooks = (books: any[]): any[] => {
     
     return {
       ...book,
-      country: assignedCountry.iso2,
-      authorCountry: assignedCountry.iso2 // For now, use same country for both
+      bookCountries: [assignedCountry.iso2],
+      authorCountries: [assignedCountry.iso2] // For now, use same country for both
     };
   });
   
@@ -59,7 +59,7 @@ export const getBooksByCountry = (books: any[], countryName: string, field: 'cou
     if (bookCountry === countryName) return true;
     
     // Try to match by display name
-    const country = COUNTRIES.find(c => c.iso2 === bookCountry);
+    const country = COUNTRIES[bookCountry];
     if (country && country.displayName === countryName) return true;
     
     // Try to match by alternatives
@@ -71,13 +71,13 @@ export const getBooksByCountry = (books: any[], countryName: string, field: 'cou
 
 // Function to get country display name from ISO2 code
 export const getCountryDisplayName = (iso2: string): string => {
-  const country = COUNTRIES.find(c => c.iso2 === iso2);
+  const country = COUNTRIES[iso2];
   return country ? country.displayName : 'Unknown Country';
 };
 
 // Function to get country flag from ISO2 code
 export const getCountryFlag = (iso2: string): string => {
-  const country = COUNTRIES.find(c => c.iso2 === iso2);
+  const country = COUNTRIES[iso2];
   return country ? country.flag : '🏳️';
 };
 

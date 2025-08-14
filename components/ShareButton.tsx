@@ -1,32 +1,42 @@
 'use client'
 
 import { useState } from 'react'
-import { Book } from '../types/book'
-import { createShareableData } from '../lib/storage'
 
-interface ShareButtonProps {
-  books: Book[]
-  className?: string
-}
-
-export const ShareButton = ({ books, className = '' }: ShareButtonProps) => {
+export const ShareButton = ({ books, className = '' }: { books: any[], className?: string }) => {
   const [showShareModal, setShowShareModal] = useState(false)
-  const [shareUrl, setShareUrl] = useState('')
-  const [copied, setCopied] = useState(false)
 
   const handleShare = () => {
-    const url = createShareableData(books)
-    setShareUrl(url)
     setShowShareModal(true)
   }
 
-  const copyToClipboard = async () => {
+  const generateShareableLink = () => {
+    // Create a shareable link with the current book data
+    const shareableData = {
+      books: books.filter(book => book.readStatus === 'read'),
+      timestamp: new Date().toISOString()
+    }
+    
+    const encodedData = btoa(JSON.stringify(shareableData))
+    const shareableUrl = `${window.location.origin}?data=${encodedData}`
+    
+    return shareableUrl
+  }
+
+  const copyToClipboard = async (text: string) => {
     try {
-      await navigator.clipboard.writeText(shareUrl)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    } catch (error) {
-      console.error('Failed to copy URL:', error)
+      await navigator.clipboard.writeText(text)
+      // You could add a toast notification here
+      alert('Link copied to clipboard!')
+    } catch (err) {
+      console.error('Failed to copy: ', err)
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea')
+      textArea.value = text
+      document.body.appendChild(textArea)
+      textArea.select()
+      document.execCommand('copy')
+      document.body.removeChild(textArea)
+      alert('Link copied to clipboard!')
     }
   }
 
@@ -34,12 +44,14 @@ export const ShareButton = ({ books, className = '' }: ShareButtonProps) => {
     <>
       <button
         onClick={handleShare}
-        className={`bg-blue-600 text-white hover:bg-blue-700 px-4 py-2 rounded-lg transition-colors flex items-center gap-2 ${className}`}
+        className={`text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md transition-all duration-200 flex items-center gap-2 hover:bg-gray-50 border border-gray-200 ${className}`}
+        title="Share Map"
+
       >
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
         </svg>
-        Share Map
+        <span className="hidden lg:inline text-sm font-medium">Share Map</span>
       </button>
 
       {/* Share Modal */}
@@ -58,33 +70,37 @@ export const ShareButton = ({ books, className = '' }: ShareButtonProps) => {
               </button>
             </div>
             
-            <p className="text-gray-600 mb-4">
-              Share this link with friends to show them your reading journey around the world!
-            </p>
-            
-            <div className="bg-gray-50 rounded-lg p-3 mb-4">
-              <div className="flex items-center gap-2">
-                <input
-                  type="text"
-                  value={shareUrl}
-                  readOnly
-                  className="flex-1 bg-transparent text-sm text-gray-700 outline-none"
-                />
-                <button
-                  onClick={copyToClipboard}
-                  className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
-                    copied 
-                      ? 'bg-green-100 text-green-700' 
-                      : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
-                  }`}
-                >
-                  {copied ? 'Copied!' : 'Copy'}
-                </button>
+            <div className="mb-4">
+              <p className="text-gray-600 mb-3">
+                Share your reading journey with friends! This link will show your personalized reading map.
+              </p>
+              
+              <div className="bg-gray-50 p-3 rounded border">
+                <p className="text-sm text-gray-700 mb-2">Shareable Link:</p>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={generateShareableLink()}
+                    readOnly
+                    className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded bg-white"
+                  />
+                  <button
+                    onClick={() => copyToClipboard(generateShareableLink())}
+                    className="px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors"
+                  >
+                    Copy
+                  </button>
+                </div>
               </div>
             </div>
             
-            <div className="text-xs text-gray-500">
-              This link will expire in 24 hours and can be shared with anyone.
+            <div className="flex justify-end">
+              <button
+                onClick={() => setShowShareModal(false)}
+                className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors"
+              >
+                Close
+              </button>
             </div>
           </div>
         </div>

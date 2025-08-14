@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { COUNTRIES, toISO2, toDisplayName } from "../lib/countries";
 import { THEMES, ThemeKey, darkenColor } from "../lib/themeManager";
 import { getCountryBookCounts, generateHeatmapStyle } from "../lib/heatmapEngine";
-import { createMapControls, updateControlColors } from "./MapControls";
+
 import { setupMapEventHandlers, getOptimalZoom } from "../lib/mapEventHandlers";
 import { createMapStyle, getMapInitialConfig } from "../lib/mapStyling";
 import { AVAILABLE_COUNTRIES, assignMockCountriesToBooks } from "../lib/mapUtilities";
@@ -124,47 +124,7 @@ export const MapLibreMap = ({
     // Add basic controls
     mapRef.current?.addControl(new maplibregl.NavigationControl(), 'top-right');
 
-    // Create map controls using the new module
-    const controls = createMapControls({
-      countryViewMode,
-      currentTheme: propCurrentTheme,
-      themes: propThemes,
-      onViewModeChange,
-      onThemeChange
-    });
-
-    // Add controls to the map container
-    console.log('Adding Book Locations control to DOM...');
-    
-    // Check if control already exists to prevent duplicates
-    if (!document.getElementById('book-locations-control')) {
-      mapContainer.current?.appendChild(controls.bookLocationsControl);
-      console.log('Book Locations control added to DOM');
-    } else {
-      console.log('Book Locations control already exists, skipping');
-    }
-    
-    console.log('Adding Author Countries control to DOM...');
-    if (!document.getElementById('author-countries-control')) {
-      mapContainer.current?.appendChild(controls.authorCountriesControl);
-      console.log('Author Countries control added to DOM');
-    } else {
-      console.log('Author Countries control already exists, skipping');
-    }
-    
-    // Set initial control colors
-    setTimeout(() => {
-      console.log('🎨 Setting initial control colors for theme:', propCurrentTheme);
-      updateControlColors(countryViewMode, propCurrentTheme, propThemes);
-    }, 100);
-    
-    console.log('Adding Theme control to DOM...');
-    if (!document.querySelector('.theme-control')) {
-      mapContainer.current?.appendChild(controls.themeControl);
-      console.log('Theme control added to DOM');
-    } else {
-      console.log('Theme control already exists, skipping');
-    }
+         // Controls are now handled by React components in the parent components
 
     // Setup map event handlers using the new module
     const cleanupEventHandlers = setupMapEventHandlers({
@@ -195,27 +155,13 @@ export const MapLibreMap = ({
       // Apply heatmap colors immediately
       applyHeatmapColors();
       
-      // Update control colors to match current theme
-      updateControlColors(countryViewMode, propCurrentTheme, propThemes);
-      
-      // Also apply after a delay to ensure they stick
-      setTimeout(() => {
-        if (mapRef.current?.isStyleLoaded()) {
-          console.log('🎨 Delayed heatmap color application for theme:', propCurrentTheme);
-          applyHeatmapColors();
-          updateControlColors(countryViewMode, propCurrentTheme, propThemes);
-        }
-      }, 500);
+             // Heatmap colors updated
     } else {
       console.log('🎨 Map not ready yet, cannot apply heatmap colors');
     }
   }, [books, propCurrentTheme, countryViewMode]);
   
-  // Update control colors when view mode changes
-  useEffect(() => {
-    console.log('🎨 View mode changed to:', countryViewMode, 'updating control colors');
-    updateControlColors(countryViewMode, propCurrentTheme, propThemes);
-  }, [countryViewMode]);
+     // View mode changes are now handled by React components
   
   // Dedicated effect for theme changes - ensure ALL colors update
   useEffect(() => {
@@ -284,11 +230,7 @@ export const MapLibreMap = ({
       console.log('🎨 DEBUG: Map not ready, cannot update colors');
     }
     
-    // Update control colors - but only if they exist and we're not in the middle of a theme change
-    setTimeout(() => {
-      console.log('🎨 DEBUG: Updating control colors in timeout');
-      updateControlColors(countryViewMode, propCurrentTheme, propThemes);
-    }, 50);
+    
     
   }, [propCurrentTheme, books, countryViewMode, propThemes]);
 
