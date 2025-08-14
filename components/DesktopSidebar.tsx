@@ -33,7 +33,7 @@ export function DesktopSidebar({
 
   return (
     <div 
-      className="hidden lg:block absolute top-4 left-4 bg-white/95 backdrop-blur-sm rounded-lg shadow-xl border border-gray-200/50 p-6 w-80 max-h-[calc(100vh-120px)] overflow-auto z-50"
+      className="hidden lg:block absolute top-20 left-4 bg-white/95 backdrop-blur-sm rounded-lg shadow-xl border border-gray-200/50 p-6 w-80 max-h-[calc(100vh-120px)] overflow-auto z-50"
       style={{ zIndex: 50 }}
       onScroll={(e) => {
         const target = e.target as HTMLDivElement
