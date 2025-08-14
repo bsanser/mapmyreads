@@ -82,16 +82,24 @@ export function MobileBottomSheet({
               >
                 {/* Book cover with paper clip - proper clipping effect */}
                 {b.coverImage && (
-                  <div className="relative mr-4 flex-shrink-0">
-                    <img 
-                      src={b.coverImage} 
-                      alt={`Cover of ${b.title}`}
-                      className="w-16 h-24 object-cover rounded border border-gray-200 shadow-sm"
-                    />
-                    <div className="absolute -top-1 -right-1 w-6 h-6 bg-white rounded-full border border-gray-300 flex items-center justify-center shadow-sm">
-                      <svg className="w-3 h-3 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
-                      </svg>
+                  <div className="absolute top-3 left-3 z-20 mr-4 flex-shrink-0">
+                    <div className="relative">
+                      {/* Book cover as the "card" */}
+                      <img 
+                        src={b.coverImage} 
+                        alt={`Cover of ${b.title}`}
+                        className="block w-20 h-24 object-cover rounded shadow-md border border-gray-200 relative z-10"
+                      />
+                      
+                      {/* Paper clip - positioned to go over the top edge of the card */}
+                      <img 
+                        src="/paperclip.svg" 
+                        alt=""
+                        className="absolute -top-10 -left-4 w-14 h-28 z-30 pointer-events-none"
+                        style={{
+                          transform: 'rotate(-20deg)'
+                        }}
+                      />
                     </div>
                   </div>
                 )}
