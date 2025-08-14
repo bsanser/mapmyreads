@@ -1,6 +1,5 @@
 import { Book } from '../types/book'
 import { getCountryFlag, mapISO2ToDisplayName } from '../lib/mapUtilities'
-import { mapCountryNameForDisplay } from '../lib/countryDetection'
 
 interface DesktopSidebarProps {
   books: Book[]
@@ -21,15 +20,20 @@ export function DesktopSidebar({
   booksToShow,
   onLoadMore
 }: DesktopSidebarProps) {
+  console.log('DesktopSidebar props:', { selectedCountry, countryViewMode, booksCount: books.length });
+  
   // Filter books based on selected country and view mode
   const filteredBooks = selectedCountry
     ? books.filter((book) => {
         const countries = countryViewMode === 'author' ? book.authorCountries : book.bookCountries
-        return countries.includes(selectedCountry)
+        const hasCountry = countries.includes(selectedCountry);
+        console.log(`Book "${book.title}": countries=${countries}, selectedCountry=${selectedCountry}, hasCountry=${hasCountry}`);
+        return hasCountry;
       })
     : books
 
   const readBooks = filteredBooks.filter(b => b.readStatus === 'read')
+  console.log('Filtered books count:', readBooks.length);
 
   return (
     <div 
@@ -51,7 +55,7 @@ export function DesktopSidebar({
       
       <div className="text-sm text-gray-700 mb-4">
         {selectedCountry
-          ? `${readBooks.length} ${countryViewMode === 'author' ? 'authors from' : 'books from'} ${getCountryFlag(selectedCountry)} ${mapCountryNameForDisplay(selectedCountry)}`
+          ? `${readBooks.length} ${countryViewMode === 'author' ? 'authors from' : 'books from'} ${getCountryFlag(selectedCountry)} ${mapISO2ToDisplayName(selectedCountry)}`
           : `${books.filter(b => b.readStatus === 'read').length} ${countryViewMode === 'author' ? 'read authors' : 'read books'}`}
         {selectedCountry && (
           <button

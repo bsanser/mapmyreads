@@ -9,8 +9,8 @@ export const getCountryBookCounts = (books: any[], countryViewMode: 'author' | '
   const countryCounts: Record<string, number> = {};
   
   // Initialize all available countries with 0
-  Object.keys(AVAILABLE_COUNTRIES).forEach(countryCode => {
-    countryCounts[countryCode] = 0;
+  AVAILABLE_COUNTRIES.forEach(country => {
+    countryCounts[country.iso2] = 0;
   });
   
   // Count books for each country based on current view mode

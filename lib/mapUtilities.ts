@@ -1,16 +1,21 @@
-import { COUNTRIES, toISO2, toDisplayName } from './countries';
+import { COUNTRIES } from './countries';
 
 // Available countries for mock data (ISO2 codes)
-export const AVAILABLE_COUNTRIES = Object.values(COUNTRIES);
+export const AVAILABLE_COUNTRIES = COUNTRIES;
 
 // Function to map display names back to ISO2 codes
 export const mapDisplayNameToISO2 = (displayName: string): string => {
-  return toISO2(displayName) || displayName;
+  const country = COUNTRIES.find(c => 
+    c.name.toLowerCase() === displayName.toLowerCase() ||
+    c.alternatives.some(alt => alt.toLowerCase() === displayName.toLowerCase())
+  );
+  return country ? country.iso2 : displayName;
 };
 
 // Function to map ISO2 codes to display names
 export const mapISO2ToDisplayName = (iso2: string): string => {
-  return toDisplayName(iso2) || iso2;
+  const country = COUNTRIES.find(c => c.iso2 === iso2);
+  return country ? country.name : iso2;
 };
 
 // Function to assign mock countries to books for testing
@@ -59,8 +64,8 @@ export const getBooksByCountry = (books: any[], countryName: string, field: 'cou
     if (bookCountry === countryName) return true;
     
     // Try to match by display name
-    const country = COUNTRIES[bookCountry];
-    if (country && country.displayName === countryName) return true;
+    const country = COUNTRIES.find(c => c.iso2 === bookCountry);
+    if (country && country.name === countryName) return true;
     
     // Try to match by alternatives
     if (country && country.alternatives.includes(countryName)) return true;
@@ -71,14 +76,18 @@ export const getBooksByCountry = (books: any[], countryName: string, field: 'cou
 
 // Function to get country display name from ISO2 code
 export const getCountryDisplayName = (iso2: string): string => {
-  const country = COUNTRIES[iso2];
-  return country ? country.displayName : 'Unknown Country';
+  const country = COUNTRIES.find(c => c.iso2 === iso2);
+  return country ? country.name : 'Unknown Country';
 };
 
 // Function to get country flag from ISO2 code
 export const getCountryFlag = (iso2: string): string => {
-  const country = COUNTRIES[iso2];
-  return country ? country.flag : '🏳️';
+  // Generate flag emoji from ISO2 code
+  // Convert ISO2 to regional indicator symbols (A-Z = 127462-127487)
+  const codePoints = iso2.toUpperCase().split('').map(char => 
+    127462 + char.charCodeAt(0) - 65
+  );
+  return String.fromCodePoint(...codePoints);
 };
 
 // Function to check if a country has books

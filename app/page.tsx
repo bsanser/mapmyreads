@@ -58,7 +58,12 @@ export default function Home() {
   }
 
   const handleCountryClick = (country: string) => {
-    setSelectedCountry(country)
+    console.log('Country clicked:', country);
+    // Convert country name to ISO2 code for proper filtering
+    const iso2Code = mapDisplayNameToISO2(country);
+    console.log('Converted to ISO2:', iso2Code);
+    setSelectedCountry(iso2Code);
+    console.log('Selected country set to:', iso2Code);
   }
 
   const handleShowAll = () => {
