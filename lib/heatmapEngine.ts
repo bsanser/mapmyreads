@@ -18,6 +18,9 @@ export const getCountryBookCounts = (books: any[], countryViewMode: 'author' | '
   const viewMode = countryViewMode || 'book';
   
   books.forEach(book => {
+    if (book.readStatus && book.readStatus !== 'read') {
+      return;
+    }
     // Only count countries based on the current view mode
     const countriesToCount = viewMode === 'author' ? book.authorCountries : book.bookCountries;
     

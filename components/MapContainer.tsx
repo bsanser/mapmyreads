@@ -24,19 +24,21 @@ export function MapContainer({
   onThemeChange,
   themes
 }: MapContainerProps) {
+  const readBooks = books.filter((book) => book.readStatus === 'read')
+
   return (
     <div className="relative w-full h-[calc(100vh-80px)] lg:h-[calc(100vh-80px)]">
       {/* Map */}
       <div className="w-full h-full relative">
         <MapLibreMap
           highlighted={new Set<string>(
-            books.flatMap((b) => 
+            readBooks.flatMap((b) => 
               countryViewMode === 'author' ? b.authorCountries : b.bookCountries
             )
           )}
           selectedCountry={selectedCountry}
           onCountryClick={onCountryClick}
-          books={books}
+          books={readBooks}
           countryViewMode={countryViewMode}
           onViewModeChange={onViewModeChange}
           currentTheme={currentTheme}
