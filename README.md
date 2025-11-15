@@ -1,6 +1,6 @@
 # Map My Reads 🌍📚
 
-A beautiful web application that visualizes your reading journey around the world. Upload your reading list from Goodreads or StoryGraph and see the countries you've explored through literature on an interactive world map.
+A web application that visualizes your reading journey around the world. Upload your reading list from Goodreads or StoryGraph and see the countries you've explored through literature on an interactive world map.
 
 ## Features
 
