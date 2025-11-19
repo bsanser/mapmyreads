@@ -1,5 +1,7 @@
 // Country detection for books and authors
 import { Book } from '../types/book'
+import { splitAuthorNames, normalizeAuthorName } from './authorUtils'
+import { mapDisplayNameToISO2 } from './mapUtilities'
 
 // Country name mapping for map display
 const COUNTRY_NAME_MAPPING: Record<string, string> = {
@@ -265,7 +267,7 @@ export const detectCountriesFromText = (text: string): string[] => {
   return Array.from(detectedCountries)
 }
 
-// Detect author nationality from text
+// Detect author nationality from text (legacy heuristic)
 export const detectAuthorNationality = (text: string): string[] => {
   if (!text) return []
   
@@ -283,6 +285,137 @@ export const detectAuthorNationality = (text: string): string[] => {
   }
   
   return Array.from(detectedCountries)
+}
+
+const WIKIDATA_API = 'https://www.wikidata.org/w/api.php'
+
+const buildWikidataURL = (params: Record<string, string>) => {
+  const searchParams = new URLSearchParams({
+    origin: '*',
+    ...params
+  })
+  return `${WIKIDATA_API}?${searchParams.toString()}`
+}
+
+const fetchJson = async <T>(url: string): Promise<T> => {
+  const response = await fetch(url)
+  if (!response.ok) {
+    throw new Error(`Wikidata request failed: ${response.status}`)
+  }
+  return response.json()
+}
+
+const searchAuthorEntityId = async (authorName: string): Promise<string | null> => {
+  const url = buildWikidataURL({
+    action: 'wbsearchentities',
+    search: authorName,
+    language: 'en',
+    format: 'json',
+    type: 'item',
+    limit: '1'
+  })
+
+  const data: any = await fetchJson(url)
+  return data?.search?.[0]?.id || null
+}
+
+const extractIdsFromClaims = (claims: any, property: string): string[] => {
+  if (!claims || !claims[property]) return []
+  return claims[property]
+    .map((claim: any) => claim?.mainsnak?.datavalue?.value?.id)
+    .filter(Boolean)
+}
+
+const fetchClaimsForEntities = async (entityIds: string[]): Promise<Record<string, any>> => {
+  if (entityIds.length === 0) return {}
+  const url = buildWikidataURL({
+    action: 'wbgetentities',
+    ids: entityIds.join('|'),
+    props: 'claims',
+    format: 'json'
+  })
+  const data: any = await fetchJson(url)
+  return data.entities || {}
+}
+
+const fetchLabelsForEntities = async (entityIds: string[]): Promise<string[]> => {
+  if (entityIds.length === 0) return []
+  const url = buildWikidataURL({
+    action: 'wbgetentities',
+    ids: entityIds.join('|'),
+    props: 'labels',
+    languages: 'en',
+    format: 'json'
+  })
+  const data: any = await fetchJson(url)
+  const labels: string[] = []
+  entityIds.forEach(id => {
+    const label = data.entities?.[id]?.labels?.en?.value
+    if (label) labels.push(label)
+  })
+  return labels
+}
+
+const fetchCountryIdsFromBirthPlaces = async (placeIds: string[]): Promise<string[]> => {
+  if (placeIds.length === 0) return []
+  const entities = await fetchClaimsForEntities(placeIds)
+  const ids = new Set<string>()
+  placeIds.forEach(placeId => {
+    const placeClaims = entities?.[placeId]?.claims
+    const countryIds = extractIdsFromClaims(placeClaims, 'P17')
+    countryIds.forEach((id: string) => ids.add(id))
+  })
+  return Array.from(ids)
+}
+
+const fetchAuthorCountryNames = async (authorName: string): Promise<string[]> => {
+  try {
+    const entityId = await searchAuthorEntityId(authorName)
+    if (!entityId) return []
+
+    const entities = await fetchClaimsForEntities([entityId])
+    const claims = entities[entityId]?.claims
+    if (!claims) return []
+
+    let countryIds = extractIdsFromClaims(claims, 'P27')
+
+    if (countryIds.length === 0) {
+      const birthPlaceIds = extractIdsFromClaims(claims, 'P19')
+      if (birthPlaceIds.length > 0) {
+        countryIds = await fetchCountryIdsFromBirthPlaces(birthPlaceIds)
+      }
+    }
+
+    if (countryIds.length === 0) return []
+
+    return await fetchLabelsForEntities(countryIds)
+  } catch (error) {
+    console.warn(`Wikidata author lookup failed for "${authorName}":`, error)
+    return []
+  }
+}
+
+const authorCountryIsoCache = new Map<string, string[]>()
+
+export const detectAuthorCountriesByName = async (authorName: string): Promise<string[]> => {
+  const normalized = normalizeAuthorName(authorName)
+  if (!normalized) return []
+
+  if (authorCountryIsoCache.has(normalized)) {
+    return authorCountryIsoCache.get(normalized) || []
+  }
+
+  const countryNames = await fetchAuthorCountryNames(authorName)
+  const isoCodes = Array.from(
+    new Set(
+      countryNames
+        .map(name => mapDisplayNameToISO2(name))
+        .filter(Boolean)
+    )
+  )
+
+  authorCountryIsoCache.set(normalized, isoCodes)
+  return isoCodes
 }
 
 // Enhanced country detection for books
@@ -360,38 +493,19 @@ export const detectBookCountries = async (book: Book): Promise<string[]> => {
 // Enhanced author country detection
 export const detectAuthorCountries = async (book: Book): Promise<string[]> => {
   const detectedCountries = new Set<string>()
+  const authorNames = splitAuthorNames(book.authors)
   
-  // Strategy 1: Check description for author nationality
-  if (book.description) {
+  for (const authorName of authorNames) {
+    const countries = await detectAuthorCountriesByName(authorName)
+    countries.forEach(country => detectedCountries.add(country))
+  }
+
+  if (detectedCountries.size === 0 && book.description) {
     const descAuthorCountries = detectAuthorNationality(book.description)
-    descAuthorCountries.forEach(country => detectedCountries.add(country))
+    descAuthorCountries.forEach(country => detectedCountries.add(mapDisplayNameToISO2(country)))
   }
   
-  // Strategy 2: Use Google Books API for author information (if we don't have description yet)
-  if (book.isbn13 && !book.description) {
-    try {
-      const response = await fetch(
-        `https://www.googleapis.com/books/v1/volumes?q=isbn:${book.isbn13}`
-      )
-      
-      if (response.ok) {
-        const data = await response.json()
-        if (data.items && data.items.length > 0) {
-          const volumeInfo = data.items[0].volumeInfo
-          
-          // Check description for author nationality
-          if (volumeInfo.description) {
-            const descAuthorCountries = detectAuthorNationality(volumeInfo.description)
-            descAuthorCountries.forEach(country => detectedCountries.add(country))
-          }
-        }
-      }
-    } catch (error) {
-      console.warn('Error fetching author metadata for country detection:', error)
-    }
-  }
-  
-  return Array.from(detectedCountries)
+  return Array.from(detectedCountries).filter(Boolean)
 }
 
 // Main function to detect both book and author countries

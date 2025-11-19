@@ -1,6 +1,6 @@
 import { Book } from '../types/book'
-import { detectAuthorCountries } from './countryDetection'
-import { mapDisplayNameToISO2 } from './mapUtilities'
+import { detectAuthorCountriesByName } from './countryDetection'
+import { normalizeAuthorName, splitAuthorNames } from './authorUtils'
 
 export type AuthorCountrySummary = {
   totalBooks: number
@@ -12,17 +12,6 @@ export type AuthorCountrySummary = {
   uniqueCountriesWithReadAuthors: number
   apiLookups: number
   authorsWithMoreThanOneCountry: number
-}
-
-const normalizeAuthorKey = (authors: string): string => {
-  return authors.trim().toLowerCase()
-}
-
-const toISO2List = (countries: string[]): string[] => {
-  return countries
-    .map(country => mapDisplayNameToISO2(country))
-    .map(iso => iso.trim())
-    .filter(Boolean)
 }
 
 export const resolveAuthorCountries = async (
@@ -38,37 +27,48 @@ export const resolveAuthorCountries = async (
     book => Boolean(book.authors && book.authors.trim().length > 0)
   )
 
-  const authorLookupTargets = new Map<string, Book>()
+  const authorLookupTargets = new Map<string, string>()
   for (const book of readBooksWithAuthors) {
-    const authorKey = normalizeAuthorKey(book.authors)
-    if (authorKey.length === 0 || authorLookupTargets.has(authorKey)) continue
-    authorLookupTargets.set(authorKey, book)
+    const authorNames = splitAuthorNames(book.authors)
+    authorNames.forEach(authorName => {
+      const key = normalizeAuthorName(authorName)
+      if (key.length === 0 || authorLookupTargets.has(key)) return
+      authorLookupTargets.set(key, authorName)
+    })
   }
 
-  for (const [authorKey, sampleBook] of authorLookupTargets.entries()) {
+  for (const [authorKey, authorName] of authorLookupTargets.entries()) {
     try {
-      const detected = await detectAuthorCountries(sampleBook)
-      const isoCountries = toISO2List(detected)
+      const isoCountries = await detectAuthorCountriesByName(authorName)
       authorCountryCache.set(authorKey, isoCountries)
     } catch (error) {
-      console.warn(`Failed to resolve author country for "${sampleBook.authors}":`, error)
+      console.warn(`Failed to resolve author country for "${authorName}":`, error)
       authorCountryCache.set(authorKey, [])
     }
   }
 
   for (const book of books) {
-    const authorKey = book.authors ? normalizeAuthorKey(book.authors) : ''
-    const cachedCountries = authorKey ? authorCountryCache.get(authorKey) || [] : []
+    const authorNames = splitAuthorNames(book.authors)
+    const authorCountriesSet = new Set<string>()
+
+    authorNames.forEach(authorName => {
+      const key = normalizeAuthorName(authorName)
+      if (!key) return
+      const cachedCountries = authorCountryCache.get(key) || []
+      cachedCountries.forEach(code => authorCountriesSet.add(code))
+    })
+
+    const authorCountries = Array.from(authorCountriesSet)
 
     const updatedBook: Book = {
       ...book,
       bookCountries: [],
-      authorCountries: cachedCountries
+      authorCountries
     }
 
-    if (book.readStatus === 'read' && cachedCountries.length > 0) {
+    if (book.readStatus === 'read' && authorCountries.length > 0) {
       readBooksWithResolvedAuthors += 1
-      cachedCountries.forEach(country => resolvedCountriesForReadAuthors.add(country))
+      authorCountries.forEach(country => resolvedCountriesForReadAuthors.add(country))
     }
 
     processedBooks.push(updatedBook)
@@ -85,8 +85,8 @@ export const resolveAuthorCountries = async (
     ).length,
     uniqueCountriesWithReadAuthors: resolvedCountriesForReadAuthors.size,
     apiLookups: authorLookupTargets.size,
-    authorsWithMoreThanOneCountry: Array.from(authorCountryCache.values()).filter(
-      countries => new Set(countries.filter(Boolean)).size > 1
+    authorsWithMoreThanOneCountry: Array.from(authorCountryCache.entries()).filter(
+      ([, countries]) => new Set(countries.filter(Boolean)).size > 1
     ).length
   }
 
