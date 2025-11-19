@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Book } from '../types/book'
 import { getCountryFlag, mapISO2ToDisplayName } from '../lib/mapUtilities'
 import { mapCountryNameForDisplay } from '../lib/countryDetection'
+import { COUNTRIES } from '../lib/countries'
 
 interface MobileBottomSheetProps {
   books: Book[]
@@ -11,6 +12,7 @@ interface MobileBottomSheetProps {
   onShowAll: () => void
   showBottomSheet: boolean
   onToggleBottomSheet: () => void
+  onUpdateBookCountries: (book: Book, countries: string[]) => void
 }
 
 export function MobileBottomSheet({ 
@@ -20,9 +22,13 @@ export function MobileBottomSheet({
   onCountryClick,
   onShowAll,
   showBottomSheet,
-  onToggleBottomSheet
+  onToggleBottomSheet,
+  onUpdateBookCountries
 }: MobileBottomSheetProps) {
   const [showMissingAuthorCountry, setShowMissingAuthorCountry] = useState(false)
+  const [editingBookId, setEditingBookId] = useState<string | null>(null)
+  const [countrySearch, setCountrySearch] = useState('')
+  const [showCountryDropdown, setShowCountryDropdown] = useState(false)
 
   const readBooksAll = useMemo(
     () => books.filter(b => b.readStatus === 'read'),
@@ -84,6 +90,36 @@ export function MobileBottomSheet({
   const displayedBookCount = readBooks.length
   const displayedBookLabel = displayedBookCount === 1 ? 'book' : 'books'
 
+  const getBookIdentifier = (book: Book) => book.isbn13 || `${book.title}-${book.authors}-${book.yearPublished ?? 'unknown'}`
+
+  const closeEditing = () => {
+    setEditingBookId(null)
+    setCountrySearch('')
+    setShowCountryDropdown(false)
+  }
+
+  const handleToggleEdit = (bookId: string) => {
+    if (editingBookId === bookId) {
+      closeEditing()
+    } else {
+      setCountrySearch('')
+      setShowCountryDropdown(false)
+      setEditingBookId(bookId)
+    }
+  }
+
+  const handleRemoveCountry = (book: Book, country: string) => {
+    const updated = book.authorCountries.filter(code => code !== country)
+    onUpdateBookCountries(book, updated)
+  }
+
+  const handleAddCountry = (book: Book, country: string) => {
+    if (book.authorCountries.includes(country)) return
+    const updated = [...book.authorCountries, country]
+    onUpdateBookCountries(book, updated)
+    closeEditing()
+  }
+
   const handleMissingAuthorCountryFilter = () => {
     if (summaryStats.booksMissingAuthorCountry === 0) return
     if (!showMissingAuthorCountry && selectedCountry) {
@@ -118,6 +154,7 @@ export function MobileBottomSheet({
                     <span className="truncate">Author countries covered</span>
                     <span className="font-semibold tabular-nums">{summaryStats.authorCountriesCovered}</span>
                   </div>
+                  {summaryStats.booksMissingAuthorCountry > 0 && (
                   <button
                     type="button"
                     onClick={handleMissingAuthorCountryFilter}
@@ -133,6 +170,7 @@ export function MobileBottomSheet({
                     <span className="flex-1 text-left truncate">Books without author country</span>
                     <span className="font-semibold tabular-nums">{summaryStats.booksMissingAuthorCountry}</span>
                   </button>
+                  )}
                 </div>
               ) : (
                 <div className="text-sm text-gray-700">
@@ -174,13 +212,16 @@ export function MobileBottomSheet({
 
             {countryViewMode === 'author' && showMissingAuthorCountry && (
               <div className="text-xs text-blue-700 text-center mb-2">
-                Showing books without author country
+
                 <button
                   type="button"
                   className="ml-2 underline"
-                  onClick={() => setShowMissingAuthorCountry(false)}
+                  onClick={() => {
+                    setShowMissingAuthorCountry(false)
+                    onShowAll()
+                  }}
                 >
-                  Clear
+                  All books
                 </button>
               </div>
             )}
@@ -216,26 +257,139 @@ export function MobileBottomSheet({
                   <p className="font-mono text-gray-900 text-sm leading-tight mb-2" style={{ textShadow: '0 1px 2px rgba(255,255,255,0.8)' }}>{b.title}</p>
                   <p className="font-mono text-gray-700 text-xs mb-1" style={{ textShadow: '0 1px 2px rgba(255,255,255,0.8)' }}>
                     by {b.authors}
-                    {b.authorCountries.length > 0 && (
-                      <span className="ml-1">{b.authorCountries.map(getCountryFlag).join(' ')}</span>
-                    )}
                   </p>
                   {b.yearPublished && <p className="font-mono text-gray-600 text-xs mb-2" style={{ textShadow: '0 1px 2px rgba(255,255,255,0.8)' }}>{b.yearPublished}</p>}
-                  {(countryViewMode === 'author' ? b.authorCountries : b.bookCountries).length > 0 && (
+                  {countryViewMode === 'author' ? (() => {
+                    const bookIdentifier = getBookIdentifier(b)
+                    const isEditing = editingBookId === bookIdentifier
+                    return (
                     <div className="font-mono text-gray-600 text-xs" style={{ textShadow: '0 1px 2px rgba(255,255,255,0.8)' }}>
-                      <span className="font-medium">{countryViewMode === 'author' ? 'Author Countries:' : 'Countries:'}</span>
-                      <div className="mt-1 flex flex-wrap gap-1">
-                        {(countryViewMode === 'author' ? b.authorCountries : b.bookCountries).map((country) => (
-                          <button
-                            key={country}
-                            onClick={() => onCountryClick(country)}
-                            className="text-blue-600 hover:text-blue-800 underline hover:no-underline transition-colors text-xs px-1 py-0.5 rounded hover:bg-blue-50"
-                          >
-                            {mapISO2ToDisplayName(country)}
-                          </button>
-                        ))}
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">{countryViewMode === 'author' ? 'Author Countries:' : 'Countries:'}</span>
+                        <button
+                          type="button"
+                          onClick={() => handleToggleEdit(bookIdentifier)}
+                          className={`text-gray-500 hover:text-gray-700 border rounded p-0.5 ${isEditing ? 'bg-blue-50 text-blue-700' : ''}`}
+                          title="Edit author countries"
+                        >
+                          ✏️
+                        </button>
                       </div>
+                      {isEditing ? (() => {
+                        const searchTerm = countrySearch.trim().toLowerCase()
+                        const availableSuggestions = COUNTRIES.filter(country => {
+                          const notSelected = !b.authorCountries.includes(country.iso2)
+                          if (!notSelected) return false
+                          if (searchTerm === '') return true
+                          const nameMatch = country.name.toLowerCase().includes(searchTerm)
+                          const altMatch = country.alternatives.some(alt => alt.toLowerCase().includes(searchTerm))
+                          return nameMatch || altMatch
+                        })
+                        const suggestions = availableSuggestions.slice(0, 8)
+                        return (
+                        <div className="mt-2 space-y-2">
+                          <div className="flex flex-wrap gap-2">
+                            {b.authorCountries.length === 0 && (
+                              <span className="text-gray-400 text-xs">No countries yet</span>
+                            )}
+                            {b.authorCountries.map(country => (
+                              <span
+                                key={country}
+                                className="inline-flex items-center gap-1 bg-blue-50 text-blue-700 rounded-full px-2 py-0.5 text-xs"
+                              >
+                                <span>{mapISO2ToDisplayName(country)} {getCountryFlag(country)}</span>
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveCountry(b, country)}
+                                  className="text-blue-700 hover:text-blue-900"
+                                  aria-label={`Remove ${mapISO2ToDisplayName(country)}`}
+                                >
+                                  ×
+                                </button>
+                              </span>
+                            ))}
+                          </div>
+                          <div className="relative">
+                            <input
+                              type="text"
+                              value={countrySearch}
+                              onChange={e => setCountrySearch(e.target.value)}
+                              onKeyDown={e => {
+                                if (e.key === 'Enter') {
+                                  e.preventDefault()
+                                  if (suggestions.length > 0) {
+                                    handleAddCountry(b, suggestions[0].iso2)
+                                  }
+                                }
+                              }}
+                              onFocus={() => setShowCountryDropdown(true)}
+                              onBlur={() => {
+                                const currentId = bookIdentifier
+                                setTimeout(() => {
+                                  setShowCountryDropdown(false)
+                                  if (editingBookId === currentId) {
+                                    closeEditing()
+                                  }
+                                }, 120)
+                              }}
+                              placeholder="Search country..."
+                              className="w-full border border-gray-300 rounded px-3 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-blue-400"
+                            />
+                            {(showCountryDropdown && (countrySearch || suggestions.length > 0)) && (
+                              <div className="absolute z-10 mt-1 w-full max-h-40 overflow-y-auto bg-white border border-gray-200 rounded shadow-lg">
+                                {suggestions.map(country => (
+                                  <button
+                                    key={country.iso2}
+                                    type="button"
+                                    onClick={() => handleAddCountry(b, country.iso2)}
+                                    className="flex w-full items-center justify-between px-3 py-2 text-left text-xs hover:bg-blue-50"
+                                  >
+                                    <span>{country.name}</span>
+                                    <span>{getCountryFlag(country.iso2)}</span>
+                                  </button>
+                                ))}
+                                {suggestions.length === 0 && (
+                                  <div className="px-3 py-2 text-xs text-gray-500">No matches</div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        )
+                      })() : (
+                        <div className="mt-1 flex flex-wrap gap-1">
+                          {b.authorCountries.map((country) => (
+                            <button
+                              key={country}
+                              onClick={() => onCountryClick(country)}
+                              className="text-blue-600 hover:text-blue-800 transition-colors text-xs px-1 py-0.5 rounded hover:bg-blue-50 flex items-center gap-1"
+                            >
+                              <span className="underline hover:no-underline">{mapISO2ToDisplayName(country)}</span>
+                              <span className="no-underline">{getCountryFlag(country)}</span>
+                            </button>
+                          ))}
+                        </div>
+                      )}
                     </div>
+                    )
+                  })() : (
+                    b.bookCountries.length > 0 && (
+                      <div className="font-mono text-gray-600 text-xs" style={{ textShadow: '0 1px 2px rgba(255,255,255,0.8)' }}>
+                        <span className="font-medium">Countries:</span>
+                        <div className="mt-1 flex flex-wrap gap-1">
+                          {b.bookCountries.map((country) => (
+                            <button
+                              key={country}
+                              onClick={() => onCountryClick(country)}
+                              className="text-blue-600 hover:text-blue-800 transition-colors text-xs px-1 py-0.5 rounded hover:bg-blue-50 flex items-center gap-1"
+                            >
+                              <span className="underline hover:no-underline">{mapISO2ToDisplayName(country)}</span>
+                              <span className="no-underline">{getCountryFlag(country)}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )
                   )}
                 </div>
               </div>

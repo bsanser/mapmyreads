@@ -70,6 +70,21 @@ export default function Home() {
     setSelectedCountry(null)
   }
 
+  const isSameBook = (a: Book, b: Book) => {
+    if (a.isbn13 && b.isbn13) return a.isbn13 === b.isbn13
+    return a.title === b.title && a.authors === b.authors && a.yearPublished === b.yearPublished
+  }
+
+  const handleUpdateBookCountries = (book: Book, countries: string[]) => {
+    setBooks(prevBooks => {
+      const updatedBooks = prevBooks.map(existing => 
+        isSameBook(existing, book) ? { ...existing, authorCountries: countries } : existing
+      )
+      saveProcessedBooks(updatedBooks)
+      return updatedBooks
+    })
+  }
+
   const handleLoadMore = () => {
     const readBooksCount = books.filter(b => b.readStatus === 'read').length
     if (booksToShow < readBooksCount) {
@@ -246,6 +261,7 @@ export default function Home() {
         onShowAll={handleShowAll}
         booksToShow={booksToShow}
         onLoadMore={handleLoadMore}
+        onUpdateBookCountries={handleUpdateBookCountries}
       />
 
       {/* Mobile Bottom Sheet */}
@@ -257,6 +273,7 @@ export default function Home() {
         onShowAll={handleShowAll}
         showBottomSheet={showBottomSheet}
         onToggleBottomSheet={() => setShowBottomSheet(!showBottomSheet)}
+        onUpdateBookCountries={handleUpdateBookCountries}
       />
 
       {/* Developer Tools */}
