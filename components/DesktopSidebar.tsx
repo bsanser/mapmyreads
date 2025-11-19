@@ -245,26 +245,24 @@ export function DesktopSidebar({
             }}
           >
             {/* Book cover with paper clip - proper clipping effect */}
-            {b.coverImage && (
-              <div className="relative flex-shrink-0">
-                {/* Book cover as the "card" */}
-                <img 
-                  src={b.coverImage} 
-                  alt={`Cover of ${b.title}`}
-                  className="block w-20 h-24 object-cover rounded shadow-md border border-gray-200 relative z-10"
-                />
-                
-                {/* Paper clip - positioned to go over the top edge of the card */}
-                <img 
-                  src="/paperclip.svg" 
-                  alt=""
-                  className="absolute -top-10 -left-4 w-14 h-28 z-30 pointer-events-none"
-                  style={{
-                    transform: 'rotate(-20deg)'
-                  }}
-                />
-              </div>
-            )}
+            <div className="relative flex-shrink-0">
+              {/* Book cover as the "card" */}
+              <img 
+                src={b.coverImage ?? '/book-placeholder.png'} 
+                alt={`Cover of ${b.title}`}
+                className="block w-20 h-24 object-cover rounded shadow-md border border-gray-200 relative z-10"
+              />
+              
+              {/* Paper clip - positioned to go over the top edge of the card */}
+              <img 
+                src="/paperclip.svg" 
+                alt=""
+                className="absolute -top-10 -left-4 w-14 h-28 z-30 pointer-events-none"
+                style={{
+                  transform: 'rotate(-20deg)'
+                }}
+              />
+            </div>
 
             {/* Book details */}
             <div className="flex-1 min-w-0">

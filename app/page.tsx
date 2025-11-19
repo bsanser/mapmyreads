@@ -32,6 +32,7 @@ import {
 } from '../lib/performanceLogger'
 import { testCountryDetection } from '../lib/testCountryDetection'
 import { resolveAuthorCountries } from '../lib/authorCountryService'
+import { enrichBooksWithCovers } from '../lib/bookCoverService'
 
 export default function Home() {
   // State management
@@ -117,12 +118,13 @@ export default function Home() {
             const csvSummary = generateCsvSummary(parsedBooks)
 
             const { booksWithCountries, summary: authorSummary } = await resolveAuthorCountries(parsedBooks)
+            const booksWithCovers = await enrichBooksWithCovers(booksWithCountries)
             
             // Save to storage
-            saveProcessedBooks(booksWithCountries)
+            saveProcessedBooks(booksWithCovers)
             
             // Update state
-            setBooks(booksWithCountries)
+            setBooks(booksWithCovers)
             setBooksToShow(10)
 
             const now = typeof performance !== 'undefined' ? performance.now() : Date.now()
@@ -138,14 +140,14 @@ export default function Home() {
             })
             
             logMapEvent('file_upload_success', { 
-              bookCount: booksWithCountries.length,
+              bookCount: booksWithCovers.length,
               readBookCount: authorSummary.readBooks,
               resolvedAuthorCount: authorSummary.readBooksWithResolvedAuthors
             })
             endMapLoadTimer({
               totalBookCount: authorSummary.totalBooks,
               readBookCount: authorSummary.readBooks,
-              bookCount: booksWithCountries.length,
+              bookCount: booksWithCovers.length,
               note: 'author_country_map_ready'
             })
           } catch (parseError) {
