@@ -1,3 +1,4 @@
+import { useEffect, useMemo, useState } from 'react'
 import { Book } from '../types/book'
 import { getCountryFlag, mapISO2ToDisplayName } from '../lib/mapUtilities'
 
@@ -20,8 +21,51 @@ export function DesktopSidebar({
   booksToShow,
   onLoadMore
 }: DesktopSidebarProps) {
-  // Filter books based on selected country and view mode
-  const filteredBooks = selectedCountry
+  const [showMissingAuthorCountry, setShowMissingAuthorCountry] = useState(false)
+
+  const readBooksAll = useMemo(
+    () => books.filter(b => b.readStatus === 'read'),
+    [books]
+  )
+
+  const summaryStats = useMemo(() => {
+    const authorSet = new Set<string>()
+    const countrySet = new Set<string>()
+    let missingAuthorCountry = 0
+
+    readBooksAll.forEach(book => {
+      if (book.authors) {
+        authorSet.add(book.authors.trim())
+      }
+
+      if (book.authorCountries && book.authorCountries.length > 0) {
+        book.authorCountries.forEach(code => countrySet.add(code))
+      } else {
+        missingAuthorCountry += 1
+      }
+    })
+
+    return {
+      readBooksCount: readBooksAll.length,
+      distinctAuthors: authorSet.size,
+      authorCountriesCovered: countrySet.size,
+      booksMissingAuthorCountry: missingAuthorCountry
+    }
+  }, [readBooksAll])
+
+  useEffect(() => {
+    if (selectedCountry) {
+      setShowMissingAuthorCountry(false)
+    }
+  }, [selectedCountry])
+
+  useEffect(() => {
+    if (countryViewMode !== 'author') {
+      setShowMissingAuthorCountry(false)
+    }
+  }, [countryViewMode])
+
+  const baseFilteredBooks = selectedCountry
     ? books.filter((book) => {
         const countries = countryViewMode === 'author' ? book.authorCountries : book.bookCountries
         const hasCountry = countries.includes(selectedCountry)
@@ -29,7 +73,24 @@ export function DesktopSidebar({
       })
     : books
 
+  const filteredBooks = baseFilteredBooks.filter(book => {
+    if (showMissingAuthorCountry) {
+      return book.readStatus === 'read' && book.authorCountries.length === 0
+    }
+    return true
+  })
+
   const readBooks = filteredBooks.filter(b => b.readStatus === 'read')
+  const displayedBookCount = readBooks.length
+  const displayedBookLabel = displayedBookCount === 1 ? 'book' : 'books'
+
+  const handleMissingAuthorCountryFilter = () => {
+    if (summaryStats.booksMissingAuthorCountry === 0) return
+    if (!showMissingAuthorCountry && selectedCountry) {
+      onShowAll()
+    }
+    setShowMissingAuthorCountry(prev => !prev)
+  }
 
   return (
     <div 
@@ -46,22 +107,83 @@ export function DesktopSidebar({
       }}
     >
       <h2 className="text-lg font-bold mb-4 text-gray-700">
-        {countryViewMode === 'author' ? 'Your Read Authors' : 'Your Read Books'}
+        {countryViewMode === 'author' ? 'Your Reading Summary' : 'Your Read Books'}
       </h2>
       
-      <div className="text-sm text-gray-700 mb-4">
-        {selectedCountry
-          ? `${readBooks.length} ${countryViewMode === 'author' ? 'authors from' : 'books from'} ${getCountryFlag(selectedCountry)} ${mapISO2ToDisplayName(selectedCountry)}`
-          : `${books.filter(b => b.readStatus === 'read').length} ${countryViewMode === 'author' ? 'read authors' : 'read books'}`}
-        {selectedCountry && (
+      {countryViewMode === 'author' ? (
+        <div className="text-sm text-gray-700 mb-4 space-y-1.5">
+          <div className="flex items-center justify-between space-x-2">
+            <span className="truncate">Books read</span>
+            <span className="font-semibold tabular-nums">{summaryStats.readBooksCount}</span>
+          </div>
+          <div className="flex items-center justify-between space-x-2">
+            <span className="truncate">Distinct authors</span>
+            <span className="font-semibold tabular-nums">{summaryStats.distinctAuthors}</span>
+          </div>
+          <div className="flex items-center justify-between space-x-2">
+            <span className="truncate">Author countries covered</span>
+            <span className="font-semibold tabular-nums">{summaryStats.authorCountriesCovered}</span>
+          </div>
+          <button
+            type="button"
+            onClick={handleMissingAuthorCountryFilter}
+            className={`flex w-full items-center justify-between rounded text-sm transition-colors ${
+              summaryStats.booksMissingAuthorCountry === 0
+                ? 'text-gray-400 cursor-not-allowed'
+                : showMissingAuthorCountry
+                  ? 'text-blue-700 bg-blue-50'
+                  : 'text-blue-600 hover:text-blue-800 hover:bg-blue-50'
+            }`}
+            disabled={summaryStats.booksMissingAuthorCountry === 0}
+          >
+            <span className="flex-1 text-left truncate">Books without author country</span>
+            <span className="font-semibold tabular-nums">{summaryStats.booksMissingAuthorCountry}</span>
+          </button>
+        </div>
+      ) : (
+        <div className="text-sm text-gray-700 mb-4">
+          {selectedCountry
+            ? `${readBooks.length} ${countryViewMode === 'author' ? 'authors from' : 'books from'} ${getCountryFlag(selectedCountry)} ${mapISO2ToDisplayName(selectedCountry)}`
+            : `${books.filter(b => b.readStatus === 'read').length} ${countryViewMode === 'author' ? 'read authors' : 'read books'}`}
+          {selectedCountry && (
+            <button
+              onClick={onShowAll}
+              className="ml-2 text-blue-600 hover:text-blue-800 underline text-xs"
+            >
+              Show all
+            </button>
+          )}
+        </div>
+      )}
+
+      {countryViewMode === 'author' && selectedCountry && (
+        <div className="text-xs text-gray-600 mb-3">
+          Filtering by {getCountryFlag(selectedCountry)} {mapISO2ToDisplayName(selectedCountry)}{' '}
           <button
             onClick={onShowAll}
-            className="ml-2 text-blue-600 hover:text-blue-800 underline text-xs"
+            className="text-blue-600 hover:text-blue-800 underline ml-1"
           >
             Show all
           </button>
-        )}
+        </div>
+      )}
+
+      <div className="text-xs text-gray-600 mb-3">
+        Showing {displayedBookCount} {displayedBookLabel}
       </div>
+
+      {countryViewMode === 'author' && showMissingAuthorCountry && (
+        <div className="text-xs text-blue-700 mb-2 flex items-center justify-between">
+          <span>Showing books without author country</span>
+          <button
+            type="button"
+            className="underline"
+            onClick={() => setShowMissingAuthorCountry(false)}
+          >
+            Clear
+          </button>
+        </div>
+      )}
 
       <div className="space-y-4">
         {readBooks.slice(0, booksToShow).map((b, i) => (
