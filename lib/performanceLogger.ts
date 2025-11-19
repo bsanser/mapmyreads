@@ -45,7 +45,6 @@ class PerformanceLogger {
     }
 
     this.logs.push(logEntry)
-    console.log(`⏱️ ${event}: ${duration.toFixed(2)}ms`, metadata)
   }
 
   logEvent(event: string, metadata?: Partial<PerformanceLog>): void {
@@ -55,7 +54,6 @@ class PerformanceLogger {
       ...metadata
     }
     this.logs.push(logEntry)
-    console.log(`📊 ${event}:`, metadata)
   }
 
   async saveToFile(): Promise<void> {
@@ -82,7 +80,6 @@ class PerformanceLogger {
       document.body.removeChild(a)
       URL.revokeObjectURL(url)
 
-      console.log('📁 Performance logs saved to file')
     } catch (error) {
       console.error('❌ Error saving performance logs:', error)
     }

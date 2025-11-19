@@ -22,6 +22,7 @@ import {
   detectCSVFormat, 
   parseCSVData
 } from '../lib/csvParser'
+import { generateCsvSummary } from '../lib/csvSummary'
 import { mapDisplayNameToISO2 } from '../lib/mapUtilities'
 import { 
   logMapEvent, 
@@ -45,6 +46,7 @@ export default function Home() {
   const [isProcessing, setIsProcessing] = useState(false)
   
   const booksLoadedRef = useRef(false)
+  const uploadStartRef = useRef<number | null>(null)
   
   // Memoize THEMES to prevent unnecessary re-renders
   const memoizedThemes = useMemo(() => THEMES, [])
@@ -60,12 +62,8 @@ export default function Home() {
   }
 
   const handleCountryClick = (country: string) => {
-    console.log('Country clicked:', country);
-    // Convert country name to ISO2 code for proper filtering
-    const iso2Code = mapDisplayNameToISO2(country);
-    console.log('Converted to ISO2:', iso2Code);
-    setSelectedCountry(iso2Code);
-    console.log('Selected country set to:', iso2Code);
+    const iso2Code = mapDisplayNameToISO2(country)
+    setSelectedCountry(iso2Code)
   }
 
   const handleShowAll = () => {
@@ -88,6 +86,7 @@ export default function Home() {
     // Start performance timer for map loading
     startMapLoadTimer()
     logMapEvent('file_upload_start', { fileName: file.name, fileSize: file.size })
+    uploadStartRef.current = typeof performance !== 'undefined' ? performance.now() : Date.now()
 
     try {
       Papa.parse<Record<string, string>>(file, {
@@ -100,8 +99,9 @@ export default function Home() {
 
             // Parse books
             const parsedBooks = parseCSVData(data, format)
+            const csvSummary = generateCsvSummary(parsedBooks)
 
-            const { booksWithCountries, summary } = await resolveAuthorCountries(parsedBooks)
+            const { booksWithCountries, summary: authorSummary } = await resolveAuthorCountries(parsedBooks)
             
             // Save to storage
             saveProcessedBooks(booksWithCountries)
@@ -109,15 +109,27 @@ export default function Home() {
             // Update state
             setBooks(booksWithCountries)
             setBooksToShow(10)
+
+            const now = typeof performance !== 'undefined' ? performance.now() : Date.now()
+            const timeToFirstShowMapSeconds = uploadStartRef.current !== null
+              ? Number(((now - uploadStartRef.current) / 1000).toFixed(2))
+              : null
+            uploadStartRef.current = null
+
+            console.log('📚 CSV Import Summary:', {
+              csv: csvSummary,
+              authorCountries: authorSummary,
+              timeToFirstShowMap: timeToFirstShowMapSeconds
+            })
             
             logMapEvent('file_upload_success', { 
               bookCount: booksWithCountries.length,
-              readBookCount: summary.readBooks,
-              resolvedAuthorCount: summary.readBooksWithResolvedAuthors
+              readBookCount: authorSummary.readBooks,
+              resolvedAuthorCount: authorSummary.readBooksWithResolvedAuthors
             })
             endMapLoadTimer({
-              totalBookCount: summary.totalBooks,
-              readBookCount: summary.readBooks,
+              totalBookCount: authorSummary.totalBooks,
+              readBookCount: authorSummary.readBooks,
               bookCount: booksWithCountries.length,
               note: 'author_country_map_ready'
             })
@@ -131,12 +143,14 @@ export default function Home() {
             })
           } finally {
             setIsProcessing(false)
+            uploadStartRef.current = null
           }
         },
         error: (error) => {
           console.error('CSV parsing error:', error)
           setError('Error reading CSV file.')
           setIsProcessing(false)
+          uploadStartRef.current = null
           logMapEvent('file_read_error', { error: error.message })
           endMapLoadTimer({
             error: error.message,
@@ -148,6 +162,7 @@ export default function Home() {
       console.error('File handling error:', error)
       setError('Error processing file.')
       setIsProcessing(false)
+      uploadStartRef.current = null
       logMapEvent('file_handling_error', { error: error.message })
       endMapLoadTimer({
         error: error instanceof Error ? error.message : 'Unknown file handling error',

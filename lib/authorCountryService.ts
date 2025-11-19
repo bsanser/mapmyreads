@@ -11,6 +11,7 @@ export type AuthorCountrySummary = {
   uniqueAuthorsWithCountries: number
   uniqueCountriesWithReadAuthors: number
   apiLookups: number
+  authorsWithMoreThanOneCountry: number
 }
 
 const normalizeAuthorKey = (authors: string): string => {
@@ -83,10 +84,11 @@ export const resolveAuthorCountries = async (
       countries => countries.length > 0
     ).length,
     uniqueCountriesWithReadAuthors: resolvedCountriesForReadAuthors.size,
-    apiLookups: authorLookupTargets.size
+    apiLookups: authorLookupTargets.size,
+    authorsWithMoreThanOneCountry: Array.from(authorCountryCache.values()).filter(
+      countries => new Set(countries.filter(Boolean)).size > 1
+    ).length
   }
-
-  console.table(summary)
 
   return {
     booksWithCountries: processedBooks,

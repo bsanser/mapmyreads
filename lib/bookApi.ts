@@ -90,12 +90,6 @@ export const fillMissingBookData = async (book: Book): Promise<Book> => {
     updatedBook.bookCountries = countries.bookCountries
     updatedBook.authorCountries = countries.authorCountries
     
-    if (countries.bookCountries.length > 0 || countries.authorCountries.length > 0) {
-      console.log(`🌍 Detected countries for "${updatedBook.title}":`, {
-        bookCountries: countries.bookCountries,
-        authorCountries: countries.authorCountries
-      })
-    }
   } catch (error) {
     console.warn(`Error detecting countries for "${updatedBook.title}":`, error)
   }
@@ -110,13 +104,10 @@ export const fillMissingDataForBooks = async (books: Book[]): Promise<Book[]> =>
     book.bookCountries.length === 0 || book.authorCountries.length === 0
   )
   
-  console.log(`Found ${booksNeedingData.length} books needing data`)
-  
   const updatedBooks = [...books]
   
   for (let i = 0; i < booksNeedingData.length; i++) {
     const book = booksNeedingData[i]
-    console.log(`[${i + 1}/${booksNeedingData.length}] Filling data for: "${book.title}"`)
     
     try {
       const filledBook = await fillMissingBookData(book)

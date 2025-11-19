@@ -11,15 +11,6 @@ export const FeedbackButton = ({ className = '' }: { className?: string }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    // For now, just log the feedback
-    // In the future, this could send to a feedback service or database
-    console.log('Feedback submitted:', {
-      type: feedbackType,
-      feedback,
-      timestamp: new Date().toISOString(),
-      userAgent: navigator.userAgent
-    })
-    
     setSubmitted(true)
     setTimeout(() => {
       setShowFeedbackModal(false)

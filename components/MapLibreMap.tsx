@@ -4,7 +4,7 @@ import maplibregl from "maplibre-gl";
 import { useEffect, useRef, useState } from "react";
 import { COUNTRIES, toISO2, toDisplayName } from "../lib/countries";
 import { THEMES, ThemeKey, darkenColor } from "../lib/themeManager";
-import { getCountryBookCounts, generateHeatmapStyle } from "../lib/heatmapEngine";
+import { generateHeatmapStyle } from "../lib/heatmapEngine";
 
 import { setupMapEventHandlers, getOptimalZoom } from "../lib/mapEventHandlers";
 import { createMapStyle, getMapInitialConfig } from "../lib/mapStyling";
@@ -37,14 +37,6 @@ export const MapLibreMap = ({
   const [mapStatus, setMapStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const currentThemeRef = useRef<ThemeKey>(propCurrentTheme);
 
-  // Debug theme props
-  console.log('🗺️ MapLibreMap: Received theme props:', {
-    currentTheme: propCurrentTheme,
-    hasOnThemeChange: !!onThemeChange,
-    themesKeys: Object.keys(propThemes),
-    themes: propThemes
-  });
-
   // Function to get current theme dynamically (avoids closure issues)
   const getCurrentTheme = () => propCurrentTheme;
   
@@ -56,7 +48,6 @@ export const MapLibreMap = ({
   // Force initial theme application when map is ready
   useEffect(() => {
     if (mapRef.current?.isStyleLoaded() && propThemes[propCurrentTheme]) {
-      console.log('🎨 Initial theme application for:', propCurrentTheme);
       
       // Force update country outlines with initial theme
       const outlineColor = propThemes[propCurrentTheme].outline;
@@ -65,8 +56,6 @@ export const MapLibreMap = ({
       // Force update country labels
       mapRef.current.setPaintProperty('country-labels', 'text-color', outlineColor);
       mapRef.current.setPaintProperty('country-labels', 'text-halo-color', propThemes[propCurrentTheme].background);
-      
-      console.log('🎨 Initial theme colors applied - outline:', outlineColor);
     }
   }, [mapStatus, propCurrentTheme, propThemes]);
 
@@ -148,15 +137,13 @@ export const MapLibreMap = ({
 
   // Update heatmap colors when books change
   useEffect(() => {
-    console.log('🎨 useEffect triggered with theme:', propCurrentTheme, 'countryViewMode:', countryViewMode);
     if (mapRef.current && mapRef.current.isStyleLoaded()) {
-      console.log('🎨 Map is ready, applying heatmap colors for theme:', propCurrentTheme);
       // Apply heatmap colors immediately
       applyHeatmapColors();
       
              // Heatmap colors updated
     } else {
-      console.log('🎨 Map not ready yet, cannot apply heatmap colors');
+      // Map not ready yet
     }
   }, [books, propCurrentTheme, countryViewMode]);
   
@@ -166,18 +153,11 @@ export const MapLibreMap = ({
   useEffect(() => {
     // Skip if theme hasn't actually changed
     if (currentThemeRef.current === propCurrentTheme) {
-      console.log('🎨 DEBUG: Theme unchanged, skipping update');
       return;
     }
     
-    console.log('🎨 Theme changed from', currentThemeRef.current, 'to:', propCurrentTheme, 'updating ALL colors');
-    console.log('🎨 DEBUG: propThemes keys:', Object.keys(propThemes));
-    console.log('🎨 DEBUG: Current theme data:', propThemes[propCurrentTheme]);
-    console.log('🎨 DEBUG: Map ready status:', mapRef.current?.isStyleLoaded());
-    
     // Only proceed if we have valid theme data and the map is ready
     if (!propThemes[propCurrentTheme]) {
-      console.log('🎨 DEBUG: Invalid theme data, skipping update');
       return;
     }
     
@@ -185,8 +165,6 @@ export const MapLibreMap = ({
       // Update map colors
       const baseColor = propThemes[propCurrentTheme].fill;
       const outlineColor = propThemes[propCurrentTheme].outline;
-      
-      console.log('🎨 DEBUG: Using colors - base:', baseColor, 'outline:', outlineColor);
       
       // Update background
       mapRef.current.setPaintProperty('background', 'background-color', propThemes[propCurrentTheme].background);
@@ -199,7 +177,6 @@ export const MapLibreMap = ({
       mapRef.current.setPaintProperty('country-labels', 'text-halo-color', propThemes[propCurrentTheme].background);
       
       // Update country fills (heatmap)
-      const countryCounts = getCountryBookCounts(books, countryViewMode);
       const newHeatmapStyle = generateHeatmapStyle(books, countryViewMode, propThemes[propCurrentTheme]);
       
       mapRef.current.setPaintProperty('countries-fill', 'fill-color', newHeatmapStyle);
@@ -221,12 +198,10 @@ export const MapLibreMap = ({
       };
       img.src = wavePatternDataURL;
       
-      console.log('🎨 All map colors updated for theme:', propCurrentTheme);
-      
       // Update the ref to track the current theme
       currentThemeRef.current = propCurrentTheme;
     } else {
-      console.log('🎨 DEBUG: Map not ready, cannot update colors');
+      // Map not ready yet
     }
     
     
@@ -236,19 +211,15 @@ export const MapLibreMap = ({
   // Function to apply heatmap colors
   const applyHeatmapColors = () => {
     if (mapRef.current?.isStyleLoaded()) {
-      console.log('🎨 DEBUG: Applying heatmap colors...');
-      
       // Generate the complete heatmap style
       const heatmapStyle = generateHeatmapStyle(books, countryViewMode, propThemes[propCurrentTheme]);
       
-      console.log('🎨 DEBUG: Setting paint property with:', heatmapStyle);
       mapRef.current.setPaintProperty('countries-fill', 'fill-color', heatmapStyle);
       
       // Force a repaint
       mapRef.current.triggerRepaint();
-      console.log('🎨 DEBUG: Heatmap colors applied and repaint triggered');
     } else {
-      console.log('🎨 DEBUG: Map not ready, cannot apply heatmap colors');
+      // Map not ready yet
     }
   };
 

@@ -17,14 +17,12 @@ export const saveProcessedBooks = (books: Book[]): void => {
   try {
     localStorage.setItem(STORAGE_KEYS.PROCESSED_BOOKS, JSON.stringify(books))
     localStorage.setItem(STORAGE_KEYS.LAST_PROCESSED, new Date().toISOString())
-    console.log(`✅ Saved ${books.length} processed books to localStorage`)
   } catch (error) {
     console.error('❌ Error saving to localStorage:', error)
     // Fallback to sessionStorage if localStorage is full
     try {
       sessionStorage.setItem(STORAGE_KEYS.PROCESSED_BOOKS, JSON.stringify(books))
       sessionStorage.setItem(STORAGE_KEYS.LAST_PROCESSED, new Date().toISOString())
-      console.log(`✅ Saved ${books.length} processed books to sessionStorage`)
     } catch (fallbackError) {
       console.error('❌ Error saving to sessionStorage:', fallbackError)
     }
@@ -84,7 +82,6 @@ export const clearProcessedBooks = (): void => {
     localStorage.removeItem(STORAGE_KEYS.LAST_PROCESSED)
     sessionStorage.removeItem(STORAGE_KEYS.PROCESSED_BOOKS)
     sessionStorage.removeItem(STORAGE_KEYS.LAST_PROCESSED)
-    console.log('✅ Cleared processed books from storage')
   } catch (error) {
     console.error('❌ Error clearing processed books:', error)
   }
@@ -126,7 +123,6 @@ export const extractShareableData = (): Book[] | null => {
     const dataString = decodeURIComponent(atob(compressed))
     const books = JSON.parse(dataString)
     
-    console.log(`✅ Extracted ${books.length} books from shareable URL`)
     return books
   } catch (error) {
     console.error('❌ Error extracting shareable data:', error)

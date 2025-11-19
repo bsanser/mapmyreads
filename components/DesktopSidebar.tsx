@@ -20,20 +20,16 @@ export function DesktopSidebar({
   booksToShow,
   onLoadMore
 }: DesktopSidebarProps) {
-  console.log('DesktopSidebar props:', { selectedCountry, countryViewMode, booksCount: books.length });
-  
   // Filter books based on selected country and view mode
   const filteredBooks = selectedCountry
     ? books.filter((book) => {
         const countries = countryViewMode === 'author' ? book.authorCountries : book.bookCountries
-        const hasCountry = countries.includes(selectedCountry);
-        console.log(`Book "${book.title}": countries=${countries}, selectedCountry=${selectedCountry}, hasCountry=${hasCountry}`);
-        return hasCountry;
+        const hasCountry = countries.includes(selectedCountry)
+        return hasCountry
       })
     : books
 
   const readBooks = filteredBooks.filter(b => b.readStatus === 'read')
-  console.log('Filtered books count:', readBooks.length);
 
   return (
     <div 
