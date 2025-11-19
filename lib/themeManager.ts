@@ -31,6 +31,14 @@ export const THEMES = {
     hover: "#E8B8CC",     // Medium rose pink
     selected: "#FDF0F5",  // Very light rose with subtle glow
     background: "#fef8fa" // Light pink-tinted background
+  },
+  green: {
+    name: "Verdant Grove",
+    fill: "#D9F2DC",      // Light mint green
+    outline: "#3C8B5E",   // Rich forest green
+    hover: "#BEE5C3",     // Medium soft green
+    selected: "#F1FBF2",  // Very light mint glow
+    background: "#f4fbf5" // Light green-tinted background
   }
 };
 
