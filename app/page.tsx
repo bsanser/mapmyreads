@@ -16,19 +16,21 @@ import {
   loadProcessedBooks, 
   saveProcessedBooks, 
   hasShareableData, 
-  saveShareableData 
+  saveShareableData
 } from '../lib/storage'
 import { 
   detectCSVFormat, 
   parseCSVData
 } from '../lib/csvParser'
-import { assignMockCountriesToBooks, mapISO2ToDisplayName, mapDisplayNameToISO2 } from '../lib/mapUtilities'
+import { mapDisplayNameToISO2 } from '../lib/mapUtilities'
 import { 
   logMapEvent, 
   startMapLoadTimer, 
+  endMapLoadTimer,
   savePerformanceLogs 
 } from '../lib/performanceLogger'
 import { testCountryDetection } from '../lib/testCountryDetection'
+import { resolveAuthorCountries } from '../lib/authorCountryService'
 
 export default function Home() {
   // State management
@@ -38,7 +40,7 @@ export default function Home() {
   const [booksToShow, setBooksToShow] = useState<number>(10)
   const [selectedCountry, setSelectedCountry] = useState<string | null>(null)
   const [showBottomSheet, setShowBottomSheet] = useState(false)
-  const [countryViewMode, setCountryViewMode] = useState<'author' | 'book'>('book')
+  const [countryViewMode, setCountryViewMode] = useState<'author' | 'book'>('author')
   const [currentTheme, setCurrentTheme] = useState<ThemeKey>('blue')
   const [isProcessing, setIsProcessing] = useState(false)
   
@@ -97,25 +99,36 @@ export default function Home() {
             const format = detectCSVFormat(meta.fields || [])
 
             // Parse books
-            let parsedBooks = parseCSVData(data, format)
+            const parsedBooks = parseCSVData(data, format)
 
-            // Assign mock countries to all books
-            parsedBooks = assignMockCountriesToBooks(parsedBooks)
+            const { booksWithCountries, summary } = await resolveAuthorCountries(parsedBooks)
             
             // Save to storage
-            saveProcessedBooks(parsedBooks)
+            saveProcessedBooks(booksWithCountries)
             
             // Update state
-            setBooks(parsedBooks)
+            setBooks(booksWithCountries)
             setBooksToShow(10)
             
             logMapEvent('file_upload_success', { 
-              bookCount: parsedBooks.length
+              bookCount: booksWithCountries.length,
+              readBookCount: summary.readBooks,
+              resolvedAuthorCount: summary.readBooksWithResolvedAuthors
+            })
+            endMapLoadTimer({
+              totalBookCount: summary.totalBooks,
+              readBookCount: summary.readBooks,
+              bookCount: booksWithCountries.length,
+              note: 'author_country_map_ready'
             })
           } catch (parseError) {
             console.error('Error parsing CSV:', parseError)
             setError('Error parsing CSV file. Please check the format.')
             logMapEvent('file_parse_error', { error: parseError.message })
+            endMapLoadTimer({
+              error: parseError instanceof Error ? parseError.message : 'Unknown parse error',
+              note: 'author_country_map_failed'
+            })
           } finally {
             setIsProcessing(false)
           }
@@ -125,6 +138,10 @@ export default function Home() {
           setError('Error reading CSV file.')
           setIsProcessing(false)
           logMapEvent('file_read_error', { error: error.message })
+          endMapLoadTimer({
+            error: error.message,
+            note: 'author_country_map_failed'
+          })
         }
       })
     } catch (error) {
@@ -132,6 +149,10 @@ export default function Home() {
       setError('Error processing file.')
       setIsProcessing(false)
       logMapEvent('file_handling_error', { error: error.message })
+      endMapLoadTimer({
+        error: error instanceof Error ? error.message : 'Unknown file handling error',
+        note: 'author_country_map_failed'
+      })
     }
   }
 
@@ -157,6 +178,7 @@ export default function Home() {
         })
         setBooks(processedBooks)
       }
+
     } catch (error) {
       console.error('Error loading books:', error)
       logMapEvent('storage_load_error', { error: error.message })
@@ -187,7 +209,7 @@ export default function Home() {
         onThemeChange={handleThemeChange}
         themes={memoizedThemes}
       />
-      
+
       {/* Map Container */}
       <MapContainer 
         books={books}

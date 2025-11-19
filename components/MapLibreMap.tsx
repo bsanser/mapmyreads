@@ -8,7 +8,6 @@ import { getCountryBookCounts, generateHeatmapStyle } from "../lib/heatmapEngine
 
 import { setupMapEventHandlers, getOptimalZoom } from "../lib/mapEventHandlers";
 import { createMapStyle, getMapInitialConfig } from "../lib/mapStyling";
-import { AVAILABLE_COUNTRIES, assignMockCountriesToBooks } from "../lib/mapUtilities";
 
 export type MapLibreMapProps = {
   highlighted?: Set<string>;

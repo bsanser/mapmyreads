@@ -12,6 +12,7 @@ interface PerformanceLog {
   fileName?: string
   fileSize?: number
   totalBookCount?: number
+  resolvedAuthorCount?: number
   note?: string
 }
 

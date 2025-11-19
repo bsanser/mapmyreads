@@ -73,10 +73,12 @@ export const parseDate = (dateStr: string): Date | null => {
 
 // Parse read status
 export const parseReadStatus = (value: string, source: CSVFormat): 'read' | 'to_read' => {
+  const normalized = (value || '').trim().toLowerCase()
+  
   if (source === 'goodreads') {
-    return value === 'read' ? 'read' : 'to_read'
-  } else {
-    // StoryGraph: 1 = read, 0 = to_read
-    return value === '1' ? 'read' : 'to_read'
+    return normalized === 'read' ? 'read' : 'to_read'
   }
-} 
+  
+  const readValues = new Set(['1', 'read', 'finished', 'complete', 'completed'])
+  return readValues.has(normalized) ? 'read' : 'to_read'
+}
