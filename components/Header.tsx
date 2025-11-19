@@ -23,8 +23,8 @@ export function Header({
   themes 
 }: HeaderProps) {
   return (
-    <div className="lg:bg-white lg:border-b lg:border-gray-200 lg:sticky lg:top-0 lg:z-50 lg:shadow-sm">
-      <div className="ml-4 mr-4 flex items-center justify-between">
+    <div className="lg:bg-transparent lg:sticky lg:top-0 lg:z-50">
+      <div className="ml-4 mr-4 flex items-center justify-between py-4">
         {/* Left side - Logo and Title */}
         <div className="pl-3">
           <div className="flex items-center gap-3">
@@ -37,6 +37,14 @@ export function Header({
         <div className="pr-3">
           <div className="flex items-center gap-4">
             <ShareButton books={books} />
+            <MapControls
+              countryViewMode={countryViewMode}
+              onViewModeChange={onViewModeChange}
+              currentTheme={currentTheme}
+              onThemeChange={onThemeChange}
+              themes={themes}
+              layout="inline"
+            />
             <FeedbackButton />
             <BuyMeACoffee />
           </div>
@@ -44,13 +52,14 @@ export function Header({
       </div>
 
       {/* Map Controls - Below header on mobile/tablet */}
-      <div className="lg:hidden">
+      <div className="lg:hidden px-4 pb-4">
         <MapControls
           countryViewMode={countryViewMode}
           onViewModeChange={onViewModeChange}
           currentTheme={currentTheme}
           onThemeChange={onThemeChange}
           themes={themes}
+          layout="stacked"
         />
       </div>
     </div>

@@ -7,6 +7,7 @@ interface MapControlsProps {
   themes: typeof THEMES
   onViewModeChange?: (mode: 'author' | 'book') => void
   onThemeChange?: (theme: ThemeKey) => void
+  layout?: 'inline' | 'stacked'
 }
 
 export function MapControls({ 
@@ -14,7 +15,8 @@ export function MapControls({
   currentTheme, 
   themes, 
   onViewModeChange, 
-  onThemeChange 
+  onThemeChange,
+  layout = 'stacked'
 }: MapControlsProps) {
   const [isThemeDropdownOpen, setIsThemeDropdownOpen] = useState(false);
   const themeDropdownRef = useRef<HTMLDivElement>(null);
@@ -36,48 +38,21 @@ export function MapControls({
     };
   }, [isThemeDropdownOpen]);
   
-  return (
-    <div className="flex items-center gap-3">
-      {/* View Mode Controls */}
-      <div className="flex items-center gap-2">
-        <button
-          onClick={() => onViewModeChange?.('book')}
-          className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-            countryViewMode === 'book'
-              ? 'bg-white shadow-md font-semibold'
-              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-          }`}
-          style={{
-            borderWidth: '3px',
-            borderColor: countryViewMode === 'book' ? themes[currentTheme].outline : '#d1d5db',
-            color: countryViewMode === 'book' ? themes[currentTheme].outline : undefined
-          }}
-        >
-          Book Locations
-        </button>
-        
-        <button
-          onClick={() => onViewModeChange?.('author')}
-          className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-            countryViewMode === 'author'
-              ? 'bg-white shadow-md font-semibold'
-              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-          }`}
-          style={{
-            borderWidth: '3px',
-            borderColor: countryViewMode === 'author' ? themes[currentTheme].outline : '#d1d5db',
-            color: countryViewMode === 'author' ? themes[currentTheme].outline : undefined
-          }}
-        >
-          Author Countries
-        </button>
-      </div>
+  const containerClasses = layout === 'inline' 
+    ? 'flex items-center gap-3' 
+    : 'flex items-center gap-3';
 
+  const buttonClasses = layout === 'inline'
+    ? 'w-8 h-8 rounded-lg bg-white/95 backdrop-blur-sm border border-gray-200 flex items-center justify-center hover:bg-white/98 hover:shadow-md transition-all duration-200'
+    : 'w-10 h-10 rounded-2xl bg-white/95 backdrop-blur-sm border border-gray-200 flex items-center justify-center shadow-sm';
+
+  return (
+    <div className={containerClasses}>
       {/* Theme Selector - Custom Dropdown with Color Previews */}
       <div className="relative" ref={themeDropdownRef}>
         <button
           onClick={() => setIsThemeDropdownOpen(!isThemeDropdownOpen)}
-          className="w-8 h-8 rounded-lg bg-white/95 backdrop-blur-sm border border-gray-200 flex items-center justify-center hover:bg-white/98 hover:shadow-md transition-all duration-200"
+          className={buttonClasses}
           title="Select theme"
         >
           <svg className="w-4 h-4 text-gray-600" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
