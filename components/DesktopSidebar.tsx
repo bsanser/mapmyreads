@@ -3,6 +3,10 @@ import { Book } from '../types/book'
 import { getCountryFlag, mapISO2ToDisplayName } from '../lib/mapUtilities'
 import { COUNTRIES } from '../lib/countries'
 import { ReadingAtlasSummary } from './ReadingAtlasSummary'
+import { ShareButton } from './ShareButton'
+import { FeedbackButton } from './FeedbackButton'
+import { BuyMeACoffee } from './BuyMeACoffee'
+import { ThemeKey, THEMES } from '../lib/themeManager'
 
 interface DesktopSidebarProps {
   books: Book[]
@@ -11,6 +15,7 @@ interface DesktopSidebarProps {
   onShowAll: () => void
   booksToShow: number
   onLoadMore: () => void
+  currentTheme: ThemeKey
   onUpdateBookCountries: (book: Book, countries: string[]) => void
 }
 
@@ -21,6 +26,7 @@ export function DesktopSidebar({
   onShowAll,
   booksToShow,
   onLoadMore,
+  currentTheme,
   onUpdateBookCountries
 }: DesktopSidebarProps) {
   const [showMissingAuthorCountry, setShowMissingAuthorCountry] = useState(false)
@@ -134,7 +140,7 @@ export function DesktopSidebar({
         stats={summaryStats}
         showMissingAuthorCountry={showMissingAuthorCountry}
         onToggleMissingAuthorCountry={handleMissingAuthorCountryFilter}
-        currentTheme="blue"
+        currentTheme={currentTheme}
         className="mb-4"
       />
 
@@ -143,7 +149,8 @@ export function DesktopSidebar({
           Filtering by {getCountryFlag(selectedCountry)} {mapISO2ToDisplayName(selectedCountry)}{' '}
           <button
             onClick={onShowAll}
-            className="text-blue-600 hover:text-blue-800 underline ml-1"
+            className="underline ml-1"
+            style={{ color: THEMES[currentTheme].outline }}
           >
             Show all
           </button>
@@ -159,6 +166,7 @@ export function DesktopSidebar({
           <button
             type="button"
             className="underline"
+            style={{ color: THEMES[currentTheme].outline }}
             onClick={() => {
               setShowMissingAuthorCountry(false)
               onShowAll()

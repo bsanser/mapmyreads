@@ -3,12 +3,17 @@ import { Book } from '../types/book'
 import { getCountryFlag, mapISO2ToDisplayName } from '../lib/mapUtilities'
 import { COUNTRIES } from '../lib/countries'
 import { ReadingAtlasSummary } from './ReadingAtlasSummary'
+import { ShareButton } from './ShareButton'
+import { FeedbackButton } from './FeedbackButton'
+import { BuyMeACoffee } from './BuyMeACoffee'
+import { ThemeKey, THEMES } from '../lib/themeManager'
 
 interface MobileBottomSheetProps {
   books: Book[]
   selectedCountry: string | null
   onCountryClick: (country: string) => void
   onShowAll: () => void
+  currentTheme: ThemeKey
   showBottomSheet: boolean
   onToggleBottomSheet: () => void
   onUpdateBookCountries: (book: Book, countries: string[]) => void
@@ -19,6 +24,7 @@ export function MobileBottomSheet({
   selectedCountry, 
   onCountryClick,
   onShowAll,
+  currentTheme,
   showBottomSheet,
   onToggleBottomSheet,
   onUpdateBookCountries
@@ -127,6 +133,7 @@ export function MobileBottomSheet({
                 stats={summaryStats}
                 showMissingAuthorCountry={showMissingAuthorCountry}
                 onToggleMissingAuthorCountry={handleMissingAuthorCountryFilter}
+                currentTheme={currentTheme}
                 className="mb-2"
               />
               {selectedCountry && (
@@ -137,7 +144,8 @@ export function MobileBottomSheet({
                       event.stopPropagation()
                       onShowAll()
                     }}
-                    className="text-blue-600 hover:text-blue-800 underline ml-1"
+                    className="underline ml-1"
+                    style={{ color: THEMES[currentTheme].outline }}
                   >
                     Show all
                   </button>
@@ -172,10 +180,11 @@ export function MobileBottomSheet({
             </div>
 
             {showMissingAuthorCountry && (
-              <div className="text-xs text-blue-700 text-center mb-2">
+              <div className="text-xs text-center mb-2">
                 <button
                   type="button"
                   className="underline"
+                  style={{ color: THEMES[currentTheme].outline }}
                   onClick={() => {
                     setShowMissingAuthorCountry(false)
                     onShowAll()

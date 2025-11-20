@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from 'react'
 import Papa from 'papaparse'
 import { Book } from '../types/book'
-import { Header } from '../components/Header'
 import { HeroScreen } from '../components/HeroScreen'
 import { MapContainer } from '../components/MapContainer'
 import { DesktopSidebar } from '../components/DesktopSidebar'
@@ -225,14 +224,6 @@ export default function Home() {
 
   return (
     <div className="h-screen relative w-full bg-gray-50 overflow-hidden">
-      {/* Header */}
-      <Header 
-        books={books}
-        currentTheme={currentTheme}
-        onThemeChange={handleThemeChange}
-        themes={memoizedThemes}
-      />
-
       {/* Map Container */}
       <MapContainer 
         books={books}
@@ -251,6 +242,7 @@ export default function Home() {
         onShowAll={handleShowAll}
         booksToShow={booksToShow}
         onLoadMore={handleLoadMore}
+        currentTheme={currentTheme}
         onUpdateBookCountries={handleUpdateBookCountries}
       />
 
@@ -262,6 +254,7 @@ export default function Home() {
         onShowAll={handleShowAll}
         showBottomSheet={showBottomSheet}
         onToggleBottomSheet={() => setShowBottomSheet(!showBottomSheet)}
+        currentTheme={currentTheme}
         onUpdateBookCountries={handleUpdateBookCountries}
       />
 
