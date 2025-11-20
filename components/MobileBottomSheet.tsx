@@ -2,10 +2,6 @@ import { useEffect, useMemo, useState } from 'react'
 import { Book } from '../types/book'
 import { getCountryFlag, mapISO2ToDisplayName } from '../lib/mapUtilities'
 import { COUNTRIES } from '../lib/countries'
-import { ReadingAtlasSummary } from './ReadingAtlasSummary'
-import { ShareButton } from './ShareButton'
-import { FeedbackButton } from './FeedbackButton'
-import { BuyMeACoffee } from './BuyMeACoffee'
 import { ThemeKey, THEMES } from '../lib/themeManager'
 
 interface MobileBottomSheetProps {
@@ -17,6 +13,9 @@ interface MobileBottomSheetProps {
   showBottomSheet: boolean
   onToggleBottomSheet: () => void
   onUpdateBookCountries: (book: Book, countries: string[]) => void
+  showMissingAuthorCountry: boolean
+  onToggleMissingAuthorCountry: () => void
+  onClearMissingAuthorCountry: () => void
 }
 
 export function MobileBottomSheet({ 
@@ -27,9 +26,11 @@ export function MobileBottomSheet({
   currentTheme,
   showBottomSheet,
   onToggleBottomSheet,
-  onUpdateBookCountries
+  onUpdateBookCountries,
+  showMissingAuthorCountry,
+  onToggleMissingAuthorCountry,
+  onClearMissingAuthorCountry
 }: MobileBottomSheetProps) {
-  const [showMissingAuthorCountry, setShowMissingAuthorCountry] = useState(false)
   const [editingBookId, setEditingBookId] = useState<string | null>(null)
   const [countrySearch, setCountrySearch] = useState('')
   const [showCountryDropdown, setShowCountryDropdown] = useState(false)
@@ -39,34 +40,9 @@ export function MobileBottomSheet({
     [books]
   )
 
-  const summaryStats = useMemo(() => {
-    const authorSet = new Set<string>()
-    const countrySet = new Set<string>()
-    let missingAuthorCountry = 0
-
-    readBooksAll.forEach(book => {
-      if (book.authors) {
-        authorSet.add(book.authors.trim())
-      }
-
-      if (book.authorCountries && book.authorCountries.length > 0) {
-        book.authorCountries.forEach(code => countrySet.add(code))
-      } else {
-        missingAuthorCountry += 1
-      }
-    })
-
-    return {
-      readBooksCount: readBooksAll.length,
-      distinctAuthors: authorSet.size,
-      authorCountriesCovered: countrySet.size,
-      booksMissingAuthorCountry: missingAuthorCountry
-    }
-  }, [readBooksAll])
-
   useEffect(() => {
     if (selectedCountry) {
-      setShowMissingAuthorCountry(false)
+      // no-op placeholder for future filters
     }
   }, [selectedCountry])
 
@@ -74,12 +50,9 @@ export function MobileBottomSheet({
     ? books.filter((book) => book.authorCountries.includes(selectedCountry))
     : books
 
-  const filteredBooks = baseFilteredBooks.filter(book => {
-    if (showMissingAuthorCountry) {
-      return book.readStatus === 'read' && book.authorCountries.length === 0
-    }
-    return true
-  })
+  const filteredBooks = showMissingAuthorCountry
+    ? baseFilteredBooks.filter(book => book.authorCountries.length === 0)
+    : baseFilteredBooks
 
   const readBooks = filteredBooks.filter(b => b.readStatus === 'read')
   const displayedBookCount = readBooks.length
@@ -115,50 +88,10 @@ export function MobileBottomSheet({
     closeEditing()
   }
 
-  const handleMissingAuthorCountryFilter = () => {
-    if (summaryStats.booksMissingAuthorCountry === 0) return
-    if (!showMissingAuthorCountry && selectedCountry) {
-      onShowAll()
-    }
-    setShowMissingAuthorCountry(prev => !prev)
-  }
-
   return (
-    <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-40">
-      <div className={`transition-all duration-300 ease-out ${showBottomSheet ? 'h-[70vh]' : 'h-48'}`}>
-        <div className="px-4 py-3 border-b border-gray-200 bg-white cursor-pointer" onClick={onToggleBottomSheet}>
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex-1">
-              <ReadingAtlasSummary
-                stats={summaryStats}
-                showMissingAuthorCountry={showMissingAuthorCountry}
-                onToggleMissingAuthorCountry={handleMissingAuthorCountryFilter}
-                currentTheme={currentTheme}
-                className="mb-2"
-              />
-              {selectedCountry && (
-                <div className="mt-2 text-xs text-gray-600">
-                  Filtering by {getCountryFlag(selectedCountry)} {mapISO2ToDisplayName(selectedCountry)}{' '}
-                  <button
-                    onClick={(event) => {
-                      event.stopPropagation()
-                      onShowAll()
-                    }}
-                    className="underline ml-1"
-                    style={{ color: THEMES[currentTheme].outline }}
-                  >
-                    Show all
-                  </button>
-                </div>
-              )}
-            </div>
-            <svg className={`w-5 h-5 text-gray-500 transition-transform duration-300 ${showBottomSheet ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-          </div>
-        </div>
-
-        <div className={`flex-1 transition-all duration-300 ease-out ${showBottomSheet ? 'overflow-y-auto' : 'overflow-hidden'}`}>
+    <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-40" style={{ height: '33vh' }}>
+      <div className="h-full flex flex-col">
+        <div className="flex-1 overflow-y-auto">
           <div 
             className="px-6 py-4 space-y-3"
             style={{
@@ -175,26 +108,27 @@ export function MobileBottomSheet({
               backgroundPosition: '0 0, 0 8px',
             }}
           >
-            <div className="text-xs text-gray-600 mb-2">
-              Showing {displayedBookCount} {displayedBookLabel}
-            </div>
-
-            {showMissingAuthorCountry && (
-              <div className="text-xs text-center mb-2">
+            <div className="text-xs text-gray-600 mb-4 flex items-center justify-between">
+              <span>
+                Showing <span className="font-semibold text-gray-900">{displayedBookCount}</span> {displayedBookLabel}
+                {showMissingAuthorCountry ? ' without country data' : selectedCountry ? ` from ${mapISO2ToDisplayName(selectedCountry)}` : ''}
+              </span>
+              {(showMissingAuthorCountry || selectedCountry) && (
                 <button
                   type="button"
-                  className="underline"
+                  className="text-xs underline"
                   style={{ color: THEMES[currentTheme].outline }}
                   onClick={() => {
-                    setShowMissingAuthorCountry(false)
                     onShowAll()
+                    if (showMissingAuthorCountry) {
+                      onClearMissingAuthorCountry()
+                    }
                   }}
                 >
                   All books
                 </button>
-              </div>
-            )}
-
+              )}
+            </div>
             {readBooks.map((b, i) => {
               const bookIdentifier = getBookIdentifier(b)
               const isEditing = editingBookId === bookIdentifier

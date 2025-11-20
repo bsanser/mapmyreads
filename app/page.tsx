@@ -10,6 +10,7 @@ import { MobileBottomSheet } from '../components/MobileBottomSheet'
 import { DeveloperTools } from '../components/DeveloperTools'
 import { THEMES } from '../lib/themeManager'
 import { ThemeKey } from '../lib/themeManager'
+import { ReadingAtlasSummary } from '../components/ReadingAtlasSummary'
 import { useMemo } from 'react'
 import { 
   loadProcessedBooks, 
@@ -43,12 +44,47 @@ export default function Home() {
   const [showBottomSheet, setShowBottomSheet] = useState(false)
   const [currentTheme, setCurrentTheme] = useState<ThemeKey>('blue')
   const [isProcessing, setIsProcessing] = useState(false)
+  const [showMissingAuthorCountry, setShowMissingAuthorCountry] = useState(false)
   
   const booksLoadedRef = useRef(false)
   const uploadStartRef = useRef<number | null>(null)
   
   // Memoize THEMES to prevent unnecessary re-renders
   const memoizedThemes = useMemo(() => THEMES, [])
+
+  const summaryStats = useMemo(() => {
+    const readBooksAll = books.filter(b => b.readStatus === 'read')
+    const authorSet = new Set<string>()
+    const countrySet = new Set<string>()
+    let missingAuthorCountry = 0
+
+    readBooksAll.forEach(book => {
+      if (book.authors) {
+        authorSet.add(book.authors.trim())
+      }
+
+      if (book.authorCountries && book.authorCountries.length > 0) {
+        book.authorCountries.forEach(code => countrySet.add(code))
+      } else {
+        missingAuthorCountry += 1
+      }
+    })
+
+    return {
+      readBooksCount: readBooksAll.length,
+      distinctAuthors: authorSet.size,
+      authorCountriesCovered: countrySet.size,
+      booksMissingAuthorCountry: missingAuthorCountry
+    }
+  }, [books])
+
+  const handleToggleMissingAuthorCountry = () => {
+    setShowMissingAuthorCountry(prev => !prev)
+  }
+
+  const handleClearMissingAuthorCountry = () => {
+    setShowMissingAuthorCountry(false)
+  }
 
   const handleThemeChange = (theme: ThemeKey) => {
     setCurrentTheme(theme)
@@ -224,6 +260,15 @@ export default function Home() {
 
   return (
     <div className="h-screen relative w-full bg-gray-50 overflow-hidden">
+      <div className="lg:hidden px-4 pt-6">
+        <ReadingAtlasSummary
+          stats={summaryStats}
+          showMissingAuthorCountry={showMissingAuthorCountry}
+          onToggleMissingAuthorCountry={handleToggleMissingAuthorCountry}
+          currentTheme={currentTheme}
+          className="mb-4"
+        />
+      </div>
       {/* Map Container */}
       <MapContainer 
         books={books}
@@ -256,6 +301,9 @@ export default function Home() {
         onToggleBottomSheet={() => setShowBottomSheet(!showBottomSheet)}
         currentTheme={currentTheme}
         onUpdateBookCountries={handleUpdateBookCountries}
+        showMissingAuthorCountry={showMissingAuthorCountry}
+        onToggleMissingAuthorCountry={handleToggleMissingAuthorCountry}
+        onClearMissingAuthorCountry={handleClearMissingAuthorCountry}
       />
 
       {/* Developer Tools */}

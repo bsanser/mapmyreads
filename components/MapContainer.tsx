@@ -29,9 +29,9 @@ export function MapContainer({
   )
 
   return (
-    <div className="relative w-full h-screen lg:h-screen">
+    <div className="relative w-full h-[50vh] lg:h-screen bg-white">
       {/* Map */}
-      <div className="w-full h-full relative">
+      <div className="w-full h-full relative pt-4 lg:pt-0">
         <MapLibreMap
           highlighted={highlightedCountries}
           selectedCountry={selectedCountry}
