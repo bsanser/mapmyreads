@@ -231,12 +231,14 @@ export function MobileBottomSheet({
                         <button
                           type="button"
                           onClick={() => handleToggleEdit(bookIdentifier)}
-                          className={`text-gray-500 hover:text-gray-700 border rounded p-0.5 ${isEditing ? 'bg-blue-50 text-blue-700' : ''}`}
+                          className={`text-gray-500 hover:text-gray-700 border rounded p-1 ${isEditing ? 'bg-gray-100 text-gray-900' : ''}`}
                           title="Edit author countries"
                         >
-                          ✏️
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16.862 3.487l3.651 3.65m-2.906-4.395L9.208 11.14c-.27.27-.46.61-.55.98l-.89 3.788a.75.75 0 00.914.914l3.788-.89c.37-.09.71-.28.98-.55l8.399-8.398a1.5 1.5 0 000-2.122l-1.95-1.95a1.5 1.5 0 00-2.122 0zM6 19.5h12" />
+                          </svg>
                         </button>
-                      </div>
+                     </div>
                       {isEditing ? (() => {
                         const searchTerm = countrySearch.trim().toLowerCase()
                         const availableSuggestions = COUNTRIES.filter(country => {
