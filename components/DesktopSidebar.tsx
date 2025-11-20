@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Book } from '../types/book'
 import { getCountryFlag, mapISO2ToDisplayName } from '../lib/mapUtilities'
 import { COUNTRIES } from '../lib/countries'
+import { ReadingAtlasSummary } from './ReadingAtlasSummary'
 
 interface DesktopSidebarProps {
   books: Book[]
@@ -129,41 +130,13 @@ export function DesktopSidebar({
         }
       }}
     >
-      <h2 className="text-lg font-bold mb-4 text-gray-700">
-        Your Reading Summary
-      </h2>
-      
-      <div className="text-sm text-gray-700 mb-4 space-y-1.5">
-        <div className="flex items-center justify-between space-x-2">
-          <span className="truncate">Books read</span>
-          <span className="font-semibold tabular-nums">{summaryStats.readBooksCount}</span>
-        </div>
-        <div className="flex items-center justify-between space-x-2">
-          <span className="truncate">Distinct authors</span>
-          <span className="font-semibold tabular-nums">{summaryStats.distinctAuthors}</span>
-        </div>
-        <div className="flex items-center justify-between space-x-2">
-          <span className="truncate">Author countries covered</span>
-          <span className="font-semibold tabular-nums">{summaryStats.authorCountriesCovered}</span>
-        </div>
-        {summaryStats.booksMissingAuthorCountry > 0 && (
-        <button
-          type="button"
-          onClick={handleMissingAuthorCountryFilter}
-          className={`flex w-full items-center justify-between rounded text-sm transition-colors ${
-            summaryStats.booksMissingAuthorCountry === 0
-              ? 'text-gray-400 cursor-not-allowed'
-              : showMissingAuthorCountry
-                ? 'text-blue-700 bg-blue-50'
-                : 'text-blue-600 hover:text-blue-800 hover:bg-blue-50'
-          }`}
-          disabled={summaryStats.booksMissingAuthorCountry === 0}
-        >
-          <span className="flex-1 text-left truncate">Books without author country</span>
-          <span className="font-semibold tabular-nums">{summaryStats.booksMissingAuthorCountry}</span>
-        </button>
-        )}
-      </div>
+      <ReadingAtlasSummary
+        stats={summaryStats}
+        showMissingAuthorCountry={showMissingAuthorCountry}
+        onToggleMissingAuthorCountry={handleMissingAuthorCountryFilter}
+        currentTheme="blue"
+        className="mb-4"
+      />
 
       {selectedCountry && (
         <div className="text-xs text-gray-600 mb-3">

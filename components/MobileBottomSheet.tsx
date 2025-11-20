@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Book } from '../types/book'
 import { getCountryFlag, mapISO2ToDisplayName } from '../lib/mapUtilities'
 import { COUNTRIES } from '../lib/countries'
+import { ReadingAtlasSummary } from './ReadingAtlasSummary'
 
 interface MobileBottomSheetProps {
   books: Book[]
@@ -120,56 +121,33 @@ export function MobileBottomSheet({
     <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-40">
       <div className={`transition-all duration-300 ease-out ${showBottomSheet ? 'h-[70vh]' : 'h-48'}`}>
         <div className="px-4 py-3 border-b border-gray-200 bg-white cursor-pointer" onClick={onToggleBottomSheet}>
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-lg font-semibold text-gray-700">Your Reading Summary</h2>
-              <div className="text-sm text-gray-700 space-y-1 mt-2">
-                <div className="flex items-center justify-between space-x-2">
-                  <span className="truncate">Books read</span>
-                  <span className="font-semibold tabular-nums">{summaryStats.readBooksCount}</span>
-                </div>
-                <div className="flex items-center justify-between space-x-2">
-                  <span className="truncate">Distinct authors</span>
-                  <span className="font-semibold tabular-nums">{summaryStats.distinctAuthors}</span>
-                </div>
-                <div className="flex items-center justify-between space-x-2">
-                  <span className="truncate">Author countries covered</span>
-                  <span className="font-semibold tabular-nums">{summaryStats.authorCountriesCovered}</span>
-                </div>
-                {summaryStats.booksMissingAuthorCountry > 0 && (
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex-1">
+              <ReadingAtlasSummary
+                stats={summaryStats}
+                showMissingAuthorCountry={showMissingAuthorCountry}
+                onToggleMissingAuthorCountry={handleMissingAuthorCountryFilter}
+                className="mb-2"
+              />
+              {selectedCountry && (
+                <div className="mt-2 text-xs text-gray-600">
+                  Filtering by {getCountryFlag(selectedCountry)} {mapISO2ToDisplayName(selectedCountry)}{' '}
                   <button
-                    type="button"
-                    onClick={handleMissingAuthorCountryFilter}
-                    className={`flex w-full items-center justify-between rounded text-sm transition-colors ${
-                      summaryStats.booksMissingAuthorCountry === 0
-                        ? 'text-gray-400 cursor-not-allowed'
-                        : showMissingAuthorCountry
-                          ? 'text-blue-700 bg-blue-50'
-                          : 'text-blue-600 hover:text-blue-800 hover:bg-blue-50'
-                    }`}
-                    disabled={summaryStats.booksMissingAuthorCountry === 0}
+                    onClick={(event) => {
+                      event.stopPropagation()
+                      onShowAll()
+                    }}
+                    className="text-blue-600 hover:text-blue-800 underline ml-1"
                   >
-                    <span className="flex-1 text-left truncate">Books without author country</span>
-                    <span className="font-semibold tabular-nums">{summaryStats.booksMissingAuthorCountry}</span>
+                    Show all
                   </button>
-                )}
-              </div>
+                </div>
+              )}
             </div>
             <svg className={`w-5 h-5 text-gray-500 transition-transform duration-300 ${showBottomSheet ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
             </svg>
           </div>
-          {selectedCountry && (
-            <div className="mt-2 text-xs text-gray-600">
-              Filtering by {getCountryFlag(selectedCountry)} {mapISO2ToDisplayName(selectedCountry)}{' '}
-              <button
-                onClick={onShowAll}
-                className="text-blue-600 hover:text-blue-800 underline ml-1"
-              >
-                Show all
-              </button>
-            </div>
-          )}
         </div>
 
         <div className={`flex-1 transition-all duration-300 ease-out ${showBottomSheet ? 'overflow-y-auto' : 'overflow-hidden'}`}>
