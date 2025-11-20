@@ -2,8 +2,7 @@
 import "maplibre-gl/dist/maplibre-gl.css";
 import maplibregl from "maplibre-gl";
 import { useEffect, useRef, useState } from "react";
-import { COUNTRIES, toISO2, toDisplayName } from "../lib/countries";
-import { THEMES, ThemeKey, darkenColor } from "../lib/themeManager";
+import { THEMES, ThemeKey } from "../lib/themeManager";
 import { generateHeatmapStyle } from "../lib/heatmapEngine";
 
 import { setupMapEventHandlers, getOptimalZoom } from "../lib/mapEventHandlers";
@@ -13,12 +12,9 @@ export type MapLibreMapProps = {
   highlighted?: Set<string>;
   selectedCountry?: string | null;
   onCountryClick?: (countryName: string) => void;
-  books?: any[]; // Add books prop for heatmap logic
-  countryViewMode?: 'author' | 'book'; // Add view mode prop for correct counting
-  onViewModeChange?: (mode: 'author' | 'book') => void; // Add callback for view mode changes
-  currentTheme?: keyof typeof THEMES; // Theme from parent component
-  onThemeChange?: (theme: keyof typeof THEMES) => void; // Theme change callback
-  themes?: typeof THEMES; // Themes object from parent component
+  books?: any[];
+  currentTheme?: keyof typeof THEMES;
+  themes?: typeof THEMES;
 };
 
 export const MapLibreMap = ({
@@ -26,20 +22,14 @@ export const MapLibreMap = ({
   selectedCountry = null,
   onCountryClick,
   books = [],
-  countryViewMode = 'book',
-  onViewModeChange,
-  currentTheme: propCurrentTheme = 'blue', // Destructure prop with default
-  onThemeChange, // Destructure prop
-  themes: propThemes = THEMES // Destructure prop with default
+  currentTheme: propCurrentTheme = 'blue',
+  themes: propThemes = THEMES
 }: MapLibreMapProps) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const [mapStatus, setMapStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const currentThemeRef = useRef<ThemeKey>(propCurrentTheme);
 
-  // Function to get current theme dynamically (avoids closure issues)
-  const getCurrentTheme = () => propCurrentTheme;
-  
   // Update theme ref when prop changes
   useEffect(() => {
     currentThemeRef.current = propCurrentTheme;
@@ -98,7 +88,7 @@ export const MapLibreMap = ({
     const updateHeatmapColors = () => {
       if (mapRef.current?.isStyleLoaded()) {
         // Generate the complete heatmap style
-        const heatmapStyle = generateHeatmapStyle(books, countryViewMode, propThemes[propCurrentTheme]);
+        const heatmapStyle = generateHeatmapStyle(books, propThemes[propCurrentTheme]);
         
         mapRef.current.setPaintProperty('countries-fill', 'fill-color', heatmapStyle);
         
@@ -133,21 +123,19 @@ export const MapLibreMap = ({
         cleanupEventHandlers();
       }
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Update heatmap colors when books change
   useEffect(() => {
-    if (mapRef.current && mapRef.current.isStyleLoaded()) {
-      // Apply heatmap colors immediately
-      applyHeatmapColors();
-      
-             // Heatmap colors updated
-    } else {
-      // Map not ready yet
+    if (!mapRef.current?.isStyleLoaded()) {
+      return;
     }
-  }, [books, propCurrentTheme, countryViewMode]);
-  
-     // View mode changes are now handled by React components
+
+    const heatmapStyle = generateHeatmapStyle(books, propThemes[propCurrentTheme]);
+    mapRef.current.setPaintProperty('countries-fill', 'fill-color', heatmapStyle);
+    mapRef.current.triggerRepaint();
+  }, [books, propCurrentTheme, propThemes]);
   
   // Dedicated effect for theme changes - ensure ALL colors update
   useEffect(() => {
@@ -177,7 +165,7 @@ export const MapLibreMap = ({
       mapRef.current.setPaintProperty('country-labels', 'text-halo-color', propThemes[propCurrentTheme].background);
       
       // Update country fills (heatmap)
-      const newHeatmapStyle = generateHeatmapStyle(books, countryViewMode, propThemes[propCurrentTheme]);
+      const newHeatmapStyle = generateHeatmapStyle(books, propThemes[propCurrentTheme]);
       
       mapRef.current.setPaintProperty('countries-fill', 'fill-color', newHeatmapStyle);
       mapRef.current.triggerRepaint();
@@ -206,22 +194,7 @@ export const MapLibreMap = ({
     
     
     
-  }, [propCurrentTheme, books, countryViewMode, propThemes]);
-
-  // Function to apply heatmap colors
-  const applyHeatmapColors = () => {
-    if (mapRef.current?.isStyleLoaded()) {
-      // Generate the complete heatmap style
-      const heatmapStyle = generateHeatmapStyle(books, countryViewMode, propThemes[propCurrentTheme]);
-      
-      mapRef.current.setPaintProperty('countries-fill', 'fill-color', heatmapStyle);
-      
-      // Force a repaint
-      mapRef.current.triggerRepaint();
-    } else {
-      // Map not ready yet
-    }
-  };
+  }, [propCurrentTheme, books, propThemes]);
 
   return (
     <div className="w-full h-full">

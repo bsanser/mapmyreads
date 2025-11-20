@@ -7,8 +7,6 @@ import { ThemeKey, THEMES } from '../lib/themeManager'
 
 interface HeaderProps {
   books: Book[]
-  countryViewMode: 'author' | 'book'
-  onViewModeChange: (mode: 'author' | 'book') => void
   currentTheme: ThemeKey
   onThemeChange: (theme: ThemeKey) => void
   themes: typeof THEMES
@@ -16,8 +14,6 @@ interface HeaderProps {
 
 export function Header({ 
   books, 
-  countryViewMode, 
-  onViewModeChange, 
   currentTheme, 
   onThemeChange, 
   themes 
@@ -38,8 +34,6 @@ export function Header({
           <div className="flex items-center gap-4">
             <ShareButton books={books} />
             <MapControls
-              countryViewMode={countryViewMode}
-              onViewModeChange={onViewModeChange}
               currentTheme={currentTheme}
               onThemeChange={onThemeChange}
               themes={themes}
@@ -54,8 +48,6 @@ export function Header({
       {/* Map Controls - Below header on mobile/tablet */}
       <div className="lg:hidden px-4 pb-4">
         <MapControls
-          countryViewMode={countryViewMode}
-          onViewModeChange={onViewModeChange}
           currentTheme={currentTheme}
           onThemeChange={onThemeChange}
           themes={themes}

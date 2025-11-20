@@ -42,7 +42,6 @@ export default function Home() {
   const [booksToShow, setBooksToShow] = useState<number>(10)
   const [selectedCountry, setSelectedCountry] = useState<string | null>(null)
   const [showBottomSheet, setShowBottomSheet] = useState(false)
-  const [countryViewMode, setCountryViewMode] = useState<'author' | 'book'>('author')
   const [currentTheme, setCurrentTheme] = useState<ThemeKey>('blue')
   const [isProcessing, setIsProcessing] = useState(false)
   
@@ -51,12 +50,6 @@ export default function Home() {
   
   // Memoize THEMES to prevent unnecessary re-renders
   const memoizedThemes = useMemo(() => THEMES, [])
-
-  // Event handlers
-  const handleViewModeChange = (mode: 'author' | 'book') => {
-    setCountryViewMode(mode)
-    setSelectedCountry(null) // Clear selected country when view mode changes
-  }
 
   const handleThemeChange = (theme: ThemeKey) => {
     setCurrentTheme(theme)
@@ -235,8 +228,6 @@ export default function Home() {
       {/* Header */}
       <Header 
         books={books}
-        countryViewMode={countryViewMode}
-        onViewModeChange={handleViewModeChange}
         currentTheme={currentTheme}
         onThemeChange={handleThemeChange}
         themes={memoizedThemes}
@@ -246,9 +237,7 @@ export default function Home() {
       <MapContainer 
         books={books}
         selectedCountry={selectedCountry}
-        countryViewMode={countryViewMode}
         onCountryClick={handleCountryClick}
-        onViewModeChange={handleViewModeChange}
         currentTheme={currentTheme}
         onThemeChange={handleThemeChange}
         themes={memoizedThemes}
@@ -258,7 +247,6 @@ export default function Home() {
       <DesktopSidebar 
         books={books}
         selectedCountry={selectedCountry}
-        countryViewMode={countryViewMode}
         onCountryClick={handleCountryClick}
         onShowAll={handleShowAll}
         booksToShow={booksToShow}
@@ -270,7 +258,6 @@ export default function Home() {
       <MobileBottomSheet 
         books={books}
         selectedCountry={selectedCountry}
-        countryViewMode={countryViewMode}
         onCountryClick={handleCountryClick}
         onShowAll={handleShowAll}
         showBottomSheet={showBottomSheet}

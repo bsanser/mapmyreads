@@ -1,13 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Book } from '../types/book'
 import { getCountryFlag, mapISO2ToDisplayName } from '../lib/mapUtilities'
-import { mapCountryNameForDisplay } from '../lib/countryDetection'
 import { COUNTRIES } from '../lib/countries'
 
 interface MobileBottomSheetProps {
   books: Book[]
   selectedCountry: string | null
-  countryViewMode: 'author' | 'book'
   onCountryClick: (country: string) => void
   onShowAll: () => void
   showBottomSheet: boolean
@@ -18,7 +16,6 @@ interface MobileBottomSheetProps {
 export function MobileBottomSheet({ 
   books, 
   selectedCountry, 
-  countryViewMode,
   onCountryClick,
   onShowAll,
   showBottomSheet,
@@ -66,17 +63,8 @@ export function MobileBottomSheet({
     }
   }, [selectedCountry])
 
-  useEffect(() => {
-    if (countryViewMode !== 'author') {
-      setShowMissingAuthorCountry(false)
-    }
-  }, [countryViewMode])
-
   const baseFilteredBooks = selectedCountry
-    ? books.filter((book) => {
-        const countries = countryViewMode === 'author' ? book.authorCountries : book.bookCountries
-        return countries.includes(selectedCountry)
-      })
+    ? books.filter((book) => book.authorCountries.includes(selectedCountry))
     : books
 
   const filteredBooks = baseFilteredBooks.filter(book => {
@@ -130,31 +118,25 @@ export function MobileBottomSheet({
 
   return (
     <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-40">
-      <div className={`h-48 transition-all duration-300 ease-out ${
-        showBottomSheet ? 'h-[70vh]' : 'h-48'
-      }`}>
-        {/* Header - Always Fixed (Outside Scrollable Container) */}
+      <div className={`transition-all duration-300 ease-out ${showBottomSheet ? 'h-[70vh]' : 'h-48'}`}>
         <div className="px-4 py-3 border-b border-gray-200 bg-white cursor-pointer" onClick={onToggleBottomSheet}>
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-lg font-semibold text-gray-700">
-                {countryViewMode === 'author' ? 'Your Reading Summary' : 'Your Read Books'}
-              </h2>
-              {countryViewMode === 'author' ? (
-                <div className="text-sm text-gray-700 space-y-1">
-                  <div className="flex items-center justify-between space-x-2">
-                    <span className="truncate">Books read</span>
-                    <span className="font-semibold tabular-nums">{summaryStats.readBooksCount}</span>
-                  </div>
-                  <div className="flex items-center justify-between space-x-2">
-                    <span className="truncate">Distinct authors</span>
-                    <span className="font-semibold tabular-nums">{summaryStats.distinctAuthors}</span>
-                  </div>
-                  <div className="flex items-center justify-between space-x-2">
-                    <span className="truncate">Author countries covered</span>
-                    <span className="font-semibold tabular-nums">{summaryStats.authorCountriesCovered}</span>
-                  </div>
-                  {summaryStats.booksMissingAuthorCountry > 0 && (
+              <h2 className="text-lg font-semibold text-gray-700">Your Reading Summary</h2>
+              <div className="text-sm text-gray-700 space-y-1 mt-2">
+                <div className="flex items-center justify-between space-x-2">
+                  <span className="truncate">Books read</span>
+                  <span className="font-semibold tabular-nums">{summaryStats.readBooksCount}</span>
+                </div>
+                <div className="flex items-center justify-between space-x-2">
+                  <span className="truncate">Distinct authors</span>
+                  <span className="font-semibold tabular-nums">{summaryStats.distinctAuthors}</span>
+                </div>
+                <div className="flex items-center justify-between space-x-2">
+                  <span className="truncate">Author countries covered</span>
+                  <span className="font-semibold tabular-nums">{summaryStats.authorCountriesCovered}</span>
+                </div>
+                {summaryStats.booksMissingAuthorCountry > 0 && (
                   <button
                     type="button"
                     onClick={handleMissingAuthorCountryFilter}
@@ -170,26 +152,27 @@ export function MobileBottomSheet({
                     <span className="flex-1 text-left truncate">Books without author country</span>
                     <span className="font-semibold tabular-nums">{summaryStats.booksMissingAuthorCountry}</span>
                   </button>
-                  )}
-                </div>
-              ) : (
-                <div className="text-sm text-gray-700">
-                  {selectedCountry
-                    ? `${readBooks.length} ${countryViewMode === 'author' ? 'authors from' : 'books from'} ${getCountryFlag(selectedCountry)} ${mapCountryNameForDisplay(selectedCountry)}`
-                    : `${books.filter(b => b.readStatus === 'read').length} ${countryViewMode === 'author' ? 'read authors' : 'read books'}`}
-                </div>
-              )}
+                )}
+              </div>
             </div>
             <svg className={`w-5 h-5 text-gray-500 transition-transform duration-300 ${showBottomSheet ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
             </svg>
           </div>
+          {selectedCountry && (
+            <div className="mt-2 text-xs text-gray-600">
+              Filtering by {getCountryFlag(selectedCountry)} {mapISO2ToDisplayName(selectedCountry)}{' '}
+              <button
+                onClick={onShowAll}
+                className="text-blue-600 hover:text-blue-800 underline ml-1"
+              >
+                Show all
+              </button>
+            </div>
+          )}
         </div>
-        
-        {/* Scrollable Book List Container */}
-        <div className={`flex-1 transition-all duration-300 ease-out ${
-          showBottomSheet ? 'overflow-y-auto' : 'overflow-hidden'
-        }`}>
+
+        <div className={`flex-1 transition-all duration-300 ease-out ${showBottomSheet ? 'overflow-y-auto' : 'overflow-hidden'}`}>
           <div 
             className="px-6 py-4 space-y-3"
             style={{
@@ -210,12 +193,11 @@ export function MobileBottomSheet({
               Showing {displayedBookCount} {displayedBookLabel}
             </div>
 
-            {countryViewMode === 'author' && showMissingAuthorCountry && (
+            {showMissingAuthorCountry && (
               <div className="text-xs text-blue-700 text-center mb-2">
-
                 <button
                   type="button"
-                  className="ml-2 underline"
+                  className="underline"
                   onClick={() => {
                     setShowMissingAuthorCountry(false)
                     onShowAll()
@@ -225,45 +207,40 @@ export function MobileBottomSheet({
                 </button>
               </div>
             )}
-            {readBooks.map((b, i) => (
-              <div
-                key={`${b.isbn13}-${i}`}
-                className="relative bg-white border border-gray-300 rounded p-4 hover:shadow-md transition-all min-h-[120px] flex items-start gap-4"
-              >
-                {/* Book cover with paper clip - proper clipping effect */}
-                <div className="relative flex-shrink-0">
-                  {/* Book cover as the "card" */}
-                  <img 
-                    src={b.coverImage ?? '/book-placeholder.png'} 
-                    alt={`Cover of ${b.title}`}
-                    className="block w-20 h-24 object-cover rounded shadow-md border border-gray-200 relative z-10"
-                  />
-                  
-                  {/* Paper clip - positioned to go over the top edge of the card */}
-                  <img 
-                    src="/paperclip.svg" 
-                    alt=""
-                    className="absolute -top-10 -left-4 w-14 h-28 z-30 pointer-events-none"
-                    style={{
-                      transform: 'rotate(-20deg)'
-                    }}
-                  />
-                </div>
 
-                {/* Book details */}
-                <div className="flex-1 min-w-0">
-                  <p className="font-mono text-gray-900 text-sm leading-tight mb-2" style={{ textShadow: '0 1px 2px rgba(255,255,255,0.8)' }}>{b.title}</p>
-                  <p className="font-mono text-gray-700 text-xs mb-1" style={{ textShadow: '0 1px 2px rgba(255,255,255,0.8)' }}>
-                    by {b.authors}
-                  </p>
-                  {b.yearPublished && <p className="font-mono text-gray-600 text-xs mb-2" style={{ textShadow: '0 1px 2px rgba(255,255,255,0.8)' }}>{b.yearPublished}</p>}
-                  {countryViewMode === 'author' ? (() => {
-                    const bookIdentifier = getBookIdentifier(b)
-                    const isEditing = editingBookId === bookIdentifier
-                    return (
+            {readBooks.map((b, i) => {
+              const bookIdentifier = getBookIdentifier(b)
+              const isEditing = editingBookId === bookIdentifier
+
+              return (
+                <div
+                  key={`${b.isbn13}-${i}`}
+                  className="relative bg-white border border-gray-300 rounded p-4 hover:shadow-md transition-all min-h-[120px] flex items-start gap-4"
+                >
+                  <div className="relative flex-shrink-0">
+                    <img 
+                      src={b.coverImage ?? '/book-placeholder.png'} 
+                      alt={`Cover of ${b.title}`}
+                      className="block w-20 h-24 object-cover rounded shadow-md border border-gray-200 relative z-10"
+                    />
+                    <img 
+                      src="/paperclip.svg" 
+                      alt=""
+                      className="absolute -top-10 -left-4 w-14 h-28 z-30 pointer-events-none"
+                      style={{ transform: 'rotate(-20deg)' }}
+                    />
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    <p className="font-mono text-gray-900 text-sm leading-tight mb-2" style={{ textShadow: '0 1px 2px rgba(255,255,255,0.8)' }}>{b.title}</p>
+                    <p className="font-mono text-gray-700 text-xs mb-1" style={{ textShadow: '0 1px 2px rgba(255,255,255,0.8)' }}>
+                      by {b.authors}
+                    </p>
+                    {b.yearPublished && <p className="font-mono text-gray-600 text-xs mb-2" style={{ textShadow: '0 1px 2px rgba(255,255,255,0.8)' }}>{b.yearPublished}</p>}
+
                     <div className="font-mono text-gray-600 text-xs" style={{ textShadow: '0 1px 2px rgba(255,255,255,0.8)' }}>
                       <div className="flex items-center gap-2">
-                        <span className="font-medium">{countryViewMode === 'author' ? 'Author Countries:' : 'Countries:'}</span>
+                        <span className="font-medium">Author Countries:</span>
                         <button
                           type="button"
                           onClick={() => handleToggleEdit(bookIdentifier)}
@@ -285,74 +262,74 @@ export function MobileBottomSheet({
                         })
                         const suggestions = availableSuggestions.slice(0, 8)
                         return (
-                        <div className="mt-2 space-y-2">
-                          <div className="flex flex-wrap gap-2">
-                            {b.authorCountries.length === 0 && (
-                              <span className="text-gray-400 text-xs">No countries yet</span>
-                            )}
-                            {b.authorCountries.map(country => (
-                              <span
-                                key={country}
-                                className="inline-flex items-center gap-1 bg-blue-50 text-blue-700 rounded-full px-2 py-0.5 text-xs"
-                              >
-                                <span>{mapISO2ToDisplayName(country)} {getCountryFlag(country)}</span>
-                                <button
-                                  type="button"
-                                  onClick={() => handleRemoveCountry(b, country)}
-                                  className="text-blue-700 hover:text-blue-900"
-                                  aria-label={`Remove ${mapISO2ToDisplayName(country)}`}
+                          <div className="mt-2 space-y-2">
+                            <div className="flex flex-wrap gap-2">
+                              {b.authorCountries.length === 0 && (
+                                <span className="text-gray-400 text-xs">No countries yet</span>
+                              )}
+                              {b.authorCountries.map(country => (
+                                <span
+                                  key={country}
+                                  className="inline-flex items-center gap-1 border border-gray-200 rounded px-2 py-0.5 text-xs bg-white"
                                 >
-                                  ×
-                                </button>
-                              </span>
-                            ))}
-                          </div>
-                          <div className="relative">
-                            <input
-                              type="text"
-                              value={countrySearch}
-                              onChange={e => setCountrySearch(e.target.value)}
-                              onKeyDown={e => {
-                                if (e.key === 'Enter') {
-                                  e.preventDefault()
-                                  if (suggestions.length > 0) {
-                                    handleAddCountry(b, suggestions[0].iso2)
-                                  }
-                                }
-                              }}
-                              onFocus={() => setShowCountryDropdown(true)}
-                              onBlur={() => {
-                                const currentId = bookIdentifier
-                                setTimeout(() => {
-                                  setShowCountryDropdown(false)
-                                  if (editingBookId === currentId) {
-                                    closeEditing()
-                                  }
-                                }, 120)
-                              }}
-                              placeholder="Search country..."
-                              className="w-full border border-gray-300 rounded px-3 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-blue-400"
-                            />
-                            {(showCountryDropdown && (countrySearch || suggestions.length > 0)) && (
-                              <div className="absolute z-10 mt-1 w-full max-h-40 overflow-y-auto bg-white border border-gray-200 rounded shadow-lg">
-                                {suggestions.map(country => (
+                                  {mapISO2ToDisplayName(country)}
                                   <button
-                                    key={country.iso2}
                                     type="button"
-                                    onClick={() => handleAddCountry(b, country.iso2)}
-                                    className="flex w-full items-center justify-between px-3 py-2 text-left text-xs hover:bg-blue-50"
+                                    onClick={() => handleRemoveCountry(b, country)}
+                                    className="text-gray-400 hover:text-gray-600"
+                                    aria-label="Remove country"
                                   >
-                                    <span>{country.name}</span>
-                                    <span>{getCountryFlag(country.iso2)}</span>
+                                    ×
                                   </button>
-                                ))}
-                                {suggestions.length === 0 && (
-                                  <div className="px-3 py-2 text-xs text-gray-500">No matches</div>
-                                )}
-                              </div>
-                            )}
+                                </span>
+                              ))}
+                            </div>
+                            <div className="relative">
+                              <input
+                                type="text"
+                                value={countrySearch}
+                                onChange={e => setCountrySearch(e.target.value)}
+                                onKeyDown={e => {
+                                  if (e.key === 'Enter') {
+                                    e.preventDefault()
+                                    if (suggestions.length > 0) {
+                                      handleAddCountry(b, suggestions[0].iso2)
+                                    }
+                                  }
+                                }}
+                                onFocus={() => setShowCountryDropdown(true)}
+                                onBlur={() => {
+                                  const currentId = bookIdentifier
+                                  setTimeout(() => {
+                                    setShowCountryDropdown(false)
+                                    if (editingBookId === currentId) {
+                                      closeEditing()
+                                    }
+                                  }, 120)
+                                }}
+                                placeholder="Search country..."
+                                className="w-full border border-gray-300 rounded px-3 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-blue-400"
+                              />
+                              {(showCountryDropdown && (countrySearch || suggestions.length > 0)) && (
+                                <div className="absolute z-10 mt-1 w-full max-h-40 overflow-y-auto bg-white border border-gray-200 rounded shadow-lg">
+                                  {suggestions.map(country => (
+                                    <button
+                                      key={country.iso2}
+                                      type="button"
+                                      onClick={() => handleAddCountry(b, country.iso2)}
+                                      className="flex w-full items-center justify-between px-3 py-2 text-left text-xs hover:bg-blue-50"
+                                    >
+                                      <span>{country.name}</span>
+                                      <span>{getCountryFlag(country.iso2)}</span>
+                                    </button>
+                                  ))}
+                                  {suggestions.length === 0 && (
+                                    <div className="px-3 py-2 text-xs text-gray-500">No matches</div>
+                                  )}
+                                </div>
+                              )}
+                            </div>
                           </div>
-                        </div>
                         )
                       })() : (
                         <div className="mt-1 flex flex-wrap gap-1">
@@ -369,29 +346,10 @@ export function MobileBottomSheet({
                         </div>
                       )}
                     </div>
-                    )
-                  })() : (
-                    b.bookCountries.length > 0 && (
-                      <div className="font-mono text-gray-600 text-xs" style={{ textShadow: '0 1px 2px rgba(255,255,255,0.8)' }}>
-                        <span className="font-medium">Countries:</span>
-                        <div className="mt-1 flex flex-wrap gap-1">
-                          {b.bookCountries.map((country) => (
-                            <button
-                              key={country}
-                              onClick={() => onCountryClick(country)}
-                              className="text-blue-600 hover:text-blue-800 transition-colors text-xs px-1 py-0.5 rounded hover:bg-blue-50 flex items-center gap-1"
-                            >
-                              <span className="underline hover:no-underline">{mapISO2ToDisplayName(country)}</span>
-                              <span className="no-underline">{getCountryFlag(country)}</span>
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    )
-                  )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </div>
       </div>
