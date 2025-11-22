@@ -264,7 +264,10 @@ export const COUNTRIES: Country[] = [
     "name": "China",
     "iso2": "CN",
     "iso3": "CHN",
-    "alternatives": []
+    "alternatives": [
+      "People's Republic of China",
+      "PRC"
+    ]
   },
   {
     "name": "Christmas Island",
@@ -880,7 +883,9 @@ export const COUNTRIES: Country[] = [
     "name": "Netherlands",
     "iso2": "NL",
     "iso3": "NLD",
-    "alternatives": []
+    "alternatives": [
+      "Kingdom of the Netherlands"
+    ]
   },
   {
     "name": "Netherlands Antilles",
@@ -1306,7 +1311,9 @@ export const COUNTRIES: Country[] = [
       "UK",
       "England",
       "Britain",
-      "Great Britain"
+      "Great Britain",
+      "United Kingdom of Great Britain and Ireland",
+      "United Kingdom of Great Britain and Northern Ireland"
     ]
   },
   {
