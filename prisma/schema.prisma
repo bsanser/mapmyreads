@@ -77,14 +77,13 @@ model SessionBook {
 model AuthorCache {
   id             String   @id @default(cuid())
   name           String   @unique // Original author name
-  normalizedName String   // Lowercase, trimmed for lookups
+  normalizedName String   @unique // Lowercase, trimmed for lookups
   countries      String[] // Array of ISO2 country codes
   wikidataId     String?  // Wikidata entity ID (for reference)
   source         String   @default("wikidata") // Where we got the data
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
   
-  @@index([normalizedName])
   @@map("author_cache")
 }
 
