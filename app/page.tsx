@@ -33,7 +33,7 @@ import {
 } from '../lib/performanceLogger'
 import { testCountryDetection } from '../lib/testCountryDetection'
 import { resolveAuthorCountriesBackend } from '../lib/authorCountryServiceBackend'
-import { enrichBooksWithCovers } from '../lib/bookCoverService'
+import { enrichBooksWithCoversBatched } from '../lib/bookCoverServiceBatched'
 
 export default function Home() {
   // State management
@@ -174,7 +174,8 @@ export default function Home() {
             const { booksWithCountries, summary: authorSummary } = await resolveAuthorCountriesBackend(
               parsedBooks,
               (current, total) => {
-                setEnrichmentProgress({ current, total, stage: `Resolving authors... ${current}/${total}` })
+                // Update progress as books are processed
+                setEnrichmentProgress({ current, total, stage: `Processing ${current}/${total} books...` })
               }
             )
             
@@ -204,24 +205,23 @@ export default function Home() {
               bookCount: booksWithCountries.length,
               note: 'author_enrichment_complete'
             })
-
-            // Load covers in background (non-blocking, no progress indicator)
-            console.log('📷 Loading book covers in background...')
-            const coverStartTime = performance.now()
-            console.time('⏱️ Cover Loading (Client-Side)')
             
-            enrichBooksWithCovers(booksWithCountries).then(booksWithCovers => {
-              const coverEndTime = performance.now()
-              const coverDuration = ((coverEndTime - coverStartTime) / 1000).toFixed(2)
-              console.timeEnd('⏱️ Cover Loading (Client-Side)')
-              console.log(`📊 Stats: ${booksWithCountries.length} books processed in ${coverDuration}s`)
+            // Load covers in background with batching
+            const booksNeedingCovers = booksWithCountries.filter(b => b.readStatus === 'read' && !b.coverImage)
+            if (booksNeedingCovers.length > 0) {
+              console.log(`📷 Loading ${booksNeedingCovers.length} READ book covers in batches...`)
               
-              setBooks(booksWithCovers)
-              saveProcessedBooks(booksWithCovers)
-              console.log('✅ Book covers loaded')
-            }).catch(error => {
-              console.warn('⚠️ Failed to load some book covers:', error)
-            })
+              enrichBooksWithCoversBatched(booksWithCountries, (loaded, total) => {
+                console.log(`📷 Progress: ${loaded}/${total} READ covers loaded`)
+              }).then(booksWithCovers => {
+                setBooks(booksWithCovers)
+                saveProcessedBooks(booksWithCovers)
+                console.log('✅ All book covers loaded!')
+              }).catch(error => {
+                console.warn('⚠️ Failed to load some book covers:', error)
+              })
+            }
+
           } catch (parseError) {
             console.error('Error parsing CSV:', parseError)
             setError('Error parsing CSV file. Please check the format.')
@@ -283,14 +283,19 @@ export default function Home() {
         })
         setBooks(processedBooks)
         
-        // Load any missing covers in background
-        const booksNeedingCovers = processedBooks.filter(b => !b.coverImage)
+        // Load covers in background with batching
+        const booksNeedingCovers = processedBooks.filter(b => b.readStatus === 'read' && !b.coverImage)
         if (booksNeedingCovers.length > 0) {
-          console.log(`📷 Loading ${booksNeedingCovers.length} missing book covers...`)
-          enrichBooksWithCovers(processedBooks).then(booksWithCovers => {
+          console.log(`📷 Loading ${booksNeedingCovers.length} missing READ book covers in batches...`)
+          
+          // Load in batches and update progressively
+          enrichBooksWithCoversBatched(processedBooks, (loaded, total) => {
+            // This callback gets called after each batch
+            console.log(`📷 Progress: ${loaded}/${total} READ covers loaded`)
+          }).then(booksWithCovers => {
             setBooks(booksWithCovers)
             saveProcessedBooks(booksWithCovers)
-            console.log('✅ Book covers loaded')
+            console.log('✅ All book covers loaded!')
           }).catch(error => {
             console.warn('⚠️ Failed to load some book covers:', error)
           })

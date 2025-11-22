@@ -41,6 +41,19 @@ export const resolveAuthorCountriesBackend = async (
   
   console.log(`🚀 Calling backend API for ${uniqueAuthors.length} authors...`)
   
+  let progressCount = 0
+  if (onProgress) {
+    onProgress(0, books.length)
+  }
+
+  const heartbeatInterval = setInterval(() => {
+    progressCount++
+    if (onProgress && progressCount < books.length) {
+      const simulatedProgress = Math.min(progressCount * 5, Math.floor(books.length * 0.9))
+      onProgress(simulatedProgress, books.length)
+    }
+  }, 1000)
+  
   // Call backend API for batch resolution
   try {
     const response = await fetch('/api/authors/batch-resolve', {
@@ -53,14 +66,16 @@ export const resolveAuthorCountriesBackend = async (
       throw new Error(`API returned ${response.status}`)
     }
 
+    clearInterval(heartbeatInterval)
     const data = await response.json()
     const authorCountryMap = data.results as Record<string, string[]>
     
     console.log(`✅ Backend returned results for ${Object.keys(authorCountryMap).length} authors`)
     console.log(`📊 Cache stats: ${data.stats.cacheHits} hits, ${data.stats.cacheMisses} misses`)
 
-    // Map results to books
-    for (const book of books) {
+    // Map results to books and show progress
+    for (let i = 0; i < books.length; i++) {
+      const book = books[i]
       const authorNames = splitAuthorNames(book.authors)
       const authorCountriesSet = new Set<string>()
 
@@ -84,9 +99,15 @@ export const resolveAuthorCountriesBackend = async (
 
       processedBooks.push(updatedBook)
       
+      // Update progress more frequently for better UX
       if (onProgress) {
-        onProgress(processedBooks.length, books.length)
+        onProgress(i + 1, books.length)
       }
+    }
+
+    // Ensure final state
+    if (onProgress) {
+      onProgress(books.length, books.length)
     }
 
     const summary: AuthorCountrySummary = {
@@ -110,6 +131,8 @@ export const resolveAuthorCountriesBackend = async (
       summary
     }
   } catch (error) {
+    clearInterval(heartbeatInterval)
+    
     console.error('❌ Backend API failed, falling back to client-side:', error)
     // Fallback to original client-side implementation
     const { resolveAuthorCountries } = await import('./authorCountryService')
