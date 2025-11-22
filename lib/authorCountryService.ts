@@ -15,7 +15,8 @@ export type AuthorCountrySummary = {
 }
 
 export const resolveAuthorCountries = async (
-  books: Book[]
+  books: Book[],
+  onProgress?: (current: number, total: number) => void
 ): Promise<{ booksWithCountries: Book[]; summary: AuthorCountrySummary }> => {
   const authorCountryCache = new Map<string, string[]>()
   const processedBooks: Book[] = []
@@ -37,13 +38,19 @@ export const resolveAuthorCountries = async (
     })
   }
 
-  for (const [authorKey, authorName] of authorLookupTargets.entries()) {
+  let processedAuthors = 0
+  for (const [authorKey, authorName] of Array.from(authorLookupTargets.entries())) {
     try {
       const isoCountries = await detectAuthorCountriesByName(authorName)
       authorCountryCache.set(authorKey, isoCountries)
     } catch (error) {
       console.warn(`Failed to resolve author country for "${authorName}":`, error)
       authorCountryCache.set(authorKey, [])
+    }
+    
+    processedAuthors++
+    if (onProgress) {
+      onProgress(processedAuthors, authorLookupTargets.size)
     }
   }
 

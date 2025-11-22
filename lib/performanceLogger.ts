@@ -14,6 +14,7 @@ interface PerformanceLog {
   totalBookCount?: number
   resolvedAuthorCount?: number
   note?: string
+  timeToFirstShowMap?: number | null
 }
 
 class PerformanceLogger {

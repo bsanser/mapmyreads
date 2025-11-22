@@ -38,26 +38,45 @@ const fetchCoverFromGoogleBooks = async (book: Book): Promise<string | null> => 
   }
 }
 
-export const enrichBooksWithCovers = async (books: Book[]): Promise<Book[]> => {
+// Helper to delay execution
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
+
+export const enrichBooksWithCovers = async (
+  books: Book[],
+  onProgress?: (current: number, total: number) => void
+): Promise<Book[]> => {
   const cache = new Map<string, string | null>()
   const enriched: Book[] = []
+  let processed = 0
+  let apiCallsMade = 0
 
   for (const book of books) {
     const key = book.isbn13 || `${book.title}|${book.authors}`
 
     if (book.coverImage) {
       enriched.push(book)
+      processed++
+      if (onProgress) onProgress(processed, books.length)
       continue
     }
 
     if (!cache.has(key)) {
+      // Add delay after every 5 API calls to avoid rate limiting
+      if (apiCallsMade > 0 && apiCallsMade % 5 === 0) {
+        await delay(1000) // Wait 1 second every 5 requests
+      }
+      
       cache.set(key, await fetchCoverFromGoogleBooks(book))
+      apiCallsMade++
     }
 
     enriched.push({
       ...book,
       coverImage: cache.get(key) || null
     })
+    
+    processed++
+    if (onProgress) onProgress(processed, books.length)
   }
 
   return enriched

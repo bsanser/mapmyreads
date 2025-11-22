@@ -1,6 +1,6 @@
 // Test file for country detection
 import { Book } from '../types/book'
-import { detectCountriesForBook, mapCountryNameForDisplay, mapDisplayNameToCountry } from './countryDetection'
+import { detectAuthorCountries, mapCountryNameForDisplay, mapDisplayNameToCountry } from './countryDetection'
 
 // Sample books for testing
 const testBooks: Book[] = [
@@ -18,10 +18,6 @@ const testBooks: Book[] = [
     numberOfPages: 336,
     bookshelves: [],
     coverImage: null,
-    language: null,
-    subtitle: null,
-    description: null,
-    publisher: null,
     source: 'goodreads',
     originalData: {}
   },
@@ -39,10 +35,6 @@ const testBooks: Book[] = [
     numberOfPages: 417,
     bookshelves: [],
     coverImage: null,
-    language: null,
-    subtitle: null,
-    description: null,
-    publisher: null,
     source: 'goodreads',
     originalData: {}
   },
@@ -60,10 +52,6 @@ const testBooks: Book[] = [
     numberOfPages: 371,
     bookshelves: [],
     coverImage: null,
-    language: null,
-    subtitle: null,
-    description: null,
-    publisher: null,
     source: 'goodreads',
     originalData: {}
   },
@@ -81,10 +69,6 @@ const testBooks: Book[] = [
     numberOfPages: 296,
     bookshelves: [],
     coverImage: null,
-    language: null,
-    subtitle: null,
-    description: null,
-    publisher: null,
     source: 'goodreads',
     originalData: {}
   }
@@ -99,13 +83,12 @@ export const testCountryDetection = async () => {
     console.log(`   ISBN: ${book.isbn13}`)
     
     try {
-      const countries = await detectCountriesForBook(book)
+      const authorCountries = await detectAuthorCountries(book)
       
-      console.log(`   📍 Book Countries: ${countries.bookCountries.length > 0 ? countries.bookCountries.join(', ') : 'None detected'}`)
-      console.log(`   👤 Author Countries: ${countries.authorCountries.length > 0 ? countries.authorCountries.join(', ') : 'None detected'}`)
+      console.log(`   👤 Author Countries: ${authorCountries.length > 0 ? authorCountries.join(', ') : 'None detected'}`)
       
-      if (countries.bookCountries.length === 0 && countries.authorCountries.length === 0) {
-        console.log(`   ⚠️  No countries detected - this might be expected for some books`)
+      if (authorCountries.length === 0) {
+        console.log(`   ⚠️  No countries detected - this might be expected for some authors`)
       }
       
     } catch (error) {

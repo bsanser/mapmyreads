@@ -56,6 +56,22 @@ body {
   animation-delay: 4s;
 }
 
+/* Slide up animation for progress indicator */
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out;
+}
+
 /* Smooth glass morphism utilities */
 @layer utilities {
   .glass {

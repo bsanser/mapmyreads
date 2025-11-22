@@ -17,10 +17,6 @@ export type Book = {
   
   // Enhanced metadata from Google Books API
   coverImage: string | null
-  language: string | null
-  subtitle: string | null
-  description: string | null
-  publisher: string | null
   
   // Metadata
   source: 'goodreads' | 'storygraph'

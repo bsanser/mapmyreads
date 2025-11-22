@@ -418,78 +418,6 @@ export const detectAuthorCountriesByName = async (authorName: string): Promise<s
   return isoCodes
 }
 
-// Enhanced country detection for books
-export const detectBookCountries = async (book: Book): Promise<string[]> => {
-  const detectedCountries = new Set<string>()
-  
-  // Strategy 1: Check book title for country references
-  const titleCountries = detectCountriesFromText(book.title)
-  titleCountries.forEach(country => detectedCountries.add(country))
-  
-  // Strategy 2: Check subtitle for country references
-  if (book.subtitle) {
-    const subtitleCountries = detectCountriesFromText(book.subtitle)
-    subtitleCountries.forEach(country => detectedCountries.add(country))
-  }
-  
-  // Strategy 3: Check description for country references
-  if (book.description) {
-    const descCountries = detectCountriesFromText(book.description)
-    descCountries.forEach(country => detectedCountries.add(country))
-  }
-  
-  // Strategy 4: Check publisher for country hints
-  if (book.publisher) {
-    const publisherCountries = detectCountriesFromText(book.publisher)
-    publisherCountries.forEach(country => detectedCountries.add(country))
-  }
-  
-  // Strategy 5: Use Google Books API for additional metadata (if we don't have the data yet)
-  if (book.isbn13 && (!book.description && !book.subtitle && !book.publisher)) {
-    try {
-      const response = await fetch(
-        `https://www.googleapis.com/books/v1/volumes?q=isbn:${book.isbn13}`
-      )
-      
-      if (response.ok) {
-        const data = await response.json()
-        if (data.items && data.items.length > 0) {
-          const volumeInfo = data.items[0].volumeInfo
-          
-          // Check description for country references
-          if (volumeInfo.description) {
-            const descCountries = detectCountriesFromText(volumeInfo.description)
-            descCountries.forEach(country => detectedCountries.add(country))
-          }
-          
-          // Check categories for location hints
-          if (volumeInfo.categories) {
-            const categoriesText = volumeInfo.categories.join(' ')
-            const catCountries = detectCountriesFromText(categoriesText)
-            catCountries.forEach(country => detectedCountries.add(country))
-          }
-          
-          // Check subtitle for country references
-          if (volumeInfo.subtitle) {
-            const subtitleCountries = detectCountriesFromText(volumeInfo.subtitle)
-            subtitleCountries.forEach(country => detectedCountries.add(country))
-          }
-          
-          // Check publisher for country hints
-          if (volumeInfo.publisher) {
-            const publisherCountries = detectCountriesFromText(volumeInfo.publisher)
-            publisherCountries.forEach(country => detectedCountries.add(country))
-          }
-        }
-      }
-    } catch (error) {
-      console.warn('Error fetching book metadata for country detection:', error)
-    }
-  }
-  
-  return Array.from(detectedCountries)
-}
-
 // Enhanced author country detection
 export const detectAuthorCountries = async (book: Book): Promise<string[]> => {
   const detectedCountries = new Set<string>()
@@ -499,27 +427,6 @@ export const detectAuthorCountries = async (book: Book): Promise<string[]> => {
     const countries = await detectAuthorCountriesByName(authorName)
     countries.forEach(country => detectedCountries.add(country))
   }
-
-  if (detectedCountries.size === 0 && book.description) {
-    const descAuthorCountries = detectAuthorNationality(book.description)
-    descAuthorCountries.forEach(country => detectedCountries.add(mapDisplayNameToISO2(country)))
-  }
   
   return Array.from(detectedCountries).filter(Boolean)
 }
-
-// Main function to detect both book and author countries
-export const detectCountriesForBook = async (book: Book): Promise<{
-  bookCountries: string[]
-  authorCountries: string[]
-}> => {
-  const [bookCountries, authorCountries] = await Promise.all([
-    detectBookCountries(book),
-    detectAuthorCountries(book)
-  ])
-  
-  return {
-    bookCountries,
-    authorCountries
-  }
-} 
