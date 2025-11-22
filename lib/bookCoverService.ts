@@ -1,37 +1,49 @@
 import { Book } from '../types/book'
 
-const GOOGLE_BOOKS_API = 'https://www.googleapis.com/books/v1/volumes?q='
+// Open Library API endpoints
+const OPEN_LIBRARY_SEARCH = 'https://openlibrary.org/search.json'
+const OPEN_LIBRARY_COVERS = 'https://covers.openlibrary.org/b'
 
-const buildCoverUrl = (imageLinks: any): string | null => {
-  if (!imageLinks) return null
-  const url = imageLinks.extraLarge || imageLinks.large || imageLinks.medium ||
-    imageLinks.small || imageLinks.thumbnail || imageLinks.smallThumbnail
-  if (!url) return null
-  // Ensure https and add larger size when possible
-  const normalized = url.replace(/^http:\/\//, 'https://')
-  return normalized.includes('&edge=curl') ? normalized : `${normalized}&fife=w800`
-}
+// Fallback: longitood.com for additional cover sources
+const LONGITOOD_COVERS = 'https://www.longitood.com/cover'
 
-const fetchCoverFromGoogleBooks = async (book: Book): Promise<string | null> => {
-  const query = book.isbn13
-    ? `isbn:${book.isbn13}`
-    : `${book.title} ${book.authors}`.trim().replace(/\s+/g, ' ')
-
+const fetchCoverFromOpenLibrary = async (book: Book): Promise<string | null> => {
   try {
-    const response = await fetch(
-      `${GOOGLE_BOOKS_API}${encodeURIComponent(query)}&maxResults=1`
-    )
-
-    if (!response.ok) {
-      console.warn(`Google Books lookup failed for ${book.title}`)
-      return null
+    // Try ISBN first (most reliable)
+    if (book.isbn13) {
+      // Direct cover URL from ISBN
+      const coverUrl = `${OPEN_LIBRARY_COVERS}/isbn/${book.isbn13}-L.jpg`
+      
+      // Check if cover exists
+      const response = await fetch(coverUrl, { method: 'HEAD' })
+      if (response.ok) {
+        return coverUrl
+      }
     }
 
-    const data = await response.json()
-    if (!data.items || data.items.length === 0) return null
+    // Fallback: Search by title and author
+    const query = `${book.title} ${book.authors}`.trim()
+    const searchUrl = `${OPEN_LIBRARY_SEARCH}?q=${encodeURIComponent(query)}&limit=1`
+    
+    const searchResponse = await fetch(searchUrl)
+    if (!searchResponse.ok) return null
 
-    const volumeInfo = data.items[0].volumeInfo
-    return buildCoverUrl(volumeInfo?.imageLinks)
+    const data = await searchResponse.json()
+    if (!data.docs || data.docs.length === 0) return null
+
+    const bookData = data.docs[0]
+    
+    // Try to get cover from Open Library ID
+    if (bookData.cover_i) {
+      return `${OPEN_LIBRARY_COVERS}/id/${bookData.cover_i}-L.jpg`
+    }
+
+    // Try ISBN from search results
+    if (bookData.isbn && bookData.isbn.length > 0) {
+      return `${OPEN_LIBRARY_COVERS}/isbn/${bookData.isbn[0]}-L.jpg`
+    }
+
+    return null
   } catch (error) {
     console.warn(`Error retrieving cover for "${book.title}":`, error)
     return null
@@ -61,12 +73,12 @@ export const enrichBooksWithCovers = async (
     }
 
     if (!cache.has(key)) {
-      // Add delay after every 5 API calls to avoid rate limiting
-      if (apiCallsMade > 0 && apiCallsMade % 5 === 0) {
-        await delay(1000) // Wait 1 second every 5 requests
+      // Add delay after every 10 API calls to be respectful to Open Library
+      if (apiCallsMade > 0 && apiCallsMade % 10 === 0) {
+        await delay(500) // Wait 500ms every 10 requests
       }
       
-      cache.set(key, await fetchCoverFromGoogleBooks(book))
+      cache.set(key, await fetchCoverFromOpenLibrary(book))
       apiCallsMade++
     }
 
