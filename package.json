@@ -11,6 +11,7 @@
     "generate-countries": "tsx scripts/generate-countries.ts"
   },
   "dependencies": {
+    "@prisma/client": "^7.0.0",
     "@react-spring/web": "^10.0.1",
     "@types/maplibre-gl": "^1.13.2",
     "country-code-lookup": "^0.1.3",

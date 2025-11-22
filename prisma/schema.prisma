@@ -86,4 +86,34 @@ model Feedback {
   user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
   
   @@map("feedback")
-} 
+}
+
+// Cache table for author country mappings
+model AuthorCache {
+  id             String   @id @default(cuid())
+  name           String   @unique // Original author name
+  normalizedName String   // Lowercase, trimmed for lookups
+  countries      String[] // Array of ISO2 country codes
+  wikidataId     String?  // Wikidata entity ID (for reference)
+  source         String   @default("wikidata") // Where we got the data
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  
+  @@index([normalizedName])
+  @@map("author_cache")
+}
+
+// Cache table for book cover URLs
+model BookMetadataCache {
+  id          String   @id @default(cuid())
+  isbn13      String?  @unique
+  title       String
+  author      String
+  coverUrl    String?
+  source      String   @default("openlibrary") // open_library, google_books, etc
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([title, author])
+  @@map("book_metadata_cache")
+}
