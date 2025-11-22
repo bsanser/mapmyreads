@@ -38,10 +38,10 @@ export async function POST(request: NextRequest) {
 
     console.log(`📊 Cache hits: ${Object.keys(results).length}, misses: ${cacheMisses.length}`)
 
-    // Step 2: Resolve cache misses from Wikidata
-    for (const authorName of cacheMisses) {
+    // Step 2: Resolve cache misses from Wikidata (in parallel with limit)
+    const resolvePromises = cacheMisses.map(async (authorName) => {
       const normalized = normalizeAuthorName(authorName)
-      if (!normalized) continue
+      if (!normalized) return
 
       try {
         console.log(`🌐 Fetching from Wikidata: ${authorName}`)
@@ -63,7 +63,15 @@ export async function POST(request: NextRequest) {
         console.error(`❌ Failed to resolve ${authorName}:`, error)
         results[authorName] = []
       }
-    }
+    })
+
+    // Wait for all with a timeout of 25 seconds (Vercel limit is 30s)
+    await Promise.race([
+      Promise.all(resolvePromises),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 25000))
+    ]).catch(error => {
+      console.warn('⚠️ Some authors timed out, returning partial results')
+    })
 
     return NextResponse.json({
       success: true,

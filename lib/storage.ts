@@ -153,6 +153,26 @@ export const saveShareableData = (): void => {
   }
 }
 
+// Clear all caches (for testing)
+export const clearAllCaches = () => {
+  if (typeof window === 'undefined') return
+  
+  try {
+    localStorage.clear()
+    sessionStorage.clear()
+    console.log('✅ All browser caches cleared!')
+    return true
+  } catch (error) {
+    console.error('❌ Error clearing caches:', error)
+    return false
+  }
+}
+
+// Expose to window for easy access in console
+if (typeof window !== 'undefined') {
+  (window as any).clearAllCaches = clearAllCaches
+}
+
 // Storage statistics
 export const getStorageStats = () => {
   if (typeof window === 'undefined') {

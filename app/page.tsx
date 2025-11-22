@@ -32,7 +32,7 @@ import {
   savePerformanceLogs 
 } from '../lib/performanceLogger'
 import { testCountryDetection } from '../lib/testCountryDetection'
-import { resolveAuthorCountries } from '../lib/authorCountryService'
+import { resolveAuthorCountriesBackend } from '../lib/authorCountryServiceBackend'
 import { enrichBooksWithCovers } from '../lib/bookCoverService'
 
 export default function Home() {
@@ -168,12 +168,20 @@ export default function Home() {
             const readBooks = parsedBooks.filter(b => b.readStatus === 'read')
             setEnrichmentProgress({ current: 0, total: 1, stage: 'Discovering author countries...' })
             
-            const { booksWithCountries, summary: authorSummary } = await resolveAuthorCountries(
+            console.time('⏱️ Author Resolution (Backend API)')
+            const authorStartTime = performance.now()
+            
+            const { booksWithCountries, summary: authorSummary } = await resolveAuthorCountriesBackend(
               parsedBooks,
               (current, total) => {
                 setEnrichmentProgress({ current, total, stage: `Resolving authors... ${current}/${total}` })
               }
             )
+            
+            const authorEndTime = performance.now()
+            const authorDuration = ((authorEndTime - authorStartTime) / 1000).toFixed(2)
+            console.timeEnd('⏱️ Author Resolution (Backend API)')
+            console.log(`📊 Stats: ${authorSummary.uniqueAuthors} authors, ${authorSummary.apiLookups} API calls, ${authorDuration}s total`)
             
             setBooks(booksWithCountries)
             saveProcessedBooks(booksWithCountries)
@@ -199,7 +207,15 @@ export default function Home() {
 
             // Load covers in background (non-blocking, no progress indicator)
             console.log('📷 Loading book covers in background...')
+            const coverStartTime = performance.now()
+            console.time('⏱️ Cover Loading (Client-Side)')
+            
             enrichBooksWithCovers(booksWithCountries).then(booksWithCovers => {
+              const coverEndTime = performance.now()
+              const coverDuration = ((coverEndTime - coverStartTime) / 1000).toFixed(2)
+              console.timeEnd('⏱️ Cover Loading (Client-Side)')
+              console.log(`📊 Stats: ${booksWithCountries.length} books processed in ${coverDuration}s`)
+              
               setBooks(booksWithCovers)
               saveProcessedBooks(booksWithCovers)
               console.log('✅ Book covers loaded')

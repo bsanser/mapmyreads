@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "clean-isbns": "tsx scripts/cleanISBNs.ts",
-    "generate-countries": "tsx scripts/generate-countries.ts"
+    "generate-countries": "tsx scripts/generate-countries.ts",
+    "clear-cache": "tsx scripts/clear-cache.ts"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
