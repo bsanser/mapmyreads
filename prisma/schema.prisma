@@ -20,7 +20,6 @@ model User {
   // Relations
   books     Book[]
   sessions  Session[]
-  feedback  Feedback[]
   
   @@map("users")
 }
@@ -72,20 +71,6 @@ model SessionBook {
   
   @@unique([sessionId, bookId])
   @@map("session_books")
-}
-
-model Feedback {
-  id        String   @id @default(cuid())
-  type      String   // 'bug', 'feature', 'general'
-  message   String
-  userAgent String?
-  createdAt DateTime @default(now())
-  
-  // Relations
-  userId    String?
-  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
-  
-  @@map("feedback")
 }
 
 // Cache table for author country mappings
