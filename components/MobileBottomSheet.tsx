@@ -138,11 +138,11 @@ export function MobileBottomSheet({
                   key={`${b.isbn13}-${i}`}
                   className="relative bg-white border border-gray-300 rounded p-4 hover:shadow-md transition-all min-h-[120px] flex items-start gap-4"
                 >
-                  <div className="relative flex-shrink-0">
+                  <div className="relative flex-shrink-0" style={{ paddingTop: '10px' }}>
                     <img 
                       src={b.coverImage ?? '/book-placeholder.png'} 
                       alt={`Cover of ${b.title}`}
-                      className="block w-20 h-24 object-cover rounded shadow-md border border-gray-200 relative z-10"
+                      className="block w-20 h-32 object-contain rounded shadow-md border border-gray-200 relative z-10 bg-white"
                     />
                     <img 
                       src="/paperclip.svg" 

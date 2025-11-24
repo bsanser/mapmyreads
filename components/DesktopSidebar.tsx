@@ -200,11 +200,11 @@ export function DesktopSidebar({
                 backgroundPosition: '0 0, 0 8px',
               }}
             >
-              <div className="relative flex-shrink-0">
+              <div className="relative flex-shrink-0" style={{ paddingTop: '10px' }}>
                 <img 
                   src={b.coverImage ?? '/book-placeholder.png'} 
                   alt={`Cover of ${b.title}`}
-                  className="block w-20 h-24 object-cover rounded shadow-md border border-gray-200 relative z-10"
+                  className="block w-20 h-32 object-contain rounded shadow-md border border-gray-200 relative z-10 bg-white"
                 />
                 <img 
                   src="/paperclip.svg" 
