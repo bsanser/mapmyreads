@@ -98,7 +98,9 @@ export async function POST(request: NextRequest) {
     console.log(`📊 Cache hits: ${Object.keys(results).length}, misses: ${cacheMisses.length}`)
 
     // Step 2: Fetch cache misses from Open Library
-    for (const book of cacheMisses) {
+    // Process sequentially with rate limiting ONLY between actual API calls
+    for (let i = 0; i < cacheMisses.length; i++) {
+      const book = cacheMisses[i]
       const key = book.isbn13 || `${book.title}|${book.author}`
       
       try {
@@ -119,8 +121,10 @@ export async function POST(request: NextRequest) {
         results[key] = coverUrl
         console.log(`💾 Cached: ${book.title} → ${coverUrl ? 'found' : 'not found'}`)
         
-        // Rate limiting: wait 100ms between requests
-        await new Promise(resolve => setTimeout(resolve, 100))
+        // Rate limiting: wait 100ms between API requests (not after the last one)
+        if (i < cacheMisses.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, 100))
+        }
       } catch (error) {
         console.error(`❌ Failed to fetch cover for ${book.title}:`, error)
         results[key] = null

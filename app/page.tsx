@@ -48,6 +48,8 @@ export default function Home() {
   const [showMissingAuthorCountry, setShowMissingAuthorCountry] = useState(false)
   const [enrichmentProgress, setEnrichmentProgress] = useState({ current: 0, total: 0, stage: '' })
   const [isEnriching, setIsEnriching] = useState(false)
+  const [coverProgress, setCoverProgress] = useState({ current: 0, total: 0, stage: '' })
+  const [isLoadingCovers, setIsLoadingCovers] = useState(false)
   
   const booksLoadedRef = useRef(false)
   const uploadStartRef = useRef<number | null>(null)
@@ -210,15 +212,23 @@ export default function Home() {
             const booksNeedingCovers = booksWithCountries.filter(b => b.readStatus === 'read' && !b.coverImage)
             if (booksNeedingCovers.length > 0) {
               console.log(`📷 Loading ${booksNeedingCovers.length} READ book covers in batches...`)
+              setIsLoadingCovers(true)
+              setCoverProgress({ current: 0, total: booksNeedingCovers.length, stage: 'Downloading book covers...' })
               
-              enrichBooksWithCoversBatched(booksWithCountries, (loaded, total) => {
+              enrichBooksWithCoversBatched(booksWithCountries, (loaded, total, updatedBooks) => {
                 console.log(`📷 Progress: ${loaded}/${total} READ covers loaded`)
+                // Update UI immediately as each batch completes
+                setBooks(updatedBooks)
+                saveProcessedBooks(updatedBooks)
+                setCoverProgress({ current: loaded, total, stage: `Loading covers: ${loaded}/${total}` })
               }).then(booksWithCovers => {
-                setBooks(booksWithCovers)
-                saveProcessedBooks(booksWithCovers)
                 console.log('✅ All book covers loaded!')
+                setIsLoadingCovers(false)
+                setCoverProgress({ current: 0, total: 0, stage: '' })
               }).catch(error => {
                 console.warn('⚠️ Failed to load some book covers:', error)
+                setIsLoadingCovers(false)
+                setCoverProgress({ current: 0, total: 0, stage: '' })
               })
             }
 
@@ -287,17 +297,25 @@ export default function Home() {
         const booksNeedingCovers = processedBooks.filter(b => b.readStatus === 'read' && !b.coverImage)
         if (booksNeedingCovers.length > 0) {
           console.log(`📷 Loading ${booksNeedingCovers.length} missing READ book covers in batches...`)
+          setIsLoadingCovers(true)
+          setCoverProgress({ current: 0, total: booksNeedingCovers.length, stage: 'Downloading book covers...' })
           
           // Load in batches and update progressively
-          enrichBooksWithCoversBatched(processedBooks, (loaded, total) => {
+          enrichBooksWithCoversBatched(processedBooks, (loaded, total, updatedBooks) => {
             // This callback gets called after each batch
             console.log(`📷 Progress: ${loaded}/${total} READ covers loaded`)
+            // Update UI immediately as each batch completes
+            setBooks(updatedBooks)
+            saveProcessedBooks(updatedBooks)
+            setCoverProgress({ current: loaded, total, stage: `Loading covers: ${loaded}/${total}` })
           }).then(booksWithCovers => {
-            setBooks(booksWithCovers)
-            saveProcessedBooks(booksWithCovers)
             console.log('✅ All book covers loaded!')
+            setIsLoadingCovers(false)
+            setCoverProgress({ current: 0, total: 0, stage: '' })
           }).catch(error => {
             console.warn('⚠️ Failed to load some book covers:', error)
+            setIsLoadingCovers(false)
+            setCoverProgress({ current: 0, total: 0, stage: '' })
           })
         }
       }
@@ -389,6 +407,15 @@ export default function Home() {
           current={enrichmentProgress.current}
           total={enrichmentProgress.total}
           stage={enrichmentProgress.stage}
+        />
+      )}
+      
+      {/* Cover Loading Progress */}
+      {isLoadingCovers && (
+        <EnrichmentProgress 
+          current={coverProgress.current}
+          total={coverProgress.total}
+          stage={coverProgress.stage}
         />
       )}
     </div>

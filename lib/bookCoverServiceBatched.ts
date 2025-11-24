@@ -3,7 +3,7 @@ import { Book } from '../types/book'
 // Load covers in small batches to avoid overwhelming the API
 export const enrichBooksWithCoversBatched = async (
   books: Book[],
-  onBatchComplete?: (loadedCount: number, totalCount: number) => void
+  onBatchComplete?: (loadedCount: number, totalCount: number, updatedBooks: Book[]) => void
 ): Promise<Book[]> => {
   // Only fetch covers for read books
   const booksNeedingCovers = books.filter(b => b.readStatus === 'read' && !b.coverImage)
@@ -15,7 +15,7 @@ export const enrichBooksWithCoversBatched = async (
 
   console.log(`📷 Loading covers for ${booksNeedingCovers.length} books in batches...`)
 
-  const BATCH_SIZE = 20 
+  const BATCH_SIZE = 10
   let enrichedBooks = [...books]
   let loadedCount = 0
 
@@ -54,16 +54,16 @@ export const enrichBooksWithCoversBatched = async (
         console.log(`✅ Batch ${Math.floor(i / BATCH_SIZE) + 1}: Loaded ${loadedCount}/${booksNeedingCovers.length} covers`)
         
         if (onBatchComplete) {
-          onBatchComplete(loadedCount, booksNeedingCovers.length)
+          onBatchComplete(loadedCount, booksNeedingCovers.length, enrichedBooks)
         }
       }
     } catch (error) {
       console.warn(`⚠️ Batch ${Math.floor(i / BATCH_SIZE) + 1} failed:`, error)
     }
 
-    // Small delay between batches to be nice to the API
+    // No delay needed - rate limiting happens in the API per actual API call
     if (i + BATCH_SIZE < booksNeedingCovers.length) {
-      await new Promise(resolve => setTimeout(resolve, 500))
+      await new Promise(resolve => setTimeout(resolve, 50))
     }
   }
 
