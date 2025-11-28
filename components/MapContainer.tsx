@@ -1,7 +1,8 @@
 import { MapLibreMap } from './MapLibreMap'
 import { MapControls } from './MapControls'
 import { Book } from '../types/book'
-import { ThemeKey, THEMES } from '../lib/themeManager'
+import { ThemeKey } from '../lib/themeManager'
+import { FeedbackButton } from './FeedbackButton'
 
 interface MapContainerProps {
   books: Book[]
@@ -43,12 +44,13 @@ export function MapContainer({
       </div>
 
       {/* Map Controls - Desktop overlay */}
-      <div className="hidden lg:block absolute top-4 right-20 z-10">
+      <div className="hidden lg:flex absolute top-4 right-16 z-10 items-center gap-2">
         <MapControls
           currentTheme={currentTheme}
           onThemeChange={onThemeChange}
           themes={themes}
         />
+        <FeedbackButton theme={currentTheme} />
       </div>
     </div>
   )

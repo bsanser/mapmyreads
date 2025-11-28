@@ -4,7 +4,6 @@ import { getCountryFlag, mapISO2ToDisplayName } from '../lib/mapUtilities'
 import { COUNTRIES } from '../lib/countries'
 import { ReadingAtlasSummary } from './ReadingAtlasSummary'
 import { ShareButton } from './ShareButton'
-import { FeedbackButton } from './FeedbackButton'
 import { BuyMeACoffee } from './BuyMeACoffee'
 import { ThemeKey, THEMES } from '../lib/themeManager'
 

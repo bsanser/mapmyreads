@@ -1,5 +1,4 @@
 import { ShareButton } from './ShareButton'
-import { FeedbackButton } from './FeedbackButton'
 import { BuyMeACoffee } from './BuyMeACoffee'
 import { MapControls } from './MapControls'
 import { Book } from '../types/book'
@@ -39,7 +38,6 @@ export function Header({
               themes={themes}
               layout="inline"
             />
-            <FeedbackButton />
             <BuyMeACoffee />
           </div>
         </div>
