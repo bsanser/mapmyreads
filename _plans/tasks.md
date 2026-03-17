@@ -10,10 +10,10 @@ Generated from refactor_plan_1.md. Check off as completed.
 - [x] Task #5: P1-C5 - Remove debug tooling (testCountryDetection + performanceLogger)
 
 ## Phase 2: Extract Shared Components (4 tasks)
-- [ ] Task #6: P2-C6 - Extract BookCard component
-- [ ] Task #7: P2-C7 - Extract BookList component
-- [ ] Task #8: P2-C8 - Refactor DesktopSidebar to use BookList
-- [ ] Task #9: P2-C9 - Refactor MobileBottomSheet to use BookList
+- [x] Task #6: P2-C6 - Extract BookCard component
+- [x] Task #7: P2-C7 - Extract BookList component
+- [x] Task #8: P2-C8 - Refactor DesktopSidebar to use BookList
+- [x] Task #9: P2-C9 - Refactor MobileBottomSheet to use BookList
 
 ## Phase 3: Introduce React Context (5 tasks)
 - [ ] Task #10: P3-C10 - Create BooksContext
