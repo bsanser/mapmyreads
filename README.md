@@ -34,7 +34,7 @@ The application uses a **session-based storage strategy** that allows users to:
 
 When users create accounts, the system will:
 
-1. **Database Storage**: Migrate session data to persistent database storage
+1. *!*Database Storage**: Migrate session data to persistent database storage
 2. **User Profiles**: Store user information and reading history
 3. **Enhanced Features**: Reading statistics, book recommendations, social features
 4. **Data Migration**: Seamless transition from session to account-based storage
