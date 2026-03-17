@@ -1,6 +1,9 @@
 import { COUNTRIES } from './countries';
 import { darkenColor } from './themeManager';
 
+// Cache for generated heatmap styles — keyed on bookCount:themeKey
+const heatmapCache = new Map<string, ReturnType<typeof buildHeatmapStyle>>();
+
 // Calculate country book counts for heatmap
 export const getCountryBookCounts = (books: any[]) => {
   const countryCounts: Record<string, number> = {};
@@ -28,44 +31,40 @@ export const getCountryBookCounts = (books: any[]) => {
   return countryCounts;
 };
 
-// Generate the complete heatmap style based on current data
-export const generateHeatmapStyle = (books: any[], currentTheme: any) => {
+// Pure builder — separated so the memoized wrapper can call it
+function buildHeatmapStyle(books: any[], currentTheme: any) {
   const countryCounts = getCountryBookCounts(books);
   const baseColor = currentTheme.fill;
   const outlineColor = currentTheme.outline;
-  
-  // Find the maximum book count to normalize the heatmap
+
   const maxCount = Math.max(...Object.values(countryCounts));
-  
+
   if (maxCount === 0) {
-    return "#ffffff"; // Default white if no books
+    return "#ffffff";
   }
-  
-  // Create a heatmap with different shades based on book count
-  const heatmapStyle = [
+
+  return [
     "case",
-    // For each country with books, create a color based on count
     ...Object.entries(countryCounts).flatMap(([iso2, count]) => {
       if (count === 0) return [];
-      
-      let color;
-      if (count === 0) {
-        color = "#ffffff"; // 0 books = white
-      } else if (count === 1) {
-        color = baseColor; // 1 book = light theme color
-      } else if (count === 2) {
-        color = darkenColor(baseColor, 0.15); // 2 books = medium shade
-      } else {
-        color = outlineColor; // 3+ books = darkest theme color
-      }
-      
-      return [
-        ["==", ["get", "ISO3166-1-Alpha-2"], iso2],
-        color
-      ];
+      const color =
+        count === 1 ? baseColor :
+        count === 2 ? darkenColor(baseColor, 0.15) :
+        outlineColor;
+      return [["==", ["get", "ISO3166-1-Alpha-2"], iso2], color];
     }),
-    "#ffffff" // Default white for countries with no books
+    "#ffffff"
   ];
-  
-  return heatmapStyle;
+}
+
+// Generate the complete heatmap style based on current data.
+// Memoized on book count + theme key to avoid rebuilding on every render.
+export const generateHeatmapStyle = (books: any[], currentTheme: any): any => {
+  const cacheKey = `${books.length}:${currentTheme.fill}:${currentTheme.outline}`;
+  if (heatmapCache.has(cacheKey)) {
+    return heatmapCache.get(cacheKey);
+  }
+  const style = buildHeatmapStyle(books, currentTheme);
+  heatmapCache.set(cacheKey, style);
+  return style;
 };

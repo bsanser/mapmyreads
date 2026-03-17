@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { Book } from '../types/book'
 import { getCountryFlag, mapISO2ToDisplayName } from '../lib/mapUtilities'
 import { COUNTRIES } from '../lib/countries'
@@ -30,7 +31,7 @@ interface BookCardProps {
   onBlur: () => void
 }
 
-export function BookCard({
+export const BookCard = memo(function BookCard({
   book: b,
   isEditing,
   onToggleEdit,
@@ -175,4 +176,4 @@ export function BookCard({
       </div>
     </div>
   )
-}
+})

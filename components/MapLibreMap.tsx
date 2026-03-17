@@ -1,15 +1,13 @@
 "use client";
 import "maplibre-gl/dist/maplibre-gl.css";
 import maplibregl from "maplibre-gl";
-import { useEffect, useRef, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import { THEMES, ThemeKey } from "../lib/themeManager";
 import { generateHeatmapStyle } from "../lib/heatmapEngine";
 import { setupMapEventHandlers, getOptimalZoom } from "../lib/mapEventHandlers";
 import { createMapStyle, getMapInitialConfig } from "../lib/mapStyling";
 
 export type MapLibreMapProps = {
-  highlighted?: Set<string>;
-  selectedCountry?: string | null;
   onCountryClick?: (countryName: string) => void;
   books?: any[];
   currentTheme?: keyof typeof THEMES;
@@ -55,14 +53,12 @@ function applyMapStyle(
   map.triggerRepaint();
 }
 
-export const MapLibreMap = ({
-  highlighted = new Set(),
-  selectedCountry = null,
+export const MapLibreMap = memo(function MapLibreMap({
   onCountryClick,
   books = [],
   currentTheme: propCurrentTheme = 'blue',
   themes: propThemes = THEMES
-}: MapLibreMapProps) => {
+}: MapLibreMapProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const [mapStatus, setMapStatus] = useState<'loading' | 'ready' | 'error'>('loading');
@@ -139,4 +135,4 @@ export const MapLibreMap = ({
       </div>
     </div>
   );
-};
+});

@@ -1,4 +1,4 @@
-import { MouseEvent } from 'react'
+import { memo, MouseEvent } from 'react'
 import { THEMES } from '../lib/themeManager'
 import { useBooks } from '../contexts/BooksContext'
 import { useTheme } from '../contexts/ThemeContext'
@@ -15,7 +15,7 @@ const STAT_CARDS = [
   { label: 'Countries', key: 'authorCountriesCovered' }
 ] as const
 
-export function ReadingAtlasSummary({
+export const ReadingAtlasSummary = memo(function ReadingAtlasSummary({
   showMissingAuthorCountry,
   onToggleMissingAuthorCountry,
   className = ''
@@ -65,4 +65,4 @@ export function ReadingAtlasSummary({
       )}
     </div>
   )
-}
+})

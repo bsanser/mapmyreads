@@ -29,7 +29,7 @@ Generated from refactor_plan_1.md. Check off as completed.
 
 ## Phase 5: Consolidate MapLibreMap (2 tasks)
 - [x] Task #18: P5-C19 - Consolidate MapLibreMap useEffect hooks
-- [ ] Task #19: P5-C20+21 - Memoize heatmap + add React.memo
+- [x] Task #19: P5-C20+21 - Memoize heatmap + add React.memo
 
 ## Phase 6: Consolidate Service Files (1 task)
 - [ ] Task #20: P6-C22+23 - Consolidate service files
