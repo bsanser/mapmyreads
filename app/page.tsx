@@ -30,13 +30,13 @@ import { useEnrichment } from '../contexts/EnrichmentContext'
 
 export default function Home() {
   // Context state
-  const { books, setBooks, selectedCountry, setSelectedCountry, summaryStats, updateBookCountries } = useBooks()
+  const { books, setBooks, selectedCountry, setSelectedCountry } = useBooks()
   const { currentTheme, setCurrentTheme } = useTheme()
   const {
-    isEnriching, setIsEnriching,
-    enrichmentProgress, setEnrichmentProgress,
-    isLoadingCovers, setIsLoadingCovers,
-    coverProgress, setCoverProgress
+    setIsEnriching,
+    setEnrichmentProgress,
+    setIsLoadingCovers,
+    setCoverProgress
   } = useEnrichment()
 
   // UI-only state
@@ -61,10 +61,6 @@ export default function Home() {
   const handleCountryClick = (country: string) => {
     const iso2Code = mapDisplayNameToISO2(country)
     setSelectedCountry(iso2Code)
-  }
-
-  const handleShowAll = () => {
-    setSelectedCountry(null)
   }
 
   const handleLoadMore = () => {
@@ -237,10 +233,8 @@ export default function Home() {
     <div className="h-screen relative w-full bg-gray-50 overflow-hidden">
       <div className="lg:hidden px-4 pt-6">
         <ReadingAtlasSummary
-          stats={summaryStats}
           showMissingAuthorCountry={showMissingAuthorCountry}
           onToggleMissingAuthorCountry={handleToggleMissingAuthorCountry}
-          currentTheme={currentTheme}
           className="mb-4"
         />
       </div>
@@ -255,25 +249,13 @@ export default function Home() {
       />
 
       <DesktopSidebar
-        books={books}
-        selectedCountry={selectedCountry}
-        onCountryClick={handleCountryClick}
-        onShowAll={handleShowAll}
         booksToShow={booksToShow}
         onLoadMore={handleLoadMore}
-        currentTheme={currentTheme}
-        onUpdateBookCountries={updateBookCountries}
       />
 
       <MobileBottomSheet
-        books={books}
-        selectedCountry={selectedCountry}
-        onCountryClick={handleCountryClick}
-        onShowAll={handleShowAll}
         showBottomSheet={showBottomSheet}
         onToggleBottomSheet={() => setShowBottomSheet(!showBottomSheet)}
-        currentTheme={currentTheme}
-        onUpdateBookCountries={updateBookCountries}
         showMissingAuthorCountry={showMissingAuthorCountry}
         onToggleMissingAuthorCountry={handleToggleMissingAuthorCountry}
         onClearMissingAuthorCountry={handleClearMissingAuthorCountry}
@@ -285,21 +267,7 @@ export default function Home() {
         books={books}
       />
 
-      {isEnriching && (
-        <EnrichmentProgress
-          current={enrichmentProgress.current}
-          total={enrichmentProgress.total}
-          stage={enrichmentProgress.stage}
-        />
-      )}
-
-      {isLoadingCovers && (
-        <EnrichmentProgress
-          current={coverProgress.current}
-          total={coverProgress.total}
-          stage={coverProgress.stage}
-        />
-      )}
+      <EnrichmentProgress />
     </div>
   )
 }

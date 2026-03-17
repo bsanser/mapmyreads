@@ -1,24 +1,16 @@
 import { useState } from 'react'
 import { Book } from '../types/book'
 import { BookCard } from './BookCard'
+import { useBooks } from '../contexts/BooksContext'
 
 interface BookListProps {
-  books: Book[]
-  selectedCountry: string | null
-  onCountryClick: (country: string) => void
-  onUpdateBookCountries: (book: Book, countries: string[]) => void
   showMissingAuthorCountry: boolean
   booksToShow?: number
 }
 
-export function BookList({
-  books,
-  selectedCountry,
-  onCountryClick,
-  onUpdateBookCountries,
-  showMissingAuthorCountry,
-  booksToShow,
-}: BookListProps) {
+export function BookList({ showMissingAuthorCountry, booksToShow }: BookListProps) {
+  const { books, selectedCountry, setSelectedCountry, updateBookCountries } = useBooks()
+
   const [editingBookId, setEditingBookId] = useState<string | null>(null)
   const [countrySearch, setCountrySearch] = useState('')
   const [showCountryDropdown, setShowCountryDropdown] = useState(false)
@@ -44,13 +36,13 @@ export function BookList({
 
   const handleRemoveCountry = (book: Book, country: string) => {
     const updated = book.authorCountries.filter(code => code !== country)
-    onUpdateBookCountries(book, updated)
+    updateBookCountries(book, updated)
   }
 
   const handleAddCountry = (book: Book, country: string) => {
     if (book.authorCountries.includes(country)) return
     const updated = [...book.authorCountries, country]
-    onUpdateBookCountries(book, updated)
+    updateBookCountries(book, updated)
     closeEditing()
   }
 
@@ -77,7 +69,7 @@ export function BookList({
             book={b}
             isEditing={isEditing}
             onToggleEdit={() => handleToggleEdit(bookIdentifier)}
-            onCountryClick={onCountryClick}
+            onCountryClick={country => setSelectedCountry(country)}
             onAddCountry={country => handleAddCountry(b, country)}
             onRemoveCountry={country => handleRemoveCountry(b, country)}
             countrySearch={countrySearch}

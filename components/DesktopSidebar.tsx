@@ -1,59 +1,26 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Book } from '../types/book'
 import { getCountryFlag, mapISO2ToDisplayName } from '../lib/mapUtilities'
 import { ReadingAtlasSummary } from './ReadingAtlasSummary'
 import { BookList } from './BookList'
-import { ThemeKey, THEMES } from '../lib/themeManager'
+import { THEMES } from '../lib/themeManager'
+import { useBooks } from '../contexts/BooksContext'
+import { useTheme } from '../contexts/ThemeContext'
 
 interface DesktopSidebarProps {
-  books: Book[]
-  selectedCountry: string | null
-  onCountryClick: (country: string) => void
-  onShowAll: () => void
   booksToShow: number
   onLoadMore: () => void
-  currentTheme: ThemeKey
-  onUpdateBookCountries: (book: Book, countries: string[]) => void
 }
 
-export function DesktopSidebar({
-  books,
-  selectedCountry,
-  onCountryClick,
-  onShowAll,
-  booksToShow,
-  onLoadMore,
-  currentTheme,
-  onUpdateBookCountries
-}: DesktopSidebarProps) {
+export function DesktopSidebar({ booksToShow, onLoadMore }: DesktopSidebarProps) {
+  const { books, selectedCountry, setSelectedCountry, summaryStats } = useBooks()
+  const { currentTheme } = useTheme()
+
   const [showMissingAuthorCountry, setShowMissingAuthorCountry] = useState(false)
 
   const readBooksAll = useMemo(
     () => books.filter(b => b.readStatus === 'read'),
     [books]
   )
-
-  const summaryStats = useMemo(() => {
-    const authorSet = new Set<string>()
-    const countrySet = new Set<string>()
-    let missingAuthorCountry = 0
-
-    readBooksAll.forEach(book => {
-      if (book.authors) authorSet.add(book.authors.trim())
-      if (book.authorCountries && book.authorCountries.length > 0) {
-        book.authorCountries.forEach(code => countrySet.add(code))
-      } else {
-        missingAuthorCountry += 1
-      }
-    })
-
-    return {
-      readBooksCount: readBooksAll.length,
-      distinctAuthors: authorSet.size,
-      authorCountriesCovered: countrySet.size,
-      booksMissingAuthorCountry: missingAuthorCountry
-    }
-  }, [readBooksAll])
 
   useEffect(() => {
     if (selectedCountry) {
@@ -64,7 +31,7 @@ export function DesktopSidebar({
   const handleMissingAuthorCountryFilter = () => {
     if (summaryStats.booksMissingAuthorCountry === 0) return
     if (!showMissingAuthorCountry && selectedCountry) {
-      onShowAll()
+      setSelectedCountry(null)
     }
     setShowMissingAuthorCountry(prev => !prev)
   }
@@ -92,10 +59,8 @@ export function DesktopSidebar({
       }}
     >
       <ReadingAtlasSummary
-        stats={summaryStats}
         showMissingAuthorCountry={showMissingAuthorCountry}
         onToggleMissingAuthorCountry={handleMissingAuthorCountryFilter}
-        currentTheme={currentTheme}
         className="mb-4"
       />
 
@@ -103,7 +68,7 @@ export function DesktopSidebar({
         <div className="text-xs text-gray-600 mb-3">
           Filtering by {getCountryFlag(selectedCountry)} {mapISO2ToDisplayName(selectedCountry)}{' '}
           <button
-            onClick={onShowAll}
+            onClick={() => setSelectedCountry(null)}
             className="underline ml-1"
             style={{ color: THEMES[currentTheme].outline }}
           >
@@ -124,7 +89,7 @@ export function DesktopSidebar({
             style={{ color: THEMES[currentTheme].outline }}
             onClick={() => {
               setShowMissingAuthorCountry(false)
-              onShowAll()
+              setSelectedCountry(null)
             }}
           >
             Show all books
@@ -133,10 +98,6 @@ export function DesktopSidebar({
       )}
 
       <BookList
-        books={books}
-        selectedCountry={selectedCountry}
-        onCountryClick={onCountryClick}
-        onUpdateBookCountries={onUpdateBookCountries}
         showMissingAuthorCountry={showMissingAuthorCountry}
         booksToShow={booksToShow}
       />

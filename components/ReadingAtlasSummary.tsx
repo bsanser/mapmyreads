@@ -1,17 +1,11 @@
 import { MouseEvent } from 'react'
-
-import { ThemeKey, THEMES } from '../lib/themeManager'
+import { THEMES } from '../lib/themeManager'
+import { useBooks } from '../contexts/BooksContext'
+import { useTheme } from '../contexts/ThemeContext'
 
 interface ReadingAtlasSummaryProps {
-  stats: {
-    readBooksCount: number
-    distinctAuthors: number
-    authorCountriesCovered: number
-    booksMissingAuthorCountry: number
-  }
   showMissingAuthorCountry: boolean
   onToggleMissingAuthorCountry?: (event?: MouseEvent<HTMLButtonElement>) => void
-  currentTheme?: ThemeKey
   className?: string
 }
 
@@ -22,12 +16,12 @@ const STAT_CARDS = [
 ] as const
 
 export function ReadingAtlasSummary({
-  stats,
   showMissingAuthorCountry,
   onToggleMissingAuthorCountry,
-  currentTheme = 'blue',
   className = ''
 }: ReadingAtlasSummaryProps) {
+  const { summaryStats: stats } = useBooks()
+  const { currentTheme } = useTheme()
   const handleMissingClick = (event: MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation()
     onToggleMissingAuthorCountry?.(event)

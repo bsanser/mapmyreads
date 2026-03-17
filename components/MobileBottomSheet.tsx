@@ -1,36 +1,27 @@
-import { useMemo } from 'react'
-import { Book } from '../types/book'
-import { getCountryFlag, mapISO2ToDisplayName } from '../lib/mapUtilities'
+import { mapISO2ToDisplayName } from '../lib/mapUtilities'
 import { BookList } from './BookList'
-import { ThemeKey, THEMES } from '../lib/themeManager'
+import { THEMES } from '../lib/themeManager'
+import { useBooks } from '../contexts/BooksContext'
+import { useTheme } from '../contexts/ThemeContext'
 
 interface MobileBottomSheetProps {
-  books: Book[]
-  selectedCountry: string | null
-  onCountryClick: (country: string) => void
-  onShowAll: () => void
-  currentTheme: ThemeKey
   showBottomSheet: boolean
   onToggleBottomSheet: () => void
-  onUpdateBookCountries: (book: Book, countries: string[]) => void
   showMissingAuthorCountry: boolean
   onToggleMissingAuthorCountry: () => void
   onClearMissingAuthorCountry: () => void
 }
 
 export function MobileBottomSheet({
-  books,
-  selectedCountry,
-  onCountryClick,
-  onShowAll,
-  currentTheme,
   showBottomSheet,
   onToggleBottomSheet,
-  onUpdateBookCountries,
   showMissingAuthorCountry,
   onToggleMissingAuthorCountry,
   onClearMissingAuthorCountry
 }: MobileBottomSheetProps) {
+  const { books, selectedCountry, setSelectedCountry } = useBooks()
+  const { currentTheme } = useTheme()
+
   // Compute count for "Showing X books" label
   const baseFilteredBooks = selectedCountry
     ? books.filter(book => book.authorCountries.includes(selectedCountry))
@@ -57,7 +48,7 @@ export function MobileBottomSheet({
                   className="text-xs underline"
                   style={{ color: THEMES[currentTheme].outline }}
                   onClick={() => {
-                    onShowAll()
+                    setSelectedCountry(null)
                     if (showMissingAuthorCountry) {
                       onClearMissingAuthorCountry()
                     }
@@ -69,10 +60,6 @@ export function MobileBottomSheet({
             </div>
 
             <BookList
-              books={books}
-              selectedCountry={selectedCountry}
-              onCountryClick={onCountryClick}
-              onUpdateBookCountries={onUpdateBookCountries}
               showMissingAuthorCountry={showMissingAuthorCountry}
             />
           </div>

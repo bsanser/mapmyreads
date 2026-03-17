@@ -20,7 +20,7 @@ Generated from refactor_plan_1.md. Check off as completed.
 - [x] Task #11: P3-C11 - Create ThemeContext
 - [x] Task #12: P3-C12 - Create EnrichmentContext
 - [x] Task #13: P3-C13 - Migrate page.tsx to use Contexts
-- [ ] Task #14: P3-C14 - Migrate child components to consume Contexts
+- [x] Task #14: P3-C14 - Migrate child components to consume Contexts
 
 ## Phase 4: Restructure Enrichment Pipeline (3 tasks)
 - [ ] Task #15: P4-C15+16 - Implement incremental author resolution
