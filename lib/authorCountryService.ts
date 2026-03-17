@@ -1,6 +1,7 @@
 import { Book } from '../types/book'
-import { detectAuthorCountriesByName } from './countryDetection'
-import { normalizeAuthorName, splitAuthorNames } from './authorUtils'
+import { splitAuthorNames, normalizeAuthorName } from './authorUtils'
+
+const BATCH_SIZE = 8
 
 export type AuthorCountrySummary = {
   totalBooks: number
@@ -14,71 +15,137 @@ export type AuthorCountrySummary = {
   authorsWithMoreThanOneCountry: number
 }
 
-export const resolveAuthorCountries = async (
+/**
+ * Apply a partial author→countries map to a books array, returning updated books.
+ * Only mutates authorCountries for books whose authors appear in the map.
+ */
+export function applyAuthorCountriesToBooks(
   books: Book[],
-  onProgress?: (current: number, total: number) => void
-): Promise<{ booksWithCountries: Book[]; summary: AuthorCountrySummary }> => {
-  const authorCountryCache = new Map<string, string[]>()
-  const processedBooks: Book[] = []
-  let readBooksWithResolvedAuthors = 0
-  const resolvedCountriesForReadAuthors = new Set<string>()
+  authorCountryMap: Record<string, string[]>
+): Book[] {
+  return books.map(book => {
+    const authorNames = splitAuthorNames(book.authors)
+    const authorCountriesSet = new Set<string>(book.authorCountries || [])
 
+    let changed = false
+    for (const authorName of authorNames) {
+      const countries = authorCountryMap[authorName]
+      if (countries) {
+        for (const code of countries) {
+          if (!authorCountriesSet.has(code)) {
+            authorCountriesSet.add(code)
+            changed = true
+          }
+        }
+      }
+    }
+
+    if (!changed) return book
+
+    return {
+      ...book,
+      bookCountries: [],
+      authorCountries: Array.from(authorCountriesSet)
+    }
+  })
+}
+
+export const resolveAuthorCountriesBackend = async (
+  books: Book[],
+  onProgress?: (current: number, total: number) => void,
+  onBatchComplete?: (batchResults: Record<string, string[]>) => void
+): Promise<{ booksWithCountries: Book[]; summary: AuthorCountrySummary }> => {
   const readBooks = books.filter(book => book.readStatus === 'read')
   const readBooksWithAuthors = readBooks.filter(
     book => Boolean(book.authors && book.authors.trim().length > 0)
   )
 
+  // Collect all unique authors
   const authorLookupTargets = new Map<string, string>()
   for (const book of readBooksWithAuthors) {
     const authorNames = splitAuthorNames(book.authors)
-    authorNames.forEach(authorName => {
+    for (const authorName of authorNames) {
       const key = normalizeAuthorName(authorName)
-      if (key.length === 0 || authorLookupTargets.has(key)) return
+      if (key.length === 0 || authorLookupTargets.has(key)) continue
       authorLookupTargets.set(key, authorName)
-    })
+    }
   }
 
-  let processedAuthors = 0
-  for (const [authorKey, authorName] of Array.from(authorLookupTargets.entries())) {
+  const uniqueAuthors = Array.from(authorLookupTargets.values())
+  const totalAuthors = uniqueAuthors.length
+
+  console.log(`🚀 Resolving ${totalAuthors} authors in batches of ${BATCH_SIZE}...`)
+
+  if (onProgress) {
+    onProgress(0, totalAuthors)
+  }
+
+  // Split into batches
+  const batches: string[][] = []
+  for (let i = 0; i < uniqueAuthors.length; i += BATCH_SIZE) {
+    batches.push(uniqueAuthors.slice(i, i + BATCH_SIZE))
+  }
+
+  // Accumulate all author→countries results across batches
+  const fullAuthorCountryMap: Record<string, string[]> = {}
+  let totalApiLookups = 0
+  let resolvedCount = 0
+  let currentBooks = books
+
+  // Process batches sequentially so the map updates incrementally
+  for (const batch of batches) {
     try {
-      const isoCountries = await detectAuthorCountriesByName(authorName)
-      authorCountryCache.set(authorKey, isoCountries)
+      const response = await fetch('/api/authors/batch-resolve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ authors: batch })
+      })
+
+      if (!response.ok) {
+        throw new Error(`API returned ${response.status}`)
+      }
+
+      const data = await response.json()
+      const batchResults = data.results as Record<string, string[]>
+
+      // Merge batch results into full map
+      Object.assign(fullAuthorCountryMap, batchResults)
+      totalApiLookups += data.stats.cacheMisses
+
+      resolvedCount += batch.length
+      console.log(`📊 Batch done: ${resolvedCount}/${totalAuthors} authors resolved`)
+
+      if (onProgress) {
+        onProgress(resolvedCount, totalAuthors)
+      }
+
+      // Apply this batch's results to internal tracking and notify caller with delta
+      currentBooks = applyAuthorCountriesToBooks(currentBooks, batchResults)
+      if (onBatchComplete) {
+        onBatchComplete(batchResults)
+      }
     } catch (error) {
-      console.warn(`Failed to resolve author country for "${authorName}":`, error)
-      authorCountryCache.set(authorKey, [])
-    }
-    
-    processedAuthors++
-    if (onProgress) {
-      onProgress(processedAuthors, authorLookupTargets.size)
+      console.error(`❌ Batch failed for authors: ${batch.join(', ')}`, error)
+      // Fill failed authors with empty results
+      for (const author of batch) {
+        fullAuthorCountryMap[author] = []
+      }
+      resolvedCount += batch.length
+      if (onProgress) {
+        onProgress(resolvedCount, totalAuthors)
+      }
     }
   }
 
-  for (const book of books) {
-    const authorNames = splitAuthorNames(book.authors)
-    const authorCountriesSet = new Set<string>()
+  // Compute summary stats
+  let readBooksWithResolvedAuthors = 0
+  const resolvedCountriesForReadAuthors = new Set<string>()
 
-    authorNames.forEach(authorName => {
-      const key = normalizeAuthorName(authorName)
-      if (!key) return
-      const cachedCountries = authorCountryCache.get(key) || []
-      cachedCountries.forEach(code => authorCountriesSet.add(code))
-    })
-
-    const authorCountries = Array.from(authorCountriesSet)
-
-    const updatedBook: Book = {
-      ...book,
-      bookCountries: [],
-      authorCountries
-    }
-
-    if (book.readStatus === 'read' && authorCountries.length > 0) {
+  for (const book of currentBooks) {
+    if (book.readStatus === 'read' && book.authorCountries.length > 0) {
       readBooksWithResolvedAuthors += 1
-      authorCountries.forEach(country => resolvedCountriesForReadAuthors.add(country))
+      book.authorCountries.forEach(c => resolvedCountriesForReadAuthors.add(c))
     }
-
-    processedBooks.push(updatedBook)
   }
 
   const summary: AuthorCountrySummary = {
@@ -87,18 +154,26 @@ export const resolveAuthorCountries = async (
     readBooksWithAuthors: readBooksWithAuthors.length,
     readBooksWithResolvedAuthors,
     uniqueAuthors: authorLookupTargets.size,
-    uniqueAuthorsWithCountries: Array.from(authorCountryCache.values()).filter(
+    uniqueAuthorsWithCountries: Object.values(fullAuthorCountryMap).filter(
       countries => countries.length > 0
     ).length,
     uniqueCountriesWithReadAuthors: resolvedCountriesForReadAuthors.size,
-    apiLookups: authorLookupTargets.size,
-    authorsWithMoreThanOneCountry: Array.from(authorCountryCache.entries()).filter(
-      ([, countries]) => new Set(countries.filter(Boolean)).size > 1
+    apiLookups: totalApiLookups,
+    authorsWithMoreThanOneCountry: Object.values(fullAuthorCountryMap).filter(
+      countries => new Set(countries.filter(Boolean)).size > 1
     ).length
   }
 
+  if (onProgress) {
+    onProgress(totalAuthors, totalAuthors)
+  }
+
+  if (summary.uniqueAuthors > 0 && summary.uniqueAuthorsWithCountries === 0) {
+    console.warn('⚠️ Author resolution complete but zero countries found — Wikidata API may be unavailable')
+  }
+
   return {
-    booksWithCountries: processedBooks,
+    booksWithCountries: currentBooks,
     summary
   }
 }

@@ -1,18 +1,18 @@
 import { COUNTRIES } from './countries';
 import { darkenColor } from './themeManager';
 
-// Available countries for mock data (ISO2 codes)
-const AVAILABLE_COUNTRIES = COUNTRIES;
+// Cache for generated heatmap styles — keyed on actual country distribution + theme
+const heatmapCache = new Map<string, ReturnType<typeof buildHeatmapStyle>>();
 
 // Calculate country book counts for heatmap
 export const getCountryBookCounts = (books: any[]) => {
   const countryCounts: Record<string, number> = {};
-  
+
   // Initialize all available countries with 0
-  AVAILABLE_COUNTRIES.forEach(country => {
+  COUNTRIES.forEach(country => {
     countryCounts[country.iso2] = 0;
   });
-  
+
   books.forEach(book => {
     if (book.readStatus && book.readStatus !== 'read') {
       return;
@@ -20,55 +20,58 @@ export const getCountryBookCounts = (books: any[]) => {
     const countriesToCount = (book.authorCountries && book.authorCountries.length > 0)
       ? book.authorCountries
       : book.bookCountries;
-    
+
     countriesToCount?.forEach((countryCode: string) => {
       if (countryCounts.hasOwnProperty(countryCode)) {
         countryCounts[countryCode]++;
       }
     });
   });
-  
+
   return countryCounts;
 };
 
-// Generate the complete heatmap style based on current data
-export const generateHeatmapStyle = (books: any[], currentTheme: any) => {
-  const countryCounts = getCountryBookCounts(books);
+// Pure builder — accepts pre-computed countryCounts to avoid double computation
+function buildHeatmapStyle(countryCounts: Record<string, number>, currentTheme: any) {
   const baseColor = currentTheme.fill;
   const outlineColor = currentTheme.outline;
-  
-  // Find the maximum book count to normalize the heatmap
+
   const maxCount = Math.max(...Object.values(countryCounts));
-  
+
   if (maxCount === 0) {
-    return "#ffffff"; // Default white if no books
+    return "#ffffff";
   }
-  
-  // Create a heatmap with different shades based on book count
-  const heatmapStyle = [
+
+  return [
     "case",
-    // For each country with books, create a color based on count
     ...Object.entries(countryCounts).flatMap(([iso2, count]) => {
       if (count === 0) return [];
-      
-      let color;
-      if (count === 0) {
-        color = "#ffffff"; // 0 books = white
-      } else if (count === 1) {
-        color = baseColor; // 1 book = light theme color
-      } else if (count === 2) {
-        color = darkenColor(baseColor, 0.15); // 2 books = medium shade
-      } else {
-        color = outlineColor; // 3+ books = darkest theme color
-      }
-      
-      return [
-        ["==", ["get", "ISO3166-1-Alpha-2"], iso2],
-        color
-      ];
+      const color =
+        count === 1 ? baseColor :
+        count === 2 ? darkenColor(baseColor, 0.15) :
+        outlineColor;
+      return [["==", ["get", "ISO3166-1-Alpha-2"], iso2], color];
     }),
-    "#ffffff" // Default white for countries with no books
+    "#ffffff"
   ];
-  
-  return heatmapStyle;
+}
+
+// Generate the complete heatmap style based on current data.
+// Memoized on actual country distribution + theme to correctly invalidate when
+// book→country mapping changes (e.g. after each author resolution batch).
+export const generateHeatmapStyle = (books: any[], currentTheme: any): any => {
+  const countryCounts = getCountryBookCounts(books);
+  const nonZero = Object.entries(countryCounts)
+    .filter(([, c]) => c > 0)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([iso2, c]) => `${iso2}:${c}`)
+    .join(',');
+  const cacheKey = `${nonZero}:${currentTheme.fill}:${currentTheme.outline}`;
+
+  if (heatmapCache.has(cacheKey)) {
+    return heatmapCache.get(cacheKey);
+  }
+  const style = buildHeatmapStyle(countryCounts, currentTheme);
+  heatmapCache.set(cacheKey, style);
+  return style;
 };

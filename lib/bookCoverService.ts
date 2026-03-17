@@ -1,95 +1,86 @@
 import { Book } from '../types/book'
 
-// Open Library API endpoints
-const OPEN_LIBRARY_SEARCH = 'https://openlibrary.org/search.json'
-const OPEN_LIBRARY_COVERS = 'https://covers.openlibrary.org/b'
-
-// Fallback: longitood.com for additional cover sources
-const LONGITOOD_COVERS = 'https://www.longitood.com/cover'
-
-const fetchCoverFromOpenLibrary = async (book: Book): Promise<string | null> => {
-  try {
-    // Try ISBN first (most reliable)
-    if (book.isbn13) {
-      // Direct cover URL from ISBN
-      const coverUrl = `${OPEN_LIBRARY_COVERS}/isbn/${book.isbn13}-L.jpg`
-      
-      // Check if cover exists
-      const response = await fetch(coverUrl, { method: 'HEAD' })
-      if (response.ok) {
-        return coverUrl
-      }
+// Load covers in small batches to avoid overwhelming the API
+/** Apply a cover results map to a books array, returning updated books. */
+export function applyCoverResultsToBooks(
+  books: Book[],
+  coverMap: Record<string, string | null>
+): Book[] {
+  return books.map(book => {
+    const key = book.isbn13 || `${book.title}|${book.authors}`
+    if (coverMap.hasOwnProperty(key) && coverMap[key] && !book.coverImage) {
+      return { ...book, coverImage: coverMap[key] }
     }
-
-    // Fallback: Search by title and author
-    const query = `${book.title} ${book.authors}`.trim()
-    const searchUrl = `${OPEN_LIBRARY_SEARCH}?q=${encodeURIComponent(query)}&limit=1`
-    
-    const searchResponse = await fetch(searchUrl)
-    if (!searchResponse.ok) return null
-
-    const data = await searchResponse.json()
-    if (!data.docs || data.docs.length === 0) return null
-
-    const bookData = data.docs[0]
-    
-    // Try to get cover from Open Library ID
-    if (bookData.cover_i) {
-      return `${OPEN_LIBRARY_COVERS}/id/${bookData.cover_i}-L.jpg`
-    }
-
-    // Try ISBN from search results
-    if (bookData.isbn && bookData.isbn.length > 0) {
-      return `${OPEN_LIBRARY_COVERS}/isbn/${bookData.isbn[0]}-L.jpg`
-    }
-
-    return null
-  } catch (error) {
-    console.warn(`Error retrieving cover for "${book.title}":`, error)
-    return null
-  }
+    return book
+  })
 }
 
-// Helper to delay execution
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
-
-export const enrichBooksWithCovers = async (
+export const enrichBooksWithCoversBatched = async (
   books: Book[],
-  onProgress?: (current: number, total: number) => void
+  onBatchComplete?: (loadedCount: number, totalCount: number, coverMap: Record<string, string | null>) => void
 ): Promise<Book[]> => {
-  const cache = new Map<string, string | null>()
-  const enriched: Book[] = []
-  let processed = 0
-  let apiCallsMade = 0
-
-  for (const book of books) {
-    const key = book.isbn13 || `${book.title}|${book.authors}`
-
-    if (book.coverImage) {
-      enriched.push(book)
-      processed++
-      if (onProgress) onProgress(processed, books.length)
-      continue
-    }
-
-    if (!cache.has(key)) {
-      // Add delay after every 10 API calls to be respectful to Open Library
-      if (apiCallsMade > 0 && apiCallsMade % 10 === 0) {
-        await delay(500) // Wait 500ms every 10 requests
-      }
-      
-      cache.set(key, await fetchCoverFromOpenLibrary(book))
-      apiCallsMade++
-    }
-
-    enriched.push({
-      ...book,
-      coverImage: cache.get(key) || null
-    })
-    
-    processed++
-    if (onProgress) onProgress(processed, books.length)
+  // Only fetch covers for read books
+  const booksNeedingCovers = books.filter(b => b.readStatus === 'read' && !b.coverImage)
+  
+  if (booksNeedingCovers.length === 0) {
+    console.log('✅ All read books already have covers')
+    return books
   }
 
-  return enriched
+  console.log(`📷 Loading covers for ${booksNeedingCovers.length} books in batches...`)
+
+  const BATCH_SIZE = 10
+  let enrichedBooks = [...books]
+  let loadedCount = 0
+
+  // Process in batches
+  for (let i = 0; i < booksNeedingCovers.length; i += BATCH_SIZE) {
+    const batch = booksNeedingCovers.slice(i, i + BATCH_SIZE)
+    
+    try {
+      // Prepare batch data
+      const booksData = batch.map(book => ({
+        isbn13: book.isbn13 || undefined,
+        title: book.title,
+        author: book.authors
+      }))
+
+      const response = await fetch('/api/books/batch-covers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ books: booksData })
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        const coverMap = data.results as Record<string, string | null>
+
+        // Update books with covers from this batch
+        enrichedBooks = enrichedBooks.map(book => {
+          const key = book.isbn13 || `${book.title}|${book.authors}`
+          if (coverMap.hasOwnProperty(key) && !book.coverImage) {
+            return { ...book, coverImage: coverMap[key] }
+          }
+          return book
+        })
+
+        loadedCount += batch.length
+        console.log(`✅ Batch ${Math.floor(i / BATCH_SIZE) + 1}: Loaded ${loadedCount}/${booksNeedingCovers.length} covers`)
+        
+        if (onBatchComplete) {
+          onBatchComplete(loadedCount, booksNeedingCovers.length, coverMap)
+        }
+      }
+    } catch (error) {
+      console.warn(`⚠️ Batch ${Math.floor(i / BATCH_SIZE) + 1} failed:`, error)
+    }
+
+    // No delay needed - rate limiting happens in the API per actual API call
+    if (i + BATCH_SIZE < booksNeedingCovers.length) {
+      await new Promise(resolve => setTimeout(resolve, 50))
+    }
+  }
+
+  console.log(`✅ Cover loading complete: ${loadedCount}/${booksNeedingCovers.length} loaded`)
+  return enrichedBooks
 }

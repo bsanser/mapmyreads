@@ -69,28 +69,33 @@ export async function POST(request: NextRequest) {
     // Step 1: Check cache for all books
     for (const book of books) {
       const key = book.isbn13 || `${book.title}|${book.author}`
-      
-      // Try to find by ISBN first
-      let cached = book.isbn13 
-        ? await prisma.bookMetadataCache.findUnique({
-            where: { isbn13: book.isbn13 }
+
+      try {
+        // Try to find by ISBN first
+        let cached = book.isbn13
+          ? await prisma.bookMetadataCache.findUnique({
+              where: { isbn13: book.isbn13 }
+            })
+          : null
+
+        // If not found by ISBN, try by title+author
+        if (!cached) {
+          cached = await prisma.bookMetadataCache.findFirst({
+            where: {
+              title: book.title,
+              author: book.author
+            }
           })
-        : null
+        }
 
-      // If not found by ISBN, try by title+author
-      if (!cached) {
-        cached = await prisma.bookMetadataCache.findFirst({
-          where: {
-            title: book.title,
-            author: book.author
-          }
-        })
-      }
-
-      if (cached) {
-        results[key] = cached.coverUrl
-        console.log(`✅ Cache hit: ${book.title}`)
-      } else {
+        if (cached) {
+          results[key] = cached.coverUrl
+          console.log(`✅ Cache hit: ${book.title}`)
+        } else {
+          cacheMisses.push(book)
+        }
+      } catch {
+        // DB unavailable — treat as cache miss
         cacheMisses.push(book)
       }
     }
@@ -107,16 +112,18 @@ export async function POST(request: NextRequest) {
         console.log(`🌐 Fetching from Open Library: ${book.title}`)
         const coverUrl = await fetchCoverUrl(book)
         
-        // Store in cache
-        await prisma.bookMetadataCache.create({
-          data: {
-            isbn13: book.isbn13 || null,
-            title: book.title,
-            author: book.author,
-            coverUrl: coverUrl,
-            source: 'openlibrary'
-          }
-        })
+        // Store in cache (best-effort — ignore DB errors)
+        try {
+          await prisma.bookMetadataCache.create({
+            data: {
+              isbn13: book.isbn13 || null,
+              title: book.title,
+              author: book.author,
+              coverUrl: coverUrl,
+              source: 'openlibrary'
+            }
+          })
+        } catch { /* cache write failure is non-fatal */ }
 
         results[key] = coverUrl
         console.log(`💾 Cached: ${book.title} → ${coverUrl ? 'found' : 'not found'}`)

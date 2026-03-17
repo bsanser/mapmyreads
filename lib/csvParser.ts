@@ -96,13 +96,3 @@ export const parseCSVData = (data: Record<string, string>[], format: CSVFormat):
     .map(row => parseCSVRow(row, format))
     .filter(book => book.title !== 'Untitled' && book.authors !== 'Unknown') // Filter out invalid rows
 }
-
-// Get books that need missing data (required fields that are null/empty)
-export const getBooksNeedingData = (books: Book[]): Book[] => {
-  return books.filter(book => 
-    !book.isbn13 || 
-    !book.yearPublished || 
-    book.bookCountries.length === 0 || 
-    book.authorCountries.length === 0
-  )
-} 

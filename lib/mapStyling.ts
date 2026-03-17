@@ -12,23 +12,15 @@ export interface WavePatternConfig {
 export const createWavePatternSVG = (config: WavePatternConfig): string => {
   const { width, height, strokeColor, strokeWidth, opacity } = config;
   
-  return `
-    <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <pattern id="waves" width="${width}" height="${height}" patternUnits="userSpaceOnUse">
-          <path d="M0 4 Q2 0 4 4 T8 4 T12 4 T16 4"
-                fill="none"
-                stroke="${strokeColor}"
-                stroke-width="${strokeWidth}"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                opacity="${opacity}"
-                vector-effect="non-scaling-stroke"/>
-        </pattern>
-      </defs>
-      <rect width="100%" height="100%" fill="url(#waves)" />
-    </svg>
-  `;
+  return `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
+    <path d="M0 4 Q2 0 4 4 T8 4 T12 4 T16 4"
+          fill="none"
+          stroke="${strokeColor}"
+          stroke-width="${strokeWidth}"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          opacity="${opacity}"/>
+  </svg>`;
 };
 
 export const createMapStyle = (currentTheme: ThemeKey): { style: StyleSpecification; wavePatternDataURL: string } => {
@@ -59,9 +51,8 @@ export const createMapStyle = (currentTheme: ThemeKey): { style: StyleSpecificat
       {
         id: "background",
         type: "background",
-        paint: { 
-          "background-color": theme.background,
-          "background-pattern": "waves"
+        paint: {
+          "background-color": theme.background
         }
       },
       {
