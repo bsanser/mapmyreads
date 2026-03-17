@@ -32,7 +32,7 @@ Generated from refactor_plan_1.md. Check off as completed.
 - [x] Task #19: P5-C20+21 - Memoize heatmap + add React.memo
 
 ## Phase 6: Consolidate Service Files (1 task)
-- [ ] Task #20: P6-C22+23 - Consolidate service files
+- [x] Task #20: P6-C22+23 - Consolidate service files
 
 ## Phase 7: Structural Cleanup (1 task)
 - [ ] Task #21: P7-C24+25+26 - Structural cleanup
