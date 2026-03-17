@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Papa from 'papaparse'
-import { Book } from '../types/book'
 import { HeroScreen } from '../components/HeroScreen'
 import { MapContainer } from '../components/MapContainer'
 import { DesktopSidebar } from '../components/DesktopSidebar'
@@ -10,68 +9,46 @@ import { MobileBottomSheet } from '../components/MobileBottomSheet'
 import { DeveloperTools } from '../components/DeveloperTools'
 import { EnrichmentProgress } from '../components/EnrichmentProgress'
 import { THEMES } from '../lib/themeManager'
-import { ThemeKey } from '../lib/themeManager'
 import { ReadingAtlasSummary } from '../components/ReadingAtlasSummary'
-import { useMemo } from 'react'
-import { 
-  loadProcessedBooks, 
-  saveProcessedBooks, 
-  hasShareableData, 
+import {
+  loadProcessedBooks,
+  saveProcessedBooks,
+  hasShareableData,
   saveShareableData
 } from '../lib/storage'
-import { 
-  detectCSVFormat, 
+import {
+  detectCSVFormat,
   parseCSVData
 } from '../lib/csvParser'
 import { generateCsvSummary } from '../lib/csvSummary'
 import { mapDisplayNameToISO2 } from '../lib/mapUtilities'
 import { resolveAuthorCountriesBackend } from '../lib/authorCountryServiceBackend'
 import { enrichBooksWithCoversBatched } from '../lib/bookCoverServiceBatched'
+import { useBooks } from '../contexts/BooksContext'
+import { useTheme } from '../contexts/ThemeContext'
+import { useEnrichment } from '../contexts/EnrichmentContext'
 
 export default function Home() {
-  // State management
-  const [books, setBooks] = useState<Book[]>([])
+  // Context state
+  const { books, setBooks, selectedCountry, setSelectedCountry, summaryStats, updateBookCountries } = useBooks()
+  const { currentTheme, setCurrentTheme } = useTheme()
+  const {
+    isEnriching, setIsEnriching,
+    enrichmentProgress, setEnrichmentProgress,
+    isLoadingCovers, setIsLoadingCovers,
+    coverProgress, setCoverProgress
+  } = useEnrichment()
+
+  // UI-only state
   const [showDeveloperMode, setShowDeveloperMode] = useState(false)
   const [error, setError] = useState<string>('')
-  const [booksToShow, setBooksToShow] = useState<number>(10)
-  const [selectedCountry, setSelectedCountry] = useState<string | null>(null)
-  const [showBottomSheet, setShowBottomSheet] = useState(false)
-  const [currentTheme, setCurrentTheme] = useState<ThemeKey>('blue')
   const [isProcessing, setIsProcessing] = useState(false)
+  const [booksToShow, setBooksToShow] = useState<number>(10)
+  const [showBottomSheet, setShowBottomSheet] = useState(false)
   const [showMissingAuthorCountry, setShowMissingAuthorCountry] = useState(false)
-  const [enrichmentProgress, setEnrichmentProgress] = useState({ current: 0, total: 0, stage: '' })
-  const [isEnriching, setIsEnriching] = useState(false)
-  const [coverProgress, setCoverProgress] = useState({ current: 0, total: 0, stage: '' })
-  const [isLoadingCovers, setIsLoadingCovers] = useState(false)
-  
+
   const booksLoadedRef = useRef(false)
   const uploadStartRef = useRef<number | null>(null)
-
-  const summaryStats = useMemo(() => {
-    const readBooksAll = books.filter(b => b.readStatus === 'read')
-    const authorSet = new Set<string>()
-    const countrySet = new Set<string>()
-    let missingAuthorCountry = 0
-
-    readBooksAll.forEach(book => {
-      if (book.authors) {
-        authorSet.add(book.authors.trim())
-      }
-
-      if (book.authorCountries && book.authorCountries.length > 0) {
-        book.authorCountries.forEach(code => countrySet.add(code))
-      } else {
-        missingAuthorCountry += 1
-      }
-    })
-
-    return {
-      readBooksCount: readBooksAll.length,
-      distinctAuthors: authorSet.size,
-      authorCountriesCovered: countrySet.size,
-      booksMissingAuthorCountry: missingAuthorCountry
-    }
-  }, [books])
 
   const handleToggleMissingAuthorCountry = () => {
     setShowMissingAuthorCountry(prev => !prev)
@@ -81,10 +58,6 @@ export default function Home() {
     setShowMissingAuthorCountry(false)
   }
 
-  const handleThemeChange = (theme: ThemeKey) => {
-    setCurrentTheme(theme)
-  }
-
   const handleCountryClick = (country: string) => {
     const iso2Code = mapDisplayNameToISO2(country)
     setSelectedCountry(iso2Code)
@@ -92,21 +65,6 @@ export default function Home() {
 
   const handleShowAll = () => {
     setSelectedCountry(null)
-  }
-
-  const isSameBook = (a: Book, b: Book) => {
-    if (a.isbn13 && b.isbn13) return a.isbn13 === b.isbn13
-    return a.title === b.title && a.authors === b.authors && a.yearPublished === b.yearPublished
-  }
-
-  const handleUpdateBookCountries = (book: Book, countries: string[]) => {
-    setBooks(prevBooks => {
-      const updatedBooks = prevBooks.map(existing => 
-        isSameBook(existing, book) ? { ...existing, authorCountries: countries } : existing
-      )
-      saveProcessedBooks(updatedBooks)
-      return updatedBooks
-    })
   }
 
   const handleLoadMore = () => {
@@ -130,72 +88,63 @@ export default function Home() {
         skipEmptyLines: true,
         complete: async ({ data, meta }) => {
           try {
-            // Detect CSV format
             const format = detectCSVFormat(meta.fields || [])
-
-            // Parse books - this is fast
             const parsedBooks = parseCSVData(data, format)
             const csvSummary = generateCsvSummary(parsedBooks)
 
             console.log('📚 CSV Parsed:', csvSummary)
-            
+
             // SHOW MAP IMMEDIATELY with parsed books (no countries yet)
             setBooks(parsedBooks)
             setBooksToShow(10)
             setIsProcessing(false)
-            
+
             const now = typeof performance !== 'undefined' ? performance.now() : Date.now()
             const timeToFirstShowMapSeconds = uploadStartRef.current !== null
               ? Number(((now - uploadStartRef.current) / 1000).toFixed(2))
               : null
-            
+
             console.log(`⚡ Map shown in ${timeToFirstShowMapSeconds}s`)
 
             // NOW enrich data in background
             setIsEnriching(true)
-            const readBooks = parsedBooks.filter(b => b.readStatus === 'read')
             setEnrichmentProgress({ current: 0, total: 1, stage: 'Discovering author countries...' })
-            
+
             console.time('⏱️ Author Resolution (Backend API)')
             const authorStartTime = performance.now()
-            
+
             const { booksWithCountries, summary: authorSummary } = await resolveAuthorCountriesBackend(
               parsedBooks,
               (current, total) => {
-                // Update progress as books are processed
                 setEnrichmentProgress({ current, total, stage: `Processing ${current}/${total} books...` })
               }
             )
-            
+
             const authorEndTime = performance.now()
             const authorDuration = ((authorEndTime - authorStartTime) / 1000).toFixed(2)
             console.timeEnd('⏱️ Author Resolution (Backend API)')
             console.log(`📊 Stats: ${authorSummary.uniqueAuthors} authors, ${authorSummary.apiLookups} API calls, ${authorDuration}s total`)
-            
+
             setBooks(booksWithCountries)
             saveProcessedBooks(booksWithCountries)
             setIsEnriching(false)
             setEnrichmentProgress({ current: 0, total: 0, stage: '' })
 
-            console.log('✅ Author countries resolved:', {
-              csv: csvSummary,
-              authorCountries: authorSummary
-            })
-            
+            console.log('✅ Author countries resolved:', { csv: csvSummary, authorCountries: authorSummary })
+
             // Load covers in background with batching
             const booksNeedingCovers = booksWithCountries.filter(b => b.readStatus === 'read' && !b.coverImage)
             if (booksNeedingCovers.length > 0) {
               console.log(`📷 Loading ${booksNeedingCovers.length} READ book covers in batches...`)
               setIsLoadingCovers(true)
               setCoverProgress({ current: 0, total: booksNeedingCovers.length, stage: 'Downloading book covers...' })
-              
+
               enrichBooksWithCoversBatched(booksWithCountries, (loaded, total, updatedBooks) => {
                 console.log(`📷 Progress: ${loaded}/${total} READ covers loaded`)
-                // Update UI immediately as each batch completes
                 setBooks(updatedBooks)
                 saveProcessedBooks(updatedBooks)
                 setCoverProgress({ current: loaded, total, stage: `Loading covers: ${loaded}/${total}` })
-              }).then(booksWithCovers => {
+              }).then(() => {
                 console.log('✅ All book covers loaded!')
                 setIsLoadingCovers(false)
                 setCoverProgress({ current: 0, total: 0, stage: '' })
@@ -232,37 +181,30 @@ export default function Home() {
 
   // Load processed books on component mount
   useEffect(() => {
-    // Prevent duplicate loading
     if (booksLoadedRef.current) return
     booksLoadedRef.current = true
 
     try {
-      // Check for shareable data first
       if (hasShareableData()) {
         saveShareableData()
       }
 
-      // Load from localStorage
       const processedBooks = loadProcessedBooks()
       if (processedBooks && processedBooks.length > 0) {
         setBooks(processedBooks)
-        
-        // Load covers in background with batching
+
         const booksNeedingCovers = processedBooks.filter(b => b.readStatus === 'read' && !b.coverImage)
         if (booksNeedingCovers.length > 0) {
           console.log(`📷 Loading ${booksNeedingCovers.length} missing READ book covers in batches...`)
           setIsLoadingCovers(true)
           setCoverProgress({ current: 0, total: booksNeedingCovers.length, stage: 'Downloading book covers...' })
-          
-          // Load in batches and update progressively
+
           enrichBooksWithCoversBatched(processedBooks, (loaded, total, updatedBooks) => {
-            // This callback gets called after each batch
             console.log(`📷 Progress: ${loaded}/${total} READ covers loaded`)
-            // Update UI immediately as each batch completes
             setBooks(updatedBooks)
             saveProcessedBooks(updatedBooks)
             setCoverProgress({ current: loaded, total, stage: `Loading covers: ${loaded}/${total}` })
-          }).then(booksWithCovers => {
+          }).then(() => {
             console.log('✅ All book covers loaded!')
             setIsLoadingCovers(false)
             setCoverProgress({ current: 0, total: 0, stage: '' })
@@ -273,7 +215,6 @@ export default function Home() {
           })
         }
       }
-
     } catch (error) {
       console.error('Error loading books:', error)
     }
@@ -282,7 +223,7 @@ export default function Home() {
   // Render logic
   if (books.length === 0) {
     return (
-      <HeroScreen 
+      <HeroScreen
         onFileUpload={handleFile}
         isProcessing={isProcessing}
         error={error}
@@ -303,18 +244,17 @@ export default function Home() {
           className="mb-4"
         />
       </div>
-      {/* Map Container */}
+
       <MapContainer
         books={books}
         selectedCountry={selectedCountry}
         onCountryClick={handleCountryClick}
         currentTheme={currentTheme}
-        onThemeChange={handleThemeChange}
+        onThemeChange={setCurrentTheme}
         themes={THEMES}
       />
 
-      {/* Desktop Sidebar */}
-      <DesktopSidebar 
+      <DesktopSidebar
         books={books}
         selectedCountry={selectedCountry}
         onCountryClick={handleCountryClick}
@@ -322,11 +262,10 @@ export default function Home() {
         booksToShow={booksToShow}
         onLoadMore={handleLoadMore}
         currentTheme={currentTheme}
-        onUpdateBookCountries={handleUpdateBookCountries}
+        onUpdateBookCountries={updateBookCountries}
       />
 
-      {/* Mobile Bottom Sheet */}
-      <MobileBottomSheet 
+      <MobileBottomSheet
         books={books}
         selectedCountry={selectedCountry}
         onCountryClick={handleCountryClick}
@@ -334,31 +273,28 @@ export default function Home() {
         showBottomSheet={showBottomSheet}
         onToggleBottomSheet={() => setShowBottomSheet(!showBottomSheet)}
         currentTheme={currentTheme}
-        onUpdateBookCountries={handleUpdateBookCountries}
+        onUpdateBookCountries={updateBookCountries}
         showMissingAuthorCountry={showMissingAuthorCountry}
         onToggleMissingAuthorCountry={handleToggleMissingAuthorCountry}
         onClearMissingAuthorCountry={handleClearMissingAuthorCountry}
       />
 
-      {/* Developer Tools */}
       <DeveloperTools
         isVisible={showDeveloperMode}
         onClose={() => setShowDeveloperMode(false)}
         books={books}
       />
 
-      {/* Enrichment Progress */}
       {isEnriching && (
-        <EnrichmentProgress 
+        <EnrichmentProgress
           current={enrichmentProgress.current}
           total={enrichmentProgress.total}
           stage={enrichmentProgress.stage}
         />
       )}
-      
-      {/* Cover Loading Progress */}
+
       {isLoadingCovers && (
-        <EnrichmentProgress 
+        <EnrichmentProgress
           current={coverProgress.current}
           total={coverProgress.total}
           stage={coverProgress.stage}

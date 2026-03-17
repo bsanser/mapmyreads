@@ -1,6 +1,9 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
+import { BooksProvider } from '../contexts/BooksContext'
+import { ThemeProvider } from '../contexts/ThemeContext'
+import { EnrichmentProvider } from '../contexts/EnrichmentContext'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -19,7 +22,15 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className} suppressHydrationWarning={true}>{children}</body>
+      <body className={inter.className} suppressHydrationWarning={true}>
+        <BooksProvider>
+          <ThemeProvider>
+            <EnrichmentProvider>
+              {children}
+            </EnrichmentProvider>
+          </ThemeProvider>
+        </BooksProvider>
+      </body>
     </html>
   )
 }
