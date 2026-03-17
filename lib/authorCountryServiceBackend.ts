@@ -132,10 +132,7 @@ export const resolveAuthorCountriesBackend = async (
     }
   } catch (error) {
     clearInterval(heartbeatInterval)
-    
-    console.error('❌ Backend API failed, falling back to client-side:', error)
-    // Fallback to original client-side implementation
-    const { resolveAuthorCountries } = await import('./authorCountryService')
-    return resolveAuthorCountries(books, onProgress)
+    console.error('❌ Backend API failed:', error)
+    throw error
   }
 }
