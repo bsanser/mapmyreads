@@ -6,7 +6,7 @@ Generated from refactor_plan_1.md. Check off as completed.
 - [x] Task #1: P1-C1 - Remove unused mapUtilities functions
 - [x] Task #2: P1-C2 - Remove legacy country detection functions
 - [x] Task #3: P1-C3 - Delete unused service files
-- [ ] Task #4: P1-C4 - Remove remaining dead code
+- [x] Task #4: P1-C4 - Remove remaining dead code
 - [ ] Task #5: P1-C5 - Remove debug tooling (testCountryDetection + performanceLogger)
 
 ## Phase 2: Extract Shared Components (4 tasks)
