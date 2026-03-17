@@ -28,7 +28,7 @@ Generated from refactor_plan_1.md. Check off as completed.
 - [x] Task #17: P4-C18 - Add UX for incremental loading
 
 ## Phase 5: Consolidate MapLibreMap (2 tasks)
-- [ ] Task #18: P5-C19 - Consolidate MapLibreMap useEffect hooks
+- [x] Task #18: P5-C19 - Consolidate MapLibreMap useEffect hooks
 - [ ] Task #19: P5-C20+21 - Memoize heatmap + add React.memo
 
 ## Phase 6: Consolidate Service Files (1 task)

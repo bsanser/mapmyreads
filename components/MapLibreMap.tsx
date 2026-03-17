@@ -4,7 +4,6 @@ import maplibregl from "maplibre-gl";
 import { useEffect, useRef, useState } from "react";
 import { THEMES, ThemeKey } from "../lib/themeManager";
 import { generateHeatmapStyle } from "../lib/heatmapEngine";
-
 import { setupMapEventHandlers, getOptimalZoom } from "../lib/mapEventHandlers";
 import { createMapStyle, getMapInitialConfig } from "../lib/mapStyling";
 
@@ -17,6 +16,45 @@ export type MapLibreMapProps = {
   themes?: typeof THEMES;
 };
 
+/**
+ * Apply all theme + book-dependent map styles in one coordinated pass.
+ * Called on initial load and whenever books or theme change.
+ */
+function applyMapStyle(
+  map: maplibregl.Map,
+  theme: ThemeKey,
+  books: any[],
+  themes: typeof THEMES
+) {
+  if (!map.isStyleLoaded()) return;
+
+  const themeColors = themes[theme];
+
+  // Background
+  map.setPaintProperty('background', 'background-color', themeColors.background);
+
+  // Country outlines + labels
+  map.setPaintProperty('countries-outline', 'line-color', themeColors.outline);
+  map.setPaintProperty('country-labels', 'text-color', themeColors.outline);
+  map.setPaintProperty('country-labels', 'text-halo-color', themeColors.background);
+
+  // Heatmap fill
+  const heatmapStyle = generateHeatmapStyle(books, themeColors);
+  map.setPaintProperty('countries-fill', 'fill-color', heatmapStyle);
+
+  // Wave pattern (theme-dependent image)
+  const { wavePatternDataURL } = createMapStyle(theme);
+  const img = new Image();
+  img.onload = () => {
+    if (!map) return;
+    try { map.removeImage('waves'); } catch (_) { /* not yet added */ }
+    map.addImage('waves', img);
+  };
+  img.src = wavePatternDataURL;
+
+  map.triggerRepaint();
+}
+
 export const MapLibreMap = ({
   highlighted = new Set(),
   selectedCountry = null,
@@ -28,36 +66,15 @@ export const MapLibreMap = ({
   const mapContainer = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const [mapStatus, setMapStatus] = useState<'loading' | 'ready' | 'error'>('loading');
-  const currentThemeRef = useRef<ThemeKey>(propCurrentTheme);
 
-  // Update theme ref when prop changes
+  // Init effect — runs once. Creates map, wires events, applies initial style on load.
   useEffect(() => {
-    currentThemeRef.current = propCurrentTheme;
-  }, [propCurrentTheme]);
-  
-  // Force initial theme application when map is ready
-  useEffect(() => {
-    if (mapRef.current?.isStyleLoaded() && propThemes[propCurrentTheme]) {
-      
-      // Force update country outlines with initial theme
-      const outlineColor = propThemes[propCurrentTheme].outline;
-      mapRef.current.setPaintProperty('countries-outline', 'line-color', outlineColor);
-      
-      // Force update country labels
-      mapRef.current.setPaintProperty('country-labels', 'text-color', outlineColor);
-      mapRef.current.setPaintProperty('country-labels', 'text-halo-color', propThemes[propCurrentTheme].background);
-    }
-  }, [mapStatus, propCurrentTheme, propThemes]);
-
-  useEffect(() => {
-    // Only run on client side
     if (typeof window === 'undefined') return;
-
     if (!mapContainer.current) {
       setMapStatus('error');
       return;
     }
-    
+
     const map = new maplibregl.Map({
       container: mapContainer.current,
       style: createMapStyle(propCurrentTheme).style,
@@ -65,48 +82,11 @@ export const MapLibreMap = ({
       zoom: getOptimalZoom()
     });
 
-    // Store map reference
     mapRef.current = map;
+    map.addControl(new maplibregl.NavigationControl(), 'top-right');
 
-    // Add the wave pattern image to the map
-    map.on('load', () => {
-      setMapStatus('ready');
-      
-      // Add custom wave pattern
-      const { wavePatternDataURL } = createMapStyle(propCurrentTheme);
-      const img = new Image();
-      img.onload = () => {
-        mapRef.current?.addImage('waves', img);
-      };
-      img.src = wavePatternDataURL;
-      
-      // Update heatmap colors after map loads
-      updateHeatmapColors();
-    });
-    
-    // Function to update heatmap colors
-    const updateHeatmapColors = () => {
-      if (mapRef.current?.isStyleLoaded()) {
-        // Generate the complete heatmap style
-        const heatmapStyle = generateHeatmapStyle(books, propThemes[propCurrentTheme]);
-        
-        mapRef.current.setPaintProperty('countries-fill', 'fill-color', heatmapStyle);
-        
-        // Force a repaint
-        mapRef.current.triggerRepaint();
-      }
-    };
-
-
-
-    // Add basic controls
-    mapRef.current?.addControl(new maplibregl.NavigationControl(), 'top-right');
-
-         // Controls are now handled by React components in the parent components
-
-    // Setup map event handlers using the new module
     const cleanupEventHandlers = setupMapEventHandlers({
-      map: mapRef.current,
+      map,
       onCountryClick,
       onMapError: (error) => {
         console.error("Map error:", error);
@@ -114,91 +94,26 @@ export const MapLibreMap = ({
       }
     });
 
+    map.on('load', () => {
+      setMapStatus('ready');
+      applyMapStyle(map, propCurrentTheme, books, propThemes);
+    });
+
     return () => {
-      if (mapRef.current) {
-        mapRef.current.remove();
-      }
-      // Clean up event handlers
-      if (cleanupEventHandlers) {
-        cleanupEventHandlers();
-      }
+      map.remove();
+      cleanupEventHandlers?.();
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Update heatmap colors when books change
+  // Update effect — runs whenever books or theme change after init.
   useEffect(() => {
-    if (!mapRef.current?.isStyleLoaded()) {
-      return;
-    }
-
-    const heatmapStyle = generateHeatmapStyle(books, propThemes[propCurrentTheme]);
-    mapRef.current.setPaintProperty('countries-fill', 'fill-color', heatmapStyle);
-    mapRef.current.triggerRepaint();
+    if (!mapRef.current) return;
+    applyMapStyle(mapRef.current, propCurrentTheme, books, propThemes);
   }, [books, propCurrentTheme, propThemes]);
-  
-  // Dedicated effect for theme changes - ensure ALL colors update
-  useEffect(() => {
-    // Skip if theme hasn't actually changed
-    if (currentThemeRef.current === propCurrentTheme) {
-      return;
-    }
-    
-    // Only proceed if we have valid theme data and the map is ready
-    if (!propThemes[propCurrentTheme]) {
-      return;
-    }
-    
-    if (mapRef.current?.isStyleLoaded()) {
-      // Update map colors
-      const baseColor = propThemes[propCurrentTheme].fill;
-      const outlineColor = propThemes[propCurrentTheme].outline;
-      
-      // Update background
-      mapRef.current.setPaintProperty('background', 'background-color', propThemes[propCurrentTheme].background);
-      
-      // Update country outlines
-      mapRef.current.setPaintProperty('countries-outline', 'line-color', outlineColor);
-      
-      // Update country labels text color
-      mapRef.current.setPaintProperty('country-labels', 'text-color', outlineColor);
-      mapRef.current.setPaintProperty('country-labels', 'text-halo-color', propThemes[propCurrentTheme].background);
-      
-      // Update country fills (heatmap)
-      const newHeatmapStyle = generateHeatmapStyle(books, propThemes[propCurrentTheme]);
-      
-      mapRef.current.setPaintProperty('countries-fill', 'fill-color', newHeatmapStyle);
-      mapRef.current.triggerRepaint();
-      
-      // Update wave pattern image
-      const { wavePatternDataURL } = createMapStyle(propCurrentTheme);
-      const img = new Image();
-      img.onload = () => {
-        if (mapRef.current) {
-          // Remove old image if it exists
-          try {
-            mapRef.current.removeImage('waves');
-          } catch (e) {
-            // Image might not exist yet, ignore error
-          }
-          mapRef.current.addImage('waves', img);
-        }
-      };
-      img.src = wavePatternDataURL;
-      
-      // Update the ref to track the current theme
-      currentThemeRef.current = propCurrentTheme;
-    } else {
-      // Map not ready yet
-    }
-    
-    
-    
-  }, [propCurrentTheme, books, propThemes]);
 
   return (
     <div className="w-full h-full">
-      {/* Map Container */}
       <div
         ref={mapContainer}
         className="w-full h-full"
@@ -212,7 +127,7 @@ export const MapLibreMap = ({
             </div>
           </div>
         )}
-        
+
         {mapStatus === 'error' && (
           <div className="w-full h-full flex items-center justify-center bg-red-50">
             <div className="text-center">
