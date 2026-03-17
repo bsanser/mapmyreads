@@ -24,14 +24,19 @@ export async function POST(request: NextRequest) {
       const normalized = normalizeAuthorName(authorName)
       if (!normalized) continue
 
-      const cached = await prisma.authorCache.findUnique({
-        where: { normalizedName: normalized }
-      })
+      try {
+        const cached = await prisma.authorCache.findUnique({
+          where: { normalizedName: normalized }
+        })
 
-      if (cached) {
-        results[authorName] = cached.countries
-        console.log(`✅ Cache hit: ${authorName} → ${cached.countries.join(', ')}`)
-      } else {
+        if (cached) {
+          results[authorName] = cached.countries
+          console.log(`✅ Cache hit: ${authorName} → ${cached.countries.join(', ')}`)
+        } else {
+          cacheMisses.push(authorName)
+        }
+      } catch {
+        // DB unavailable — treat as cache miss
         cacheMisses.push(authorName)
       }
     }
@@ -47,15 +52,17 @@ export async function POST(request: NextRequest) {
         console.log(`🌐 Fetching from Wikidata: ${authorName}`)
         const countries = await detectAuthorCountriesByName(authorName)
         
-        // Store in cache
-        await prisma.authorCache.create({
-          data: {
-            name: authorName,
-            normalizedName: normalized,
-            countries: countries,
-            source: 'wikidata'
-          }
-        })
+        // Store in cache (best-effort — ignore DB errors)
+        try {
+          await prisma.authorCache.create({
+            data: {
+              name: authorName,
+              normalizedName: normalized,
+              countries: countries,
+              source: 'wikidata'
+            }
+          })
+        } catch { /* cache write failure is non-fatal */ }
 
         results[authorName] = countries
         console.log(`💾 Cached: ${authorName} → ${countries.join(', ') || 'none'}`)

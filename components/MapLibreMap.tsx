@@ -47,6 +47,7 @@ function applyMapStyle(
     if (!map) return;
     try { map.removeImage('waves'); } catch (_) { /* not yet added */ }
     map.addImage('waves', img);
+    map.setPaintProperty('background', 'background-pattern', 'waves');
   };
   img.src = wavePatternDataURL;
 
