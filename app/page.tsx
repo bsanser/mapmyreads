@@ -112,7 +112,12 @@ export default function Home() {
             const { booksWithCountries, summary: authorSummary } = await resolveAuthorCountriesBackend(
               parsedBooks,
               (current, total) => {
-                setEnrichmentProgress({ current, total, stage: `Processing ${current}/${total} books...` })
+                setEnrichmentProgress({ current, total, stage: `Mapping authors: ${current}/${total} resolved` })
+              },
+              (updatedBooks) => {
+                // Incremental update — map re-renders with new countries after each batch
+                setBooks(updatedBooks)
+                saveProcessedBooks(updatedBooks)
               }
             )
 
@@ -128,7 +133,7 @@ export default function Home() {
 
             console.log('✅ Author countries resolved:', { csv: csvSummary, authorCountries: authorSummary })
 
-            // Load covers in background with batching
+            // Load covers in background with batching (after author resolution)
             const booksNeedingCovers = booksWithCountries.filter(b => b.readStatus === 'read' && !b.coverImage)
             if (booksNeedingCovers.length > 0) {
               console.log(`📷 Loading ${booksNeedingCovers.length} READ book covers in batches...`)

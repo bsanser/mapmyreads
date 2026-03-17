@@ -1,7 +1,7 @@
 import { MapLibreMap } from './MapLibreMap'
 import { MapControls } from './MapControls'
 import { Book } from '../types/book'
-import { ThemeKey } from '../lib/themeManager'
+import { ThemeKey, THEMES } from '../lib/themeManager'
 import { FeedbackButton } from './FeedbackButton'
 
 interface MapContainerProps {
