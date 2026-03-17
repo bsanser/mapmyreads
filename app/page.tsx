@@ -25,13 +25,6 @@ import {
 } from '../lib/csvParser'
 import { generateCsvSummary } from '../lib/csvSummary'
 import { mapDisplayNameToISO2 } from '../lib/mapUtilities'
-import { 
-  logMapEvent, 
-  startMapLoadTimer, 
-  endMapLoadTimer,
-  savePerformanceLogs 
-} from '../lib/performanceLogger'
-import { testCountryDetection } from '../lib/testCountryDetection'
 import { resolveAuthorCountriesBackend } from '../lib/authorCountryServiceBackend'
 import { enrichBooksWithCoversBatched } from '../lib/bookCoverServiceBatched'
 
@@ -129,9 +122,6 @@ export default function Home() {
     const file = e.target.files?.[0]
     if (!file) return
 
-    // Start performance timer for map loading
-    startMapLoadTimer()
-    logMapEvent('file_upload_start', { fileName: file.name, fileSize: file.size })
     uploadStartRef.current = typeof performance !== 'undefined' ? performance.now() : Date.now()
 
     try {
@@ -160,7 +150,6 @@ export default function Home() {
               : null
             
             console.log(`⚡ Map shown in ${timeToFirstShowMapSeconds}s`)
-            logMapEvent('map_displayed', { timeToFirstShowMap: timeToFirstShowMapSeconds })
 
             // NOW enrich data in background
             setIsEnriching(true)
@@ -193,18 +182,6 @@ export default function Home() {
               authorCountries: authorSummary
             })
             
-            logMapEvent('author_enrichment_complete', { 
-              bookCount: booksWithCountries.length,
-              readBookCount: authorSummary.readBooks,
-              resolvedAuthorCount: authorSummary.readBooksWithResolvedAuthors
-            })
-            endMapLoadTimer({
-              totalBookCount: authorSummary.totalBooks,
-              readBookCount: authorSummary.readBooks,
-              bookCount: booksWithCountries.length,
-              note: 'author_enrichment_complete'
-            })
-            
             // Load covers in background with batching
             const booksNeedingCovers = booksWithCountries.filter(b => b.readStatus === 'read' && !b.coverImage)
             if (booksNeedingCovers.length > 0) {
@@ -234,11 +211,6 @@ export default function Home() {
             setError('Error parsing CSV file. Please check the format.')
             setIsProcessing(false)
             setIsEnriching(false)
-            logMapEvent('file_parse_error', { error: parseError.message })
-            endMapLoadTimer({
-              error: parseError instanceof Error ? parseError.message : 'Unknown parse error',
-              note: 'author_country_map_failed'
-            })
           }
         },
         error: (error) => {
@@ -247,11 +219,6 @@ export default function Home() {
           setIsProcessing(false)
           setIsEnriching(false)
           uploadStartRef.current = null
-          logMapEvent('file_read_error', { error: error.message })
-          endMapLoadTimer({
-            error: error.message,
-            note: 'author_country_map_failed'
-          })
         }
       })
     } catch (error) {
@@ -260,11 +227,6 @@ export default function Home() {
       setIsProcessing(false)
       setIsEnriching(false)
       uploadStartRef.current = null
-      logMapEvent('file_handling_error', { error: error.message })
-      endMapLoadTimer({
-        error: error instanceof Error ? error.message : 'Unknown file handling error',
-        note: 'author_country_map_failed'
-      })
     }
   }
 
@@ -277,17 +239,12 @@ export default function Home() {
     try {
       // Check for shareable data first
       if (hasShareableData()) {
-        logMapEvent('loading_shareable_data')
         saveShareableData()
       }
 
       // Load from localStorage
       const processedBooks = loadProcessedBooks()
       if (processedBooks && processedBooks.length > 0) {
-        logMapEvent('books_loaded_from_storage', { 
-          bookCount: processedBooks.length,
-          hasCountries: processedBooks.some(book => book.bookCountries.length > 0)
-        })
         setBooks(processedBooks)
         
         // Load covers in background with batching
@@ -319,7 +276,6 @@ export default function Home() {
 
     } catch (error) {
       console.error('Error loading books:', error)
-      logMapEvent('storage_load_error', { error: error.message })
     }
   }, [])
 
@@ -385,17 +341,10 @@ export default function Home() {
       />
 
       {/* Developer Tools */}
-      <DeveloperTools 
+      <DeveloperTools
         isVisible={showDeveloperMode}
         onClose={() => setShowDeveloperMode(false)}
         books={books}
-        onTestCountryDetection={testCountryDetection}
-        onTestCountryMapping={() => {
-          if (typeof window !== 'undefined' && (window as any).testCountryMapping) {
-            (window as any).testCountryMapping()
-          }
-        }}
-        onSavePerformanceLogs={savePerformanceLogs}
       />
 
       {/* Enrichment Progress */}
