@@ -24,8 +24,8 @@ Generated from refactor_plan_1.md. Check off as completed.
 
 ## Phase 4: Restructure Enrichment Pipeline (3 tasks)
 - [x] Task #15: P4-C15+16 - Implement incremental author resolution
-- [ ] Task #16: P4-C17 - Run cover loading in parallel with author resolution
-- [ ] Task #17: P4-C18 - Add UX for incremental loading
+- [x] Task #16: P4-C17 - Run cover loading in parallel with author resolution
+- [x] Task #17: P4-C18 - Add UX for incremental loading
 
 ## Phase 5: Consolidate MapLibreMap (2 tasks)
 - [ ] Task #18: P5-C19 - Consolidate MapLibreMap useEffect hooks

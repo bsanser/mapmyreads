@@ -1,49 +1,101 @@
+import { useState, useEffect } from 'react'
 import { useEnrichment } from '../contexts/EnrichmentContext'
 
-function ProgressBar({ current, total, stage }: { current: number; total: number; stage: string }) {
+function ProgressBar({ current, total, stage, color = 'bg-blue-600' }: {
+  current: number
+  total: number
+  stage: string
+  color?: string
+}) {
   const percentage = total > 0 ? Math.round((current / total) * 100) : 0
 
   return (
-    <div className="fixed bottom-6 right-6 bg-white rounded-lg shadow-lg border border-gray-200 p-4 max-w-sm z-50 animate-slide-up">
-      <div className="flex items-start gap-3">
-        <div className="flex-shrink-0 mt-1">
-          <div className="animate-spin rounded-full h-5 w-5 border-2 border-gray-300 border-t-blue-600"></div>
-        </div>
-
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-gray-900 mb-1">
-            Enriching your data...
-          </p>
-          <p className="text-xs text-gray-600 mb-2">
-            {stage}
-          </p>
-
-          <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
-            <div
-              className="bg-blue-600 h-2 rounded-full transition-all duration-300 ease-out"
-              style={{ width: `${percentage}%` }}
-            />
-          </div>
-
-          <p className="text-xs text-gray-500 mt-1">
-            {current} of {total} ({percentage}%)
-          </p>
-        </div>
+    <div className="flex items-start gap-3">
+      <div className="flex-shrink-0 mt-1">
+        <div className="animate-spin rounded-full h-4 w-4 border-2 border-gray-300 border-t-blue-600"></div>
       </div>
+
+      <div className="flex-1 min-w-0">
+        <p className="text-xs text-gray-600 mb-1">
+          {stage}
+        </p>
+
+        <div className="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
+          <div
+            className={`${color} h-1.5 rounded-full transition-all duration-300 ease-out`}
+            style={{ width: `${percentage}%` }}
+          />
+        </div>
+
+        <p className="text-xs text-gray-400 mt-0.5">
+          {current} of {total} ({percentage}%)
+        </p>
+      </div>
+    </div>
+  )
+}
+
+function DoneMessage() {
+  const [visible, setVisible] = useState(true)
+
+  useEffect(() => {
+    const timer = setTimeout(() => setVisible(false), 2000)
+    return () => clearTimeout(timer)
+  }, [])
+
+  if (!visible) return null
+
+  return (
+    <div className="flex items-center gap-2 text-xs text-green-700">
+      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+      </svg>
+      All authors mapped!
     </div>
   )
 }
 
 export function EnrichmentProgress() {
   const { isEnriching, enrichmentProgress, isLoadingCovers, coverProgress } = useEnrichment()
+  const [showAuthorsDone, setShowAuthorsDone] = useState(false)
 
-  if (isEnriching) {
-    return <ProgressBar current={enrichmentProgress.current} total={enrichmentProgress.total} stage={enrichmentProgress.stage} />
-  }
+  // Show "done" briefly when authors finish while covers are still loading
+  useEffect(() => {
+    if (!isEnriching && isLoadingCovers) {
+      setShowAuthorsDone(true)
+      const timer = setTimeout(() => setShowAuthorsDone(false), 2000)
+      return () => clearTimeout(timer)
+    }
+    setShowAuthorsDone(false)
+  }, [isEnriching, isLoadingCovers])
 
-  if (isLoadingCovers) {
-    return <ProgressBar current={coverProgress.current} total={coverProgress.total} stage={coverProgress.stage} />
-  }
+  if (!isEnriching && !isLoadingCovers) return null
 
-  return null
+  return (
+    <div className="fixed bottom-6 right-6 bg-white rounded-lg shadow-lg border border-gray-200 p-4 max-w-xs z-50 animate-slide-up space-y-3">
+      <p className="text-sm font-medium text-gray-900">
+        Enriching your data...
+      </p>
+
+      {isEnriching && (
+        <ProgressBar
+          current={enrichmentProgress.current}
+          total={enrichmentProgress.total}
+          stage={enrichmentProgress.stage}
+          color="bg-blue-600"
+        />
+      )}
+
+      {showAuthorsDone && <DoneMessage />}
+
+      {isLoadingCovers && (
+        <ProgressBar
+          current={coverProgress.current}
+          total={coverProgress.total}
+          stage={coverProgress.stage}
+          color="bg-amber-500"
+        />
+      )}
+    </div>
+  )
 }

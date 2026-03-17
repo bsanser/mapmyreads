@@ -19,7 +19,7 @@ export type AuthorCountrySummary = {
  * Apply a partial author→countries map to a books array, returning updated books.
  * Only mutates authorCountries for books whose authors appear in the map.
  */
-function applyAuthorCountriesToBooks(
+export function applyAuthorCountriesToBooks(
   books: Book[],
   authorCountryMap: Record<string, string[]>
 ): Book[] {
@@ -53,7 +53,7 @@ function applyAuthorCountriesToBooks(
 export const resolveAuthorCountriesBackend = async (
   books: Book[],
   onProgress?: (current: number, total: number) => void,
-  onBatchComplete?: (updatedBooks: Book[]) => void
+  onBatchComplete?: (batchResults: Record<string, string[]>) => void
 ): Promise<{ booksWithCountries: Book[]; summary: AuthorCountrySummary }> => {
   const readBooks = books.filter(book => book.readStatus === 'read')
   const readBooksWithAuthors = readBooks.filter(
@@ -119,10 +119,10 @@ export const resolveAuthorCountriesBackend = async (
         onProgress(resolvedCount, totalAuthors)
       }
 
-      // Apply this batch's results to books and notify caller
+      // Apply this batch's results to internal tracking and notify caller with delta
       currentBooks = applyAuthorCountriesToBooks(currentBooks, batchResults)
       if (onBatchComplete) {
-        onBatchComplete(currentBooks)
+        onBatchComplete(batchResults)
       }
     } catch (error) {
       console.error(`❌ Batch failed for authors: ${batch.join(', ')}`, error)

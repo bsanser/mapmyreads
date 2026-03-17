@@ -1,9 +1,23 @@
 import { Book } from '../types/book'
 
 // Load covers in small batches to avoid overwhelming the API
+/** Apply a cover results map to a books array, returning updated books. */
+export function applyCoverResultsToBooks(
+  books: Book[],
+  coverMap: Record<string, string | null>
+): Book[] {
+  return books.map(book => {
+    const key = book.isbn13 || `${book.title}|${book.authors}`
+    if (coverMap.hasOwnProperty(key) && coverMap[key] && !book.coverImage) {
+      return { ...book, coverImage: coverMap[key] }
+    }
+    return book
+  })
+}
+
 export const enrichBooksWithCoversBatched = async (
   books: Book[],
-  onBatchComplete?: (loadedCount: number, totalCount: number, updatedBooks: Book[]) => void
+  onBatchComplete?: (loadedCount: number, totalCount: number, coverMap: Record<string, string | null>) => void
 ): Promise<Book[]> => {
   // Only fetch covers for read books
   const booksNeedingCovers = books.filter(b => b.readStatus === 'read' && !b.coverImage)
@@ -54,7 +68,7 @@ export const enrichBooksWithCoversBatched = async (
         console.log(`✅ Batch ${Math.floor(i / BATCH_SIZE) + 1}: Loaded ${loadedCount}/${booksNeedingCovers.length} covers`)
         
         if (onBatchComplete) {
-          onBatchComplete(loadedCount, booksNeedingCovers.length, enrichedBooks)
+          onBatchComplete(loadedCount, booksNeedingCovers.length, coverMap)
         }
       }
     } catch (error) {

@@ -22,8 +22,9 @@ import {
 } from '../lib/csvParser'
 import { generateCsvSummary } from '../lib/csvSummary'
 import { mapDisplayNameToISO2 } from '../lib/mapUtilities'
-import { resolveAuthorCountriesBackend } from '../lib/authorCountryServiceBackend'
-import { enrichBooksWithCoversBatched } from '../lib/bookCoverServiceBatched'
+import { resolveAuthorCountriesBackend, applyAuthorCountriesToBooks } from '../lib/authorCountryServiceBackend'
+import { enrichBooksWithCoversBatched, applyCoverResultsToBooks } from '../lib/bookCoverServiceBatched'
+import { enrichmentMetrics } from '../lib/enrichmentMetrics'
 import { useBooks } from '../contexts/BooksContext'
 import { useTheme } from '../contexts/ThemeContext'
 import { useEnrichment } from '../contexts/EnrichmentContext'
@@ -48,7 +49,6 @@ export default function Home() {
   const [showMissingAuthorCountry, setShowMissingAuthorCountry] = useState(false)
 
   const booksLoadedRef = useRef(false)
-  const uploadStartRef = useRef<number | null>(null)
 
   const handleToggleMissingAuthorCountry = () => {
     setShowMissingAuthorCountry(prev => !prev)
@@ -76,7 +76,7 @@ export default function Home() {
     const file = e.target.files?.[0]
     if (!file) return
 
-    uploadStartRef.current = typeof performance !== 'undefined' ? performance.now() : Date.now()
+    enrichmentMetrics.startUpload()
 
     try {
       Papa.parse<Record<string, string>>(file, {
@@ -94,59 +94,28 @@ export default function Home() {
             setBooks(parsedBooks)
             setBooksToShow(10)
             setIsProcessing(false)
+            enrichmentMetrics.mapShown()
 
-            const now = typeof performance !== 'undefined' ? performance.now() : Date.now()
-            const timeToFirstShowMapSeconds = uploadStartRef.current !== null
-              ? Number(((now - uploadStartRef.current) / 1000).toFixed(2))
-              : null
-
-            console.log(`⚡ Map shown in ${timeToFirstShowMapSeconds}s`)
-
-            // NOW enrich data in background
+            // Enrich data in background — authors and covers run in parallel
             setIsEnriching(true)
             setEnrichmentProgress({ current: 0, total: 1, stage: 'Discovering author countries...' })
 
-            console.time('⏱️ Author Resolution (Backend API)')
-            const authorStartTime = performance.now()
-
-            const { booksWithCountries, summary: authorSummary } = await resolveAuthorCountriesBackend(
-              parsedBooks,
-              (current, total) => {
-                setEnrichmentProgress({ current, total, stage: `Mapping authors: ${current}/${total} resolved` })
-              },
-              (updatedBooks) => {
-                // Incremental update — map re-renders with new countries after each batch
-                setBooks(updatedBooks)
-                saveProcessedBooks(updatedBooks)
-              }
-            )
-
-            const authorEndTime = performance.now()
-            const authorDuration = ((authorEndTime - authorStartTime) / 1000).toFixed(2)
-            console.timeEnd('⏱️ Author Resolution (Backend API)')
-            console.log(`📊 Stats: ${authorSummary.uniqueAuthors} authors, ${authorSummary.apiLookups} API calls, ${authorDuration}s total`)
-
-            setBooks(booksWithCountries)
-            saveProcessedBooks(booksWithCountries)
-            setIsEnriching(false)
-            setEnrichmentProgress({ current: 0, total: 0, stage: '' })
-
-            console.log('✅ Author countries resolved:', { csv: csvSummary, authorCountries: authorSummary })
-
-            // Load covers in background with batching (after author resolution)
-            const booksNeedingCovers = booksWithCountries.filter(b => b.readStatus === 'read' && !b.coverImage)
+            // Start cover loading immediately — covers don't depend on author countries
+            const booksNeedingCovers = parsedBooks.filter(b => b.readStatus === 'read' && !b.coverImage)
             if (booksNeedingCovers.length > 0) {
-              console.log(`📷 Loading ${booksNeedingCovers.length} READ book covers in batches...`)
               setIsLoadingCovers(true)
               setCoverProgress({ current: 0, total: booksNeedingCovers.length, stage: 'Downloading book covers...' })
 
-              enrichBooksWithCoversBatched(booksWithCountries, (loaded, total, updatedBooks) => {
-                console.log(`📷 Progress: ${loaded}/${total} READ covers loaded`)
-                setBooks(updatedBooks)
-                saveProcessedBooks(updatedBooks)
+              enrichBooksWithCoversBatched(parsedBooks, (loaded, total, coverMap) => {
+                enrichmentMetrics.firstCoverBatch()
+                setBooks(prev => {
+                  const updated = applyCoverResultsToBooks(prev, coverMap)
+                  saveProcessedBooks(updated)
+                  return updated
+                })
                 setCoverProgress({ current: loaded, total, stage: `Loading covers: ${loaded}/${total}` })
               }).then(() => {
-                console.log('✅ All book covers loaded!')
+                enrichmentMetrics.coversComplete(booksNeedingCovers.length)
                 setIsLoadingCovers(false)
                 setCoverProgress({ current: 0, total: 0, stage: '' })
               }).catch(error => {
@@ -155,6 +124,29 @@ export default function Home() {
                 setCoverProgress({ current: 0, total: 0, stage: '' })
               })
             }
+
+            // Resolve author countries incrementally (runs concurrently with covers)
+            const { summary: authorSummary } = await resolveAuthorCountriesBackend(
+              parsedBooks,
+              (current, total) => {
+                setEnrichmentProgress({ current, total, stage: `Mapping authors: ${current}/${total} resolved` })
+              },
+              (batchResults) => {
+                enrichmentMetrics.firstCountryBatch()
+                // Incremental update — merge this batch's countries onto latest state
+                setBooks(prev => {
+                  const updated = applyAuthorCountriesToBooks(prev, batchResults)
+                  saveProcessedBooks(updated)
+                  return updated
+                })
+              }
+            )
+
+            enrichmentMetrics.authorsComplete(authorSummary.uniqueAuthors, authorSummary.apiLookups)
+            enrichmentMetrics.logSummary()
+
+            setIsEnriching(false)
+            setEnrichmentProgress({ current: 0, total: 0, stage: '' })
 
           } catch (parseError) {
             console.error('Error parsing CSV:', parseError)
@@ -200,10 +192,13 @@ export default function Home() {
           setIsLoadingCovers(true)
           setCoverProgress({ current: 0, total: booksNeedingCovers.length, stage: 'Downloading book covers...' })
 
-          enrichBooksWithCoversBatched(processedBooks, (loaded, total, updatedBooks) => {
+          enrichBooksWithCoversBatched(processedBooks, (loaded, total, coverMap) => {
             console.log(`📷 Progress: ${loaded}/${total} READ covers loaded`)
-            setBooks(updatedBooks)
-            saveProcessedBooks(updatedBooks)
+            setBooks(prev => {
+              const updated = applyCoverResultsToBooks(prev, coverMap)
+              saveProcessedBooks(updated)
+              return updated
+            })
             setCoverProgress({ current: loaded, total, stage: `Loading covers: ${loaded}/${total}` })
           }).then(() => {
             console.log('✅ All book covers loaded!')
