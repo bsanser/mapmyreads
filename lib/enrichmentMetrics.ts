@@ -79,7 +79,7 @@ export const enrichmentMetrics = {
     metrics.totalCovers = totalCovers
   },
 
-  /** Log a summary table to the console */
+  /** Log a summary table to the console, with budget warnings */
   logSummary() {
     const rows = [
       ['Map visible', elapsed(metrics.mapShown)],
@@ -96,5 +96,22 @@ export const enrichmentMetrics = {
     console.log(
       `   Authors: ${metrics.totalAuthors} (${metrics.apiLookups} API lookups) | Covers: ${metrics.totalCovers}`
     )
+
+    // Performance budget warnings
+    if (metrics.uploadStart !== null && metrics.mapShown !== null) {
+      const mapDelay = (metrics.mapShown - metrics.uploadStart) / 1000
+      if (mapDelay > 3) {
+        console.warn(`⚠️ Slow map render: ${mapDelay.toFixed(2)}s (budget: 3s)`)
+      }
+    }
+    if (metrics.uploadStart !== null && metrics.authorsComplete !== null) {
+      const authorDelay = (metrics.authorsComplete - metrics.uploadStart) / 1000
+      if (authorDelay > 30) {
+        console.warn(`⚠️ Slow author resolution: ${authorDelay.toFixed(2)}s (budget: 30s)`)
+      }
+    }
+    if (metrics.firstCountryBatch === null && metrics.totalAuthors > 0) {
+      console.warn('⚠️ No country data resolved — author API may be failing')
+    }
   },
 }

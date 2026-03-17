@@ -168,6 +168,10 @@ export const resolveAuthorCountriesBackend = async (
     onProgress(totalAuthors, totalAuthors)
   }
 
+  if (summary.uniqueAuthors > 0 && summary.uniqueAuthorsWithCountries === 0) {
+    console.warn('⚠️ Author resolution complete but zero countries found — Wikidata API may be unavailable')
+  }
+
   return {
     booksWithCountries: currentBooks,
     summary

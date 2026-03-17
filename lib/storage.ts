@@ -29,25 +29,43 @@ export const saveProcessedBooks = (books: Book[]): void => {
   }
 }
 
+const REQUIRED_BOOK_FIELDS = ['title', 'authors', 'readStatus', 'authorCountries', 'bookCountries'] as const
+
+function isValidBooksArray(data: unknown): data is Book[] {
+  if (!Array.isArray(data) || data.length === 0) return false
+  const sample = data[0]
+  return REQUIRED_BOOK_FIELDS.every(field => field in sample)
+}
+
 // Load processed books from storage
 export const loadProcessedBooks = (): Book[] | null => {
   if (typeof window === 'undefined') return null
-  
+
   try {
     // Try localStorage first
     const stored = localStorage.getItem(STORAGE_KEYS.PROCESSED_BOOKS)
     if (stored) {
       const books = JSON.parse(stored)
+      if (!isValidBooksArray(books)) {
+        console.warn('⚠️ Stored books failed shape validation — clearing stale data')
+        localStorage.removeItem(STORAGE_KEYS.PROCESSED_BOOKS)
+        return null
+      }
       return books
     }
-    
+
     // Fallback to sessionStorage
     const sessionStored = sessionStorage.getItem(STORAGE_KEYS.PROCESSED_BOOKS)
     if (sessionStored) {
       const books = JSON.parse(sessionStored)
+      if (!isValidBooksArray(books)) {
+        console.warn('⚠️ Stored books failed shape validation — clearing stale data')
+        sessionStorage.removeItem(STORAGE_KEYS.PROCESSED_BOOKS)
+        return null
+      }
       return books
     }
-    
+
     return null
   } catch (error) {
     console.error('❌ Error loading processed books:', error)

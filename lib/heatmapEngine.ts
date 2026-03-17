@@ -1,7 +1,7 @@
 import { COUNTRIES } from './countries';
 import { darkenColor } from './themeManager';
 
-// Cache for generated heatmap styles — keyed on bookCount:themeKey
+// Cache for generated heatmap styles — keyed on actual country distribution + theme
 const heatmapCache = new Map<string, ReturnType<typeof buildHeatmapStyle>>();
 
 // Calculate country book counts for heatmap
@@ -12,7 +12,7 @@ export const getCountryBookCounts = (books: any[]) => {
   COUNTRIES.forEach(country => {
     countryCounts[country.iso2] = 0;
   });
-  
+
   books.forEach(book => {
     if (book.readStatus && book.readStatus !== 'read') {
       return;
@@ -20,20 +20,19 @@ export const getCountryBookCounts = (books: any[]) => {
     const countriesToCount = (book.authorCountries && book.authorCountries.length > 0)
       ? book.authorCountries
       : book.bookCountries;
-    
+
     countriesToCount?.forEach((countryCode: string) => {
       if (countryCounts.hasOwnProperty(countryCode)) {
         countryCounts[countryCode]++;
       }
     });
   });
-  
+
   return countryCounts;
 };
 
-// Pure builder — separated so the memoized wrapper can call it
-function buildHeatmapStyle(books: any[], currentTheme: any) {
-  const countryCounts = getCountryBookCounts(books);
+// Pure builder — accepts pre-computed countryCounts to avoid double computation
+function buildHeatmapStyle(countryCounts: Record<string, number>, currentTheme: any) {
   const baseColor = currentTheme.fill;
   const outlineColor = currentTheme.outline;
 
@@ -58,13 +57,21 @@ function buildHeatmapStyle(books: any[], currentTheme: any) {
 }
 
 // Generate the complete heatmap style based on current data.
-// Memoized on book count + theme key to avoid rebuilding on every render.
+// Memoized on actual country distribution + theme to correctly invalidate when
+// book→country mapping changes (e.g. after each author resolution batch).
 export const generateHeatmapStyle = (books: any[], currentTheme: any): any => {
-  const cacheKey = `${books.length}:${currentTheme.fill}:${currentTheme.outline}`;
+  const countryCounts = getCountryBookCounts(books);
+  const nonZero = Object.entries(countryCounts)
+    .filter(([, c]) => c > 0)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([iso2, c]) => `${iso2}:${c}`)
+    .join(',');
+  const cacheKey = `${nonZero}:${currentTheme.fill}:${currentTheme.outline}`;
+
   if (heatmapCache.has(cacheKey)) {
     return heatmapCache.get(cacheKey);
   }
-  const style = buildHeatmapStyle(books, currentTheme);
+  const style = buildHeatmapStyle(countryCounts, currentTheme);
   heatmapCache.set(cacheKey, style);
   return style;
 };
