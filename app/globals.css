@@ -56,6 +56,20 @@ body {
   animation-delay: 4s;
 }
 
+/* Notebook-line background for book cards */
+.notebook-lines {
+  background-image:
+    linear-gradient(to right, rgba(226, 232, 240, 0.3) 1px, transparent 1px),
+    repeating-linear-gradient(
+      transparent, transparent 24px,
+      rgba(59, 130, 246, 0.2) 24px, rgba(59, 130, 246, 0.2) 25px,
+      transparent 25px, transparent 49px,
+      rgba(220, 38, 38, 0.2) 49px, rgba(220, 38, 38, 0.2) 50px
+    );
+  background-size: 100% 100%, 100% 50px;
+  background-position: 0 0, 0 8px;
+}
+
 /* Slide up animation for progress indicator */
 @keyframes slide-up {
   from {

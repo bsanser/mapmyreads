@@ -5,16 +5,12 @@ import { useBooks } from '../contexts/BooksContext'
 import { useTheme } from '../contexts/ThemeContext'
 
 interface MobileBottomSheetProps {
-  showBottomSheet: boolean
-  onToggleBottomSheet: () => void
   showMissingAuthorCountry: boolean
   onToggleMissingAuthorCountry: () => void
   onClearMissingAuthorCountry: () => void
 }
 
 export function MobileBottomSheet({
-  showBottomSheet,
-  onToggleBottomSheet,
   showMissingAuthorCountry,
   onToggleMissingAuthorCountry,
   onClearMissingAuthorCountry

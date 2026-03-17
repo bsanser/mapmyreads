@@ -3,19 +3,6 @@ import { Book } from '../types/book'
 import { getCountryFlag, mapISO2ToDisplayName } from '../lib/mapUtilities'
 import { COUNTRIES } from '../lib/countries'
 
-const NOTEBOOK_STYLE = {
-  backgroundImage: `
-    linear-gradient(to right, rgba(226, 232, 240, 0.3) 1px, transparent 1px),
-    repeating-linear-gradient(
-      transparent, transparent 24px,
-      rgba(59, 130, 246, 0.2) 24px, rgba(59, 130, 246, 0.2) 25px,
-      transparent 25px, transparent 49px,
-      rgba(220, 38, 38, 0.2) 49px, rgba(220, 38, 38, 0.2) 50px
-    )
-  `,
-  backgroundSize: '100% 100%, 100% 50px',
-  backgroundPosition: '0 0, 0 8px',
-}
 
 interface BookCardProps {
   book: Book
@@ -56,8 +43,7 @@ export const BookCard = memo(function BookCard({
 
   return (
     <div
-      className="relative bg-white border border-gray-300 rounded p-4 hover:shadow-md transition-all min-h-[120px] flex items-start gap-4"
-      style={NOTEBOOK_STYLE}
+      className="notebook-lines relative bg-white border border-gray-300 rounded p-4 hover:shadow-md transition-all min-h-[120px] flex items-start gap-4"
     >
       <div className="relative flex-shrink-0" style={{ paddingTop: '10px' }}>
         <img

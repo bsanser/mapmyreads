@@ -45,7 +45,6 @@ export default function Home() {
   const [error, setError] = useState<string>('')
   const [isProcessing, setIsProcessing] = useState(false)
   const [booksToShow, setBooksToShow] = useState<number>(10)
-  const [showBottomSheet, setShowBottomSheet] = useState(false)
   const [showMissingAuthorCountry, setShowMissingAuthorCountry] = useState(false)
 
   const booksLoadedRef = useRef(false)
@@ -160,7 +159,6 @@ export default function Home() {
           setError('Error reading CSV file.')
           setIsProcessing(false)
           setIsEnriching(false)
-          uploadStartRef.current = null
         }
       })
     } catch (error) {
@@ -168,7 +166,6 @@ export default function Home() {
       setError('Error processing file.')
       setIsProcessing(false)
       setIsEnriching(false)
-      uploadStartRef.current = null
     }
   }
 
@@ -240,8 +237,6 @@ export default function Home() {
       </div>
 
       <MapContainer
-        books={books}
-        selectedCountry={selectedCountry}
         onCountryClick={handleCountryClick}
         currentTheme={currentTheme}
         onThemeChange={setCurrentTheme}
@@ -254,8 +249,6 @@ export default function Home() {
       />
 
       <MobileBottomSheet
-        showBottomSheet={showBottomSheet}
-        onToggleBottomSheet={() => setShowBottomSheet(!showBottomSheet)}
         showMissingAuthorCountry={showMissingAuthorCountry}
         onToggleMissingAuthorCountry={handleToggleMissingAuthorCountry}
         onClearMissingAuthorCountry={handleClearMissingAuthorCountry}

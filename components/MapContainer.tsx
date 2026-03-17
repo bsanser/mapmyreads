@@ -1,31 +1,27 @@
 import { MapLibreMap } from './MapLibreMap'
 import { MapControls } from './MapControls'
-import { Book } from '../types/book'
 import { ThemeKey, THEMES } from '../lib/themeManager'
 import { FeedbackButton } from './FeedbackButton'
+import { useBooks } from '../contexts/BooksContext'
 
 interface MapContainerProps {
-  books: Book[]
-  selectedCountry: string | null
   onCountryClick: (country: string) => void
   currentTheme: ThemeKey
   onThemeChange: (theme: ThemeKey) => void
   themes: typeof THEMES
 }
 
-export function MapContainer({ 
-  books, 
-  selectedCountry, 
+export function MapContainer({
   onCountryClick,
   currentTheme,
   onThemeChange,
   themes
 }: MapContainerProps) {
+  const { books } = useBooks()
   const readBooks = books.filter((book) => book.readStatus === 'read')
 
   return (
     <div className="relative w-full h-[50vh] lg:h-screen bg-white">
-      {/* Map */}
       <div className="w-full h-full relative pt-4 lg:pt-0">
         <MapLibreMap
           onCountryClick={onCountryClick}

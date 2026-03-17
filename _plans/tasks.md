@@ -35,7 +35,7 @@ Generated from refactor_plan_1.md. Check off as completed.
 - [x] Task #20: P6-C22+23 - Consolidate service files
 
 ## Phase 7: Structural Cleanup (1 task)
-- [ ] Task #21: P7-C24+25+26 - Structural cleanup
+- [x] Task #21: P7-C24+25+26 - Structural cleanup
 
 ## Phase 8: Testability Foundation (1 task)
 - [ ] Task #22: P8-C27+28 - Testability foundation + performance measurement
