@@ -1,15 +1,12 @@
 import { COUNTRIES } from './countries';
 import { darkenColor } from './themeManager';
 
-// Available countries for mock data (ISO2 codes)
-const AVAILABLE_COUNTRIES = COUNTRIES;
-
 // Calculate country book counts for heatmap
 export const getCountryBookCounts = (books: any[]) => {
   const countryCounts: Record<string, number> = {};
-  
+
   // Initialize all available countries with 0
-  AVAILABLE_COUNTRIES.forEach(country => {
+  COUNTRIES.forEach(country => {
     countryCounts[country.iso2] = 0;
   });
   

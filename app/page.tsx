@@ -53,9 +53,6 @@ export default function Home() {
   
   const booksLoadedRef = useRef(false)
   const uploadStartRef = useRef<number | null>(null)
-  
-  // Memoize THEMES to prevent unnecessary re-renders
-  const memoizedThemes = useMemo(() => THEMES, [])
 
   const summaryStats = useMemo(() => {
     const readBooksAll = books.filter(b => b.readStatus === 'read')
@@ -351,13 +348,13 @@ export default function Home() {
         />
       </div>
       {/* Map Container */}
-      <MapContainer 
+      <MapContainer
         books={books}
         selectedCountry={selectedCountry}
         onCountryClick={handleCountryClick}
         currentTheme={currentTheme}
         onThemeChange={handleThemeChange}
-        themes={memoizedThemes}
+        themes={THEMES}
       />
 
       {/* Desktop Sidebar */}

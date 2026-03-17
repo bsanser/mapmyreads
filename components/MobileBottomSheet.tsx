@@ -40,12 +40,6 @@ export function MobileBottomSheet({
     [books]
   )
 
-  useEffect(() => {
-    if (selectedCountry) {
-      // no-op placeholder for future filters
-    }
-  }, [selectedCountry])
-
   const baseFilteredBooks = selectedCountry
     ? books.filter((book) => book.authorCountries.includes(selectedCountry))
     : books
