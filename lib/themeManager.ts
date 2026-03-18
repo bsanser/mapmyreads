@@ -1,12 +1,12 @@
 // Warm & indie editorial map themes
 export const THEMES = {
-  ink: {
-    name: "Inkwell",
-    fill: "#C8D8D5",      // Muted teal-gray, like faded ink wash
-    outline: "#2C4A52",   // Deep teal-slate, like fountain pen ink
-    hover: "#A8C4C0",     // Deeper teal-gray
-    selected: "#E8F2F0",  // Very light teal glow
-    background: "#E8EEF0",// Cool parchment, like aged paper under ink
+  claret: {
+    name: "Claret",
+    fill: "#E8B4C0",      // Pale blush, 1 book
+    outline: "#6B1F3A",   // Deep wine red, 3+ books
+    hover: "#D49AAA",     // Deeper blush on hover
+    selected: "#FDF0F3",  // Very light rose glow
+    background: "#F0E8EC",// Barely-there rose, ocean
     empty: "#F0EBE0"      // Warm cream, unread
   },
   amber: {
