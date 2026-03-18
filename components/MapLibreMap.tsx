@@ -85,10 +85,6 @@ export const MapLibreMap = memo(function MapLibreMap({
     const cleanupEventHandlers = setupMapEventHandlers({
       map,
       onCountryClick,
-      onMapError: (error) => {
-        console.error("Map error:", error);
-        setMapStatus('error');
-      }
     });
 
     map.on('load', () => {
