@@ -45,7 +45,7 @@ function applyMapStyle(
   const img = new Image();
   img.onload = () => {
     if (!map) return;
-    try { map.removeImage('waves'); } catch (_) { /* not yet added */ }
+    if (map.hasImage('waves')) map.removeImage('waves');
     map.addImage('waves', img);
     map.setPaintProperty('background', 'background-pattern', 'waves');
   };
@@ -57,7 +57,7 @@ function applyMapStyle(
 export const MapLibreMap = memo(function MapLibreMap({
   onCountryClick,
   books = [],
-  currentTheme: propCurrentTheme = 'blue',
+  currentTheme: propCurrentTheme = 'sepia',
   themes: propThemes = THEMES
 }: MapLibreMapProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
@@ -85,10 +85,6 @@ export const MapLibreMap = memo(function MapLibreMap({
     const cleanupEventHandlers = setupMapEventHandlers({
       map,
       onCountryClick,
-      onMapError: (error) => {
-        console.error("Map error:", error);
-        setMapStatus('error');
-      }
     });
 
     map.on('load', () => {

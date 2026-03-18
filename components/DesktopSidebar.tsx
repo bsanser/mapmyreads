@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from 'react'
 import { getCountryFlag, mapISO2ToDisplayName } from '../lib/mapUtilities'
 import { ReadingAtlasSummary } from './ReadingAtlasSummary'
 import { BookList } from './BookList'
-import { THEMES } from '../lib/themeManager'
 import { useBooks } from '../contexts/BooksContext'
 import { useTheme } from '../contexts/ThemeContext'
 
@@ -36,7 +35,6 @@ export function DesktopSidebar({ booksToShow, onLoadMore }: DesktopSidebarProps)
     setShowMissingAuthorCountry(prev => !prev)
   }
 
-  // Compute count for "Showing X books" label
   const baseFiltered = selectedCountry
     ? books.filter(book => book.authorCountries.includes(selectedCountry))
     : books
@@ -48,8 +46,7 @@ export function DesktopSidebar({ booksToShow, onLoadMore }: DesktopSidebarProps)
 
   return (
     <div
-      className="hidden lg:block absolute top-20 left-4 bg-white/95 backdrop-blur-sm rounded-lg shadow-xl border border-gray-200/50 p-6 w-80 max-h-[calc(100vh-120px)] overflow-auto z-50"
-      style={{ zIndex: 50 }}
+      className="desktop-sidebar sidebar-surface custom-scrollbar"
       onScroll={(e) => {
         const target = e.target as HTMLDivElement
         const { scrollTop, scrollHeight, clientHeight } = target
@@ -65,28 +62,27 @@ export function DesktopSidebar({ booksToShow, onLoadMore }: DesktopSidebarProps)
       />
 
       {selectedCountry && (
-        <div className="text-xs text-gray-600 mb-3">
+        <div className="type-caption mb-3">
           Filtering by {getCountryFlag(selectedCountry)} {mapISO2ToDisplayName(selectedCountry)}{' '}
           <button
             onClick={() => setSelectedCountry(null)}
-            className="underline ml-1"
-            style={{ color: THEMES[currentTheme].outline }}
+            className="link-accent"
+            style={{ marginLeft: '0.25rem' }}
           >
             Show all
           </button>
         </div>
       )}
 
-      <div className="text-xs text-gray-600 mb-3">
+      <div className="type-caption mb-3">
         Showing {displayedBookCount} {displayedBookLabel}
       </div>
 
       {showMissingAuthorCountry && (
-        <div className="text-xs mb-2">
+        <div className="type-caption mb-2">
           <button
             type="button"
-            className="underline"
-            style={{ color: THEMES[currentTheme].outline }}
+            className="link-accent"
             onClick={() => {
               setShowMissingAuthorCountry(false)
               setSelectedCountry(null)

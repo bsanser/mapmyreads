@@ -1,89 +1,104 @@
 import { StorageStatus } from './StorageStatus'
-import { BuyMeACoffee } from './BuyMeACoffee'
 
 interface HeroScreenProps {
   onFileUpload: (e: React.ChangeEvent<HTMLInputElement>) => void
   isProcessing: boolean
   error: string
-  showDeveloperMode: boolean
-  onToggleDeveloperMode: () => void
 }
 
-export function HeroScreen({ 
-  onFileUpload, 
-  isProcessing, 
-  error, 
-  showDeveloperMode, 
-  onToggleDeveloperMode,
+export function HeroScreen({
+  onFileUpload,
+  isProcessing,
+  error,
 }: HeroScreenProps) {
   return (
-    <div
-      className="relative min-h-screen font-mono overflow-hidden"
-      style={{
-        backgroundImage: "url('/vintage_world_map.webp')",
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-      }}
-    >
-      <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-6">
-        <div className="text-center max-w-2xl">
-          {/* Brand mark */}
-          <div className="w-32 h-32 bg-white/90 backdrop-blur-sm rounded-2xl flex items-center justify-center mx-auto mb-8 border border-gray-200 shadow-lg">
+    <div className="hero-screen">
+      {/* Warm sepia gradient — creates the readable stage */}
+      <div className="hero-overlay" />
+
+      {/* Editorial two-column layout, anchored to bottom */}
+      <div className="hero-content">
+
+        {/* Left: brand mark + big headline */}
+        <div className="hero-brand">
+          <div className="hero-brand-mark">
             <img
               src="/logo.png"
-              alt="Your Reading Map logo"
-              className="w-20 h-20 object-contain drop-shadow-sm"
+              alt="Map My Reads"
+              className="w-8 h-8 object-contain"
             />
+            <span className="type-eyebrow" style={{ color: 'oklch(from var(--color-surface) l c h / 0.55)' }}>
+              Map My Reads
+            </span>
           </div>
-          
-          <h1 className="text-4xl font-bold text-gray-900 mb-6">Map Your Reading Journey</h1>
-          <p className="text-xl text-gray-600 mb-8">
-            Upload your reading list to visualize the countries and cultures you&apos;ve explored through literature
+
+          <h1 className="hero-headline">
+            Map Your<br />Reading Journey
+          </h1>
+
+          <p className="hero-tagline">
+            Upload your reading list to discover where in the world your books come from.
           </p>
 
-          {/* Export Instructions */}
-          <div className="bg-white/80 backdrop-blur-sm border border-gray-300 text-gray-700 px-6 py-4 rounded-lg mb-8 shadow-sm">
-            <h3 className="font-semibold mb-3 text-gray-900">How to export your reading list:</h3>
-            <div className="space-y-2 text-sm">
-              <p><strong>Goodreads:</strong> Go to your <a href="https://www.goodreads.com/review/import" target="_blank" rel="noopener noreferrer" className="underline hover:text-gray-900 transition-colors">Goodreads Import/Export page</a> and download your library</p>
-              <p><strong>StoryGraph:</strong> Visit <a href="https://app.thestorygraph.com/user-export" target="_blank" rel="noopener noreferrer" className="underline hover:text-gray-900 transition-colors">The StoryGraph Export page</a> to download your data</p>
-            </div>
-          </div>
+          <p className="hero-sources">
+            Export your library from{' '}
+            <a
+              href="https://www.goodreads.com/review/import"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hero-source-link"
+            >
+              Goodreads
+            </a>
+            {' '}or{' '}
+            <a
+              href="https://app.thestorygraph.com/user-export"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hero-source-link"
+            >
+              StoryGraph
+            </a>
+          </p>
+        </div>
 
-          <StorageStatus />
-          
+        {/* Right: upload action */}
+        <div className="hero-upload-col">
           {error && (
-            <div className="bg-red-50/90 backdrop-blur-sm border border-red-200 text-red-700 px-6 py-4 rounded-lg mb-8 flex items-center gap-4">
-              <span className="font-medium">{error}</span>
+            <div className="hero-error">
+              <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v4m0 4h.01M12 5a7 7 0 110 14 7 7 0 010-14z" />
+              </svg>
+              <span className="type-ui">{error}</span>
             </div>
           )}
 
           {isProcessing && (
-            <div className="bg-gray-50/90 backdrop-blur-sm border border-gray-200 text-gray-700 px-6 py-4 rounded-lg mb-8 flex items-center gap-4">
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600"></div>
-              <span className="font-medium">Processing your books and enriching your data...</span>
+            <div className="hero-processing">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 flex-shrink-0" style={{ borderColor: 'var(--color-surface)' }} />
+              <span className="type-ui" style={{ color: 'oklch(from var(--color-surface) l c h / 0.8)' }}>
+                Processing your books…
+              </span>
             </div>
           )}
 
           <label className="block cursor-pointer">
-            <div className="bg-white/90 backdrop-blur-sm rounded-lg shadow-lg border border-gray-200 p-10 hover:bg-white/95 transition-all">
-              <div className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg py-16 px-8 hover:border-gray-400 transition-colors group">
-                <svg className="w-8 h-8 text-gray-600 mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3-3m3 3l3-3" />
-                </svg>
-                <p className="text-xl font-semibold text-gray-800 mb-3">Upload your reading list</p>
-                <p className="text-gray-600 mb-8 text-center max-w-md">CSV files from Goodreads or StoryGraph</p>
-                <div className="bg-gray-900 text-white px-8 py-3 rounded font-medium hover:bg-gray-800 transition-colors">
-                  Choose File
-                </div>
-              </div>
-              <input type="file" accept=".csv" onChange={onFileUpload} className="sr-only" />
+            <div className="hero-dropzone">
+              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'oklch(from var(--color-surface) l c h / 0.5)' }}>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v8" />
+              </svg>
+              <p className="type-ui" style={{ color: 'oklch(from var(--color-surface) l c h / 0.7)' }}>
+                Drop your CSV file here
+              </p>
+              <div className="btn-hero">Choose File</div>
             </div>
+            <input type="file" accept=".csv" onChange={onFileUpload} className="sr-only" />
           </label>
-        </div>
-      </div>
 
+          <StorageStatus />
+        </div>
+
+      </div>
     </div>
   )
 }

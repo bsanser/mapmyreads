@@ -1,3 +1,7 @@
+---
+description: Create tasks from a PRD to guide a junior developer through implementation
+---
+
 # Rule: Generating a Task List from a PRD
 
 ## Goal

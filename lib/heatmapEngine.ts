@@ -38,8 +38,10 @@ function buildHeatmapStyle(countryCounts: Record<string, number>, currentTheme: 
 
   const maxCount = Math.max(...Object.values(countryCounts));
 
+  const emptyColor = currentTheme.empty ?? "#f5f0e8";
+
   if (maxCount === 0) {
-    return "#ffffff";
+    return emptyColor;
   }
 
   return [
@@ -52,7 +54,7 @@ function buildHeatmapStyle(countryCounts: Record<string, number>, currentTheme: 
         outlineColor;
       return [["==", ["get", "ISO3166-1-Alpha-2"], iso2], color];
     }),
-    "#ffffff"
+    emptyColor
   ];
 }
 

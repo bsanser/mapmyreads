@@ -3,7 +3,6 @@ import maplibregl from 'maplibre-gl';
 export interface MapEventHandlersProps {
   map: maplibregl.Map;
   onCountryClick?: (countryName: string) => void;
-  onMapError?: (error: any) => void;
 }
 
 export const getOptimalZoom = () => {
@@ -20,7 +19,7 @@ export const getOptimalZoom = () => {
 };
 
 export const setupMapEventHandlers = (props: MapEventHandlersProps) => {
-  const { map, onCountryClick, onMapError } = props;
+  const { map, onCountryClick } = props;
 
   // Handle window resize to adjust zoom
   const handleResize = () => {
@@ -30,10 +29,9 @@ export const setupMapEventHandlers = (props: MapEventHandlersProps) => {
     }
   };
 
-  // Add error event listener
+  // Log map errors without surfacing them to the user — most are non-fatal
   map.on('error', (e) => {
     console.error("Map error:", e);
-    onMapError?.(e);
   });
 
   // Add country click event listener

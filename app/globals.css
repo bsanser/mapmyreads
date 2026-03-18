@@ -3,116 +3,855 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Color Tokens ─────────────────────────────────── */
+
 :root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
+  /* Backgrounds */
+  --color-bg:            oklch(96.5% 0.012 75);
+  --color-surface:       oklch(98.5% 0.008 75);
+  --color-surface-warm:  oklch(95% 0.018 72);
+
+  /* Ink (text) */
+  --color-ink:           oklch(22% 0.025 55);
+  --color-ink-2:         oklch(45% 0.022 55);
+  --color-ink-3:         oklch(64% 0.015 65);
+
+  /* Borders */
+  --color-border:        oklch(87% 0.018 75);
+  --color-border-light:  oklch(92% 0.012 75);
+
+  /* Accent — warm terracotta/amber */
+  --color-accent:        oklch(58% 0.13 48);
+  --color-accent-hover:  oklch(50% 0.15 48);
+  --color-accent-soft:   oklch(95.5% 0.04 70);
+  --color-accent-border: oklch(83% 0.07 70);
+
+  /* Semantic states */
+  --color-success:       oklch(48% 0.14 145);
+  --color-success-soft:  oklch(95% 0.04 145);
+  --color-error:         oklch(52% 0.17 25);
+  --color-error-soft:    oklch(96% 0.04 25);
+  --color-error-border:  oklch(84% 0.07 25);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
+/* ── Base ─────────────────────────────────────────── */
+
+body {
+  font-family: var(--font-sans, system-ui, sans-serif);
+  font-kerning: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--color-bg);
+  color: var(--color-ink);
+}
+
+/* ── Type System ──────────────────────────────────── */
+
+@layer components {
+  /* Display — Fraunces, hero headlines */
+  .type-display {
+    @apply font-display text-4xl font-bold leading-tight tracking-tight;
+    color: var(--color-ink);
+  }
+
+  /* Heading — Fraunces, section headings */
+  .type-heading {
+    @apply font-display text-2xl font-semibold leading-snug;
+    color: var(--color-ink);
+  }
+
+  /* Eyebrow — DM Sans, small tracked label above a heading */
+  .type-eyebrow {
+    @apply font-sans text-xs uppercase tracking-widest font-medium;
+    color: var(--color-ink-3);
+  }
+
+  /* Lead — DM Sans, large intro text */
+  .type-lead {
+    @apply font-sans text-xl leading-relaxed;
+    color: var(--color-ink-2);
+  }
+
+  /* Body — DM Sans, standard body text */
+  .type-body {
+    @apply font-sans text-base leading-relaxed;
+    color: var(--color-ink-2);
+  }
+
+  /* UI — DM Sans, interface labels and controls */
+  .type-ui {
+    @apply font-sans text-sm font-medium leading-normal;
+    color: var(--color-ink);
+  }
+
+  /* Label — DM Sans, small labels */
+  .type-label {
+    @apply font-sans text-xs font-medium leading-normal;
+    color: var(--color-ink-2);
+  }
+
+  /* Caption — DM Sans, secondary small text */
+  .type-caption {
+    @apply font-sans text-xs leading-normal;
+    color: var(--color-ink-3);
+  }
+
+  /* Meta — monospace, for dates, ISBNs, technical data only */
+  .type-meta {
+    @apply font-mono text-xs leading-normal;
+    color: var(--color-ink-3);
+  }
+
+  /* Stat — large tabular number in reading atlas */
+  .type-stat {
+    @apply font-display text-2xl font-semibold leading-none;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-ink);
+  }
+
+  /* Stat label — tiny uppercase label below a stat */
+  .type-stat-label {
+    @apply font-sans uppercase leading-none;
+    font-size: 0.6875rem;
+    letter-spacing: 0.25em;
+    color: var(--color-ink-3);
+  }
+
+  /* Book card title */
+  .book-title {
+    @apply font-sans font-semibold text-sm leading-tight mb-2;
+    color: var(--color-ink);
+    text-shadow: 0 1px 2px oklch(98% 0.008 75 / 0.8);
+  }
+
+  /* Book card author */
+  .book-author {
+    @apply font-sans text-xs leading-normal mb-1;
+    color: var(--color-ink-2);
+    text-shadow: 0 1px 2px oklch(98% 0.008 75 / 0.8);
+  }
+
+  /* Book card year / metadata */
+  .book-year {
+    @apply font-sans text-xs leading-normal;
+    color: var(--color-ink-3);
+  }
+
+  /* ── Book card layout ─────────────────────────── */
+
+  .book-card {
+    @apply notebook-lines surface-card relative rounded p-4 transition-all;
+    min-height: 120px;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .book-card:hover {
+    box-shadow: 0 4px 12px oklch(0% 0 0 / 0.08);
+  }
+
+  .book-card-cover {
+    @apply relative flex-shrink-0;
+    padding-top: 10px;
+  }
+
+  .book-cover-img {
+    @apply block rounded border relative;
+    width: 5rem;
+    height: 8rem;
+    object-fit: contain;
+    box-shadow: 0 4px 6px -1px oklch(0% 0 0 / 0.1);
+    z-index: 10;
+    border-color: var(--color-border);
+    background-color: var(--color-surface);
+  }
+
+  .book-paperclip {
+    @apply absolute pointer-events-none;
+    top: -2.5rem;
+    left: -1rem;
+    width: 3.5rem;
+    height: 7rem;
+    z-index: 30;
+    transform: rotate(-20deg);
+  }
+
+  .book-card-content {
+    @apply flex-1 min-w-0;
+  }
+
+  .book-country-header {
+    @apply flex items-center gap-2;
+    text-shadow: 0 1px 2px oklch(98% 0.008 75 / 0.8);
+  }
+
+  .book-country-edit-area {
+    @apply mt-2 space-y-2;
+  }
+
+  .book-country-badges {
+    @apply flex flex-wrap gap-2;
+  }
+
+  .book-country-tags {
+    @apply mt-1 flex flex-wrap gap-1;
+  }
+
+  .country-tag-name {
+    text-decoration: underline;
+    text-underline-offset: 1px;
+  }
+
+  .country-tag:hover .country-tag-name {
+    text-decoration: none;
+  }
+
+  .country-dropdown-empty {
+    @apply px-3 py-2;
+    font-family: var(--font-mono, monospace);
+    font-size: 0.75rem;
+    line-height: 1rem;
+    color: var(--color-ink-3);
+  }
+
+  /* ── Surfaces ─────────────────────────────────── */
+
+  .surface-card {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+  }
+
+  .surface-warm {
+    background-color: var(--color-surface-warm);
+    border: 1px solid var(--color-border);
+  }
+
+  /* ── Page layout ──────────────────────────────── */
+
+  .map-page-layout {
+    @apply relative w-full overflow-hidden;
+    height: 100dvh;
+    background-color: var(--color-bg);
+  }
+
+  /* Full-size map container wrappers */
+  .map-container-root {
+    @apply relative w-full h-full;
+  }
+
+  .map-canvas-wrapper {
+    @apply w-full h-full;
+  }
+
+  /* ── Map controls bar ─────────────────────────── */
+
+  .map-controls-bar {
+    @apply absolute top-4 z-10;
+    right: 4rem; /* clears MapLibre nav controls (~40px) at all sizes */
+  }
+
+  /* ── Feedback button (bottom-left of map) ─────── */
+
+  .feedback-btn {
+    @apply absolute bottom-4 left-4 z-10 flex items-center gap-2 rounded-full transition-all;
+    background-color: oklch(from var(--color-surface) l c h / 0.92);
+    border: 1px solid var(--color-border);
+    backdrop-filter: blur(8px);
+    padding: 0.5rem 0.75rem;
+    box-shadow: 0 2px 8px oklch(0% 0 0 / 0.08);
+  }
+
+  .feedback-btn:hover {
+    background-color: var(--color-surface);
+    box-shadow: 0 4px 12px oklch(0% 0 0 / 0.12);
+  }
+
+  .feedback-btn-icon {
+    @apply flex-shrink-0;
+    color: var(--color-ink-2);
+    width: 1rem;
+    height: 1rem;
+  }
+
+  .feedback-btn-label {
+    @apply font-sans text-xs font-medium;
+    color: var(--color-ink-2);
+  }
+
+  /* ── Feedback modal ───────────────────────────── */
+
+  .feedback-modal-overlay {
+    @apply fixed inset-0 flex items-center justify-center z-50 p-4;
+    background-color: oklch(0% 0 0 / 0.45);
+  }
+
+  .feedback-modal {
+    @apply rounded-xl shadow-xl max-w-md w-full p-6;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+  }
+
+  .feedback-modal-header {
+    @apply flex items-center justify-between mb-4;
+  }
+
+  .feedback-modal-body {
+    @apply mb-4;
+  }
+
+  .feedback-textarea {
+    @apply w-full rounded-lg px-3 py-2 focus:outline-none;
+    border: 1px solid var(--color-border);
+    background-color: var(--color-surface);
+    color: var(--color-ink);
+    resize: vertical;
+    font-family: var(--font-sans, system-ui, sans-serif);
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+
+  .feedback-textarea:focus {
+    border-color: var(--color-accent-border);
+    box-shadow: 0 0 0 2px var(--color-accent-soft);
+  }
+
+  .feedback-device-info {
+    @apply rounded-lg p-3 mt-4 text-xs whitespace-pre-line;
+    background-color: var(--color-surface-warm);
+    border: 1px dashed var(--color-border-light);
+    color: var(--color-ink-3);
+    font-family: var(--font-mono, monospace);
+  }
+
+  .feedback-actions {
+    @apply flex gap-3 mt-4;
+  }
+
+  .feedback-submit-btn {
+    @apply flex-1 rounded-lg px-4 py-2 font-medium text-sm transition-colors disabled:opacity-60 disabled:cursor-not-allowed;
+    background-color: var(--color-accent);
+    color: var(--color-surface);
+  }
+
+  .feedback-submit-btn:hover:not(:disabled) {
+    background-color: var(--color-accent-hover);
+  }
+
+  .feedback-cancel-btn {
+    @apply flex-1 rounded-lg px-4 py-2 font-medium text-sm transition-colors;
+    background-color: var(--color-surface-warm);
+    border: 1px solid var(--color-border);
+    color: var(--color-ink-2);
+  }
+
+  .feedback-cancel-btn:hover {
+    background-color: var(--color-bg);
+  }
+
+  /* ── Book card edit button ─────────────────────── */
+
+  .book-edit-btn {
+    @apply transition-colors border rounded p-1;
+    border-color: var(--color-border);
+    color: var(--color-ink-3);
+  }
+
+  .book-edit-btn:hover {
+    border-color: var(--color-accent-border);
+  }
+
+  .book-edit-btn-active {
+    @apply transition-colors border rounded p-1;
+    background-color: var(--color-accent-soft);
+    border-color: var(--color-accent-border);
+    color: var(--color-accent);
+  }
+
+  /* ── Sidebar ──────────────────────────────────── */
+
+  .desktop-sidebar {
+    @apply hidden lg:block absolute top-20 left-4;
+    z-index: 50;
+  }
+
+  .sidebar-surface {
+    @apply rounded-xl shadow-xl p-6 w-80 max-h-[calc(100vh-120px)] overflow-auto;
+    background-color: oklch(from var(--color-surface) l c h / 0.96);
+    border: 1px solid var(--color-border);
+    backdrop-filter: blur(12px);
+  }
+
+  /* ── Hero — poster layout ─────────────────────── */
+
+  .hero-screen {
+    @apply relative min-h-screen overflow-hidden;
+    background-image: url('/vintage_world_map.webp');
+    background-size: cover;
+    background-position: center;
+  }
+
+  /* Warm sepia gradient — anchors readable stage to bottom */
+  .hero-overlay {
+    @apply absolute inset-0 pointer-events-none;
+    background: linear-gradient(
+      to top,
+      oklch(18% 0.03 60 / 0.88) 0%,
+      oklch(18% 0.03 60 / 0.65) 38%,
+      oklch(18% 0.03 60 / 0.15) 65%,
+      transparent 100%
+    );
+  }
+
+  /* Two-column editorial layout anchored to the bottom */
+  .hero-content {
+    @apply relative z-10 flex flex-col lg:flex-row items-end min-h-screen;
+    padding: clamp(2rem, 5vw, 4rem) clamp(1.5rem, 6vw, 5rem);
+    gap: clamp(2rem, 5vw, 5rem);
+  }
+
+  /* Left: brand + headline */
+  .hero-brand {
+    @apply flex-1 flex flex-col;
+    gap: clamp(0.75rem, 1.5vw, 1.25rem);
+  }
+
+  .hero-brand-mark {
+    @apply flex items-center gap-2 mb-2;
+  }
+
+  .hero-headline {
+    @apply font-display font-bold leading-none;
+    font-size: clamp(3rem, 7.5vw, 5.75rem);
+    letter-spacing: -0.03em;
+    color: var(--color-surface);
+  }
+
+  .hero-tagline {
+    @apply font-sans leading-relaxed;
+    font-size: clamp(0.95rem, 1.5vw, 1.125rem);
+    color: oklch(from var(--color-surface) l c h / 0.65);
+    max-width: 42ch;
+  }
+
+  .hero-sources {
+    @apply font-sans text-sm;
+    color: oklch(from var(--color-surface) l c h / 0.45);
+  }
+
+  .hero-source-link {
+    @apply underline underline-offset-4 transition-colors;
+    color: oklch(from var(--color-surface) l c h / 0.7);
+    text-decoration-color: oklch(from var(--color-surface) l c h / 0.35);
+  }
+
+  .hero-source-link:hover {
+    color: var(--color-surface);
+    text-decoration-color: oklch(from var(--color-surface) l c h / 0.65);
+  }
+
+  /* Right: upload action column */
+  .hero-upload-col {
+    @apply flex-shrink-0 flex flex-col gap-3 w-full;
+    max-width: 22rem;
+  }
+
+  .hero-dropzone {
+    @apply flex flex-col items-center gap-4 py-10 px-6 rounded-xl cursor-pointer transition-all;
+    background-color: oklch(from var(--color-surface) l c h / 0.1);
+    border: 1.5px dashed oklch(from var(--color-surface) l c h / 0.3);
+    backdrop-filter: blur(4px);
+  }
+
+  .hero-dropzone:hover {
+    background-color: oklch(from var(--color-surface) l c h / 0.17);
+    border-color: oklch(from var(--color-surface) l c h / 0.55);
+  }
+
+  /* Cream-on-dark button for the hero */
+  .btn-hero {
+    @apply px-6 py-2.5 rounded-lg font-medium text-sm transition-colors;
+    background-color: var(--color-surface);
+    color: var(--color-ink);
+  }
+
+  .btn-hero:hover {
+    background-color: var(--color-accent-soft);
+    color: var(--color-accent);
+  }
+
+  .hero-error {
+    @apply px-4 py-3 rounded-lg flex items-center gap-3;
+    background-color: oklch(from var(--color-error-soft) l c h / 0.15);
+    border: 1px solid oklch(from var(--color-error) l c h / 0.4);
+    color: oklch(from var(--color-surface) l c h / 0.8);
+    backdrop-filter: blur(4px);
+  }
+
+  .hero-processing {
+    @apply px-4 py-3 rounded-lg flex items-center gap-3;
+    background-color: oklch(from var(--color-surface) l c h / 0.1);
+    border: 1px solid oklch(from var(--color-surface) l c h / 0.2);
+    color: oklch(from var(--color-surface) l c h / 0.7);
+    backdrop-filter: blur(4px);
+  }
+
+  /* ── Storage status bar (hero screen) ────────── */
+
+  .storage-status-bar {
+    @apply flex items-center justify-between px-3 py-2 rounded-lg;
+    background-color: oklch(from var(--color-surface) l c h / 0.08);
+    border: 1px solid oklch(from var(--color-surface) l c h / 0.15);
+  }
+
+  .storage-clear-btn {
+    @apply text-xs transition-colors;
+    color: oklch(from var(--color-surface) l c h / 0.45);
+  }
+
+  .storage-clear-btn:hover {
+    color: oklch(from var(--color-error) 75% 0.12 25 / 0.9);
+  }
+
+  /* ── Buttons ──────────────────────────────────── */
+
+  .btn-primary {
+    @apply px-8 py-3 rounded-lg font-medium transition-colors;
+    background-color: var(--color-ink);
+    color: var(--color-surface);
+  }
+
+  .btn-primary:hover {
+    background-color: var(--color-accent);
+  }
+
+  .btn-accent {
+    @apply px-3 py-2 rounded-lg text-sm font-medium transition-colors;
+    background-color: var(--color-accent);
+    color: var(--color-surface);
+  }
+
+  .btn-accent:hover {
+    background-color: var(--color-accent-hover);
+  }
+
+  .btn-ghost {
+    @apply px-4 py-2 rounded-lg transition-colors;
+    color: var(--color-ink-2);
+    background-color: transparent;
+    border: 1px solid var(--color-border);
+  }
+
+  .btn-ghost:hover {
+    background-color: var(--color-surface-warm);
+  }
+
+  /* ── Links ────────────────────────────────────── */
+
+  .link-accent {
+    color: var(--color-accent);
+    text-decoration: underline;
+    text-decoration-color: var(--color-accent-border);
+    text-underline-offset: 2px;
+    transition: color 0.15s ease;
+  }
+
+  .link-accent:hover {
+    color: var(--color-accent-hover);
+  }
+
+  /* ── Country tags (clickable) ─────────────────── */
+
+  .country-tag {
+    @apply text-xs px-1 py-0.5 rounded transition-colors flex items-center gap-1;
+    color: var(--color-accent);
+  }
+
+  .country-tag:hover {
+    background-color: var(--color-accent-soft);
+    color: var(--color-accent-hover);
+  }
+
+  /* ── Country edit badges ──────────────────────── */
+
+  .country-badge {
+    @apply inline-flex items-center gap-1 rounded px-2 py-0.5 text-xs;
+    background-color: var(--color-surface-warm);
+    border: 1px solid var(--color-border);
+    color: var(--color-ink-2);
+  }
+
+  .country-badge-remove {
+    @apply transition-colors;
+    color: var(--color-ink-3);
+  }
+
+  .country-badge-remove:hover {
+    color: var(--color-error);
+  }
+
+  /* ── Country search input ─────────────────────── */
+
+  .country-input {
+    @apply w-full rounded px-3 py-1 text-xs focus:outline-none;
+    border: 1px solid var(--color-border);
+    background-color: var(--color-surface);
+    color: var(--color-ink);
+  }
+
+  .country-input:focus {
+    border-color: var(--color-accent-border);
+    box-shadow: 0 0 0 2px var(--color-accent-soft);
+  }
+
+  /* ── Country dropdown ─────────────────────────── */
+
+  .country-dropdown {
+    @apply absolute z-10 mt-1 w-full max-h-40 overflow-y-auto rounded shadow-lg;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+  }
+
+  .country-dropdown-item {
+    @apply flex w-full items-center justify-between px-3 py-2 text-left text-xs transition-colors;
+    color: var(--color-ink-2);
+  }
+
+  .country-dropdown-item:hover {
+    background-color: var(--color-accent-soft);
+    color: var(--color-ink);
+  }
+
+  /* ── Missing books badge ──────────────────────── */
+
+  .badge-info {
+    @apply rounded-xl p-3;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+  }
+
+  .badge-info-row {
+    @apply flex items-center gap-3;
+  }
+
+  .missing-books-link {
+    @apply underline underline-offset-4 decoration-dashed font-medium transition-colors;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    color: var(--color-accent);
+    text-decoration-color: var(--color-accent-border);
+  }
+
+  .missing-books-link:hover {
+    color: var(--color-accent-hover);
+  }
+
+  /* ── Reading atlas stats grid ─────────────────── */
+
+  .stats-grid {
+    @apply grid grid-cols-3 gap-2 text-center pb-1;
+  }
+
+  /* ── Floating progress card ───────────────────── */
+
+  .surface-float {
+    @apply rounded-xl shadow-lg p-4 max-w-xs;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+  }
+
+  /* ── Map controls ─────────────────────────────── */
+
+  .map-control-btn {
+    @apply flex items-center justify-center transition-all;
+    background-color: oklch(from var(--color-surface) l c h / 0.95);
+    border: 1px solid var(--color-border);
+    backdrop-filter: blur(8px);
+  }
+
+  .map-control-btn:hover {
+    background-color: var(--color-surface);
+    box-shadow: 0 4px 12px oklch(0% 0 0 / 0.1);
+  }
+
+  .map-dropdown {
+    @apply rounded-xl shadow-lg py-2;
+    background-color: oklch(from var(--color-surface) l c h / 0.98);
+    border: 1px solid var(--color-border);
+    backdrop-filter: blur(8px);
+  }
+
+  .map-theme-dropdown {
+    @apply absolute top-full right-0 mt-1 z-50;
+    min-width: 160px;
+  }
+
+  .map-dropdown-item {
+    @apply w-full px-4 py-2 text-left transition-colors flex items-center gap-3;
+    color: var(--color-ink-2);
+  }
+
+  .map-dropdown-item:hover {
+    background-color: var(--color-accent-soft);
+    color: var(--color-ink);
+  }
+
+  /* ── Mobile bottom sheet ──────────────────────── */
+
+  .mobile-bottom-sheet-wrapper {
+    @apply lg:hidden fixed bottom-0 left-0 right-0 shadow-lg z-40;
+    height: 42vh;
+    background-color: var(--color-surface);
+    border-top: 1px solid var(--color-border);
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+
+  .bottom-sheet-inner {
+    @apply h-full flex flex-col;
+  }
+
+  .bottom-sheet-handle {
+    @apply flex justify-center pt-2 pb-1 flex-shrink-0;
+  }
+
+  .bottom-sheet-handle-bar {
+    @apply w-8 h-1 rounded-full;
+    background-color: var(--color-border);
+  }
+
+  .bottom-sheet-stats {
+    @apply flex items-center justify-between px-6 py-2 flex-shrink-0;
+    border-bottom: 1px solid var(--color-border-light);
+  }
+
+  .bottom-sheet-stat-group {
+    @apply flex items-center gap-3;
+  }
+
+  .bottom-sheet-stat-divider {
+    @apply text-xs;
+    color: var(--color-border);
+  }
+
+  /* Inline link used inside bottom sheet captions */
+  .bottom-sheet-link {
+    @apply underline;
+    font-size: 0.75rem;
+    line-height: 1rem;
+    color: var(--color-accent);
+    text-decoration-color: var(--color-accent-border);
+    text-underline-offset: 2px;
+  }
+
+  .bottom-sheet-link:hover {
+    color: var(--color-accent-hover);
+  }
+
+  .bottom-sheet-scroll {
+    @apply flex-1 overflow-y-auto;
+  }
+
+  .bottom-sheet-book-list {
+    @apply px-6 py-3 space-y-3;
+  }
+
+  .bottom-sheet-count-row {
+    @apply flex items-center justify-between;
+    font-size: 0.75rem;
+    line-height: 1rem;
+    color: var(--color-ink-3);
+  }
+
+  /* ── Share modal ──────────────────────────────── */
+
+  .modal-overlay {
+    @apply fixed inset-0 flex items-center justify-center z-50 p-4;
+    background-color: oklch(0% 0 0 / 0.45);
+  }
+
+  .modal-surface {
+    @apply rounded-xl shadow-xl max-w-md w-full p-6;
+    background-color: var(--color-surface);
+  }
+
+  .share-url-surface {
+    @apply p-3 rounded-lg;
+    background-color: var(--color-bg);
+    border: 1px solid var(--color-border);
+  }
+
+  /* ── Success / Done message ───────────────────── */
+
+  .status-success {
+    @apply flex items-center gap-2 text-xs;
+    color: var(--color-success);
   }
 }
 
-body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
-}
+/* ── Scrollbar ────────────────────────────────────── */
 
-/* Custom scrollbar for liquid glass effect */
 .custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
+  width: 5px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
+  background: transparent;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: linear-gradient(45deg, rgba(99, 102, 241, 0.5), rgba(168, 85, 247, 0.5));
+  background-color: var(--color-border);
   border-radius: 10px;
-  backdrop-filter: blur(10px);
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(45deg, rgba(99, 102, 241, 0.7), rgba(168, 85, 247, 0.7));
+  background-color: var(--color-ink-3);
 }
 
-/* Animation delays for staggered effects */
-.animation-delay-2000 {
-  animation-delay: 2s;
-}
+/* ── Notebook lines — warm earthy tones ───────────── */
 
-.animation-delay-4000 {
-  animation-delay: 4s;
-}
-
-/* Notebook-line background for book cards */
 .notebook-lines {
   background-image:
-    linear-gradient(to right, rgba(226, 232, 240, 0.3) 1px, transparent 1px),
+    linear-gradient(to right, oklch(82% 0.025 75 / 0.35) 1px, transparent 1px),
     repeating-linear-gradient(
       transparent, transparent 24px,
-      rgba(59, 130, 246, 0.2) 24px, rgba(59, 130, 246, 0.2) 25px,
+      oklch(78% 0.04 80 / 0.22) 24px, oklch(78% 0.04 80 / 0.22) 25px,
       transparent 25px, transparent 49px,
-      rgba(220, 38, 38, 0.2) 49px, rgba(220, 38, 38, 0.2) 50px
+      oklch(60% 0.1 30 / 0.14) 49px, oklch(60% 0.1 30 / 0.14) 50px
     );
   background-size: 100% 100%, 100% 50px;
   background-position: 0 0, 0 8px;
 }
 
-/* Slide up animation for progress indicator */
+/* ── Animations ───────────────────────────────────── */
+
 @keyframes slide-up {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 .animate-slide-up {
-  animation: slide-up 0.3s ease-out;
+  animation: slide-up 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Smooth glass morphism utilities */
-@layer utilities {
-  .glass {
-    backdrop-filter: blur(16px) saturate(180%);
-    background-color: rgba(255, 255, 255, 0.25);
-    border: 1px solid rgba(255, 255, 255, 0.18);
-  }
-  
-  .glass-hover {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-  
-  .glass-hover:hover {
-    backdrop-filter: blur(20px) saturate(200%);
-    background-color: rgba(255, 255, 255, 0.35);
-    transform: translateY(-2px);
+@media (prefers-reduced-motion: reduce) {
+  .animate-slide-up {
+    animation: none;
   }
 }
 
-/* Enhanced focus states for accessibility */
-input:focus,
-button:focus {
-  outline: 2px solid rgba(99, 102, 241, 0.5);
+/* ── Focus states ─────────────────────────────────── */
+
+input:focus-visible,
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--color-accent-border);
   outline-offset: 2px;
 }
 
-/* Smooth transitions for all interactive elements */
-* {
-  transition: backdrop-filter 0.3s ease;
+/* ── EnrichmentProgress: clear of mobile bottom sheet */
+
+@media (max-width: 1023px) {
+  .surface-float {
+    bottom: calc(42vh + 1rem) !important;
+  }
 }

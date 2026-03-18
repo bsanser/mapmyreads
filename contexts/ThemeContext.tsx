@@ -12,7 +12,7 @@ interface ThemeContextValue {
 const ThemeContext = createContext<ThemeContextValue | null>(null)
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [currentTheme, setCurrentTheme] = useState<ThemeKey>('blue')
+  const [currentTheme, setCurrentTheme] = useState<ThemeKey>('claret')
 
   return (
     <ThemeContext.Provider value={{ currentTheme, setCurrentTheme, themeObject: THEMES[currentTheme] }}>

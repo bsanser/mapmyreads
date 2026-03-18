@@ -1,44 +1,49 @@
-// Apple-inspired theme system with carefully balanced colors
+// Warm & indie editorial map themes
 export const THEMES = {
-  blue: {
-    name: "Ocean Blue",
-    fill: "#B3D9E5",      // Light blue
-    outline: "#0A6A89",   // Dark blue
-    hover: "#7FB3C7",     // Medium blue
-    selected: "#E8F4F8",  // Very light blue with subtle glow
-    background: "#eef3f5" // Light blue-gray background
+  claret: {
+    name: "Claret",
+    fill: "#E8B4C0",      // Pale blush, 1 book
+    outline: "#6B1F3A",   // Deep wine red, 3+ books
+    hover: "#D49AAA",     // Deeper blush on hover
+    selected: "#FDF0F3",  // Very light rose glow
+    background: "#F0E8EC",// Barely-there rose, ocean
+    empty: "#F0EBE0"      // Warm cream, unread
   },
-  yellow: {
-    name: "Golden Hour",
-    fill: "#F4E4BC",      // Light warm yellow
-    outline: "#D4A574",   // Rich golden brown
-    hover: "#E8D4A8",     // Medium warm yellow
-    selected: "#FDF8E8",  // Very light cream with subtle glow
-    background: "#fefbf3" // Warm off-white background
+  amber: {
+    name: "Amber Road",
+    fill: "#E8C87A",      // Warm amber gold
+    outline: "#8B4513",   // Saddle brown, burnt sienna
+    hover: "#D4A855",     // Deeper amber
+    selected: "#FDF3DC",  // Very light amber glow
+    background: "#F5ECD5",// Warm sand
+    empty: "#F0EBE0"      // Warm cream, unread
   },
-  purple: {
-    name: "Royal Purple",
-    fill: "#E8D4F0",      // Light lavender
-    outline: "#8B5A96",   // Rich purple
-    hover: "#D4B8E0",     // Medium lavender
-    selected: "#F8F0FC",  // Very light lavender with subtle glow
-    background: "#f9f6fc" // Light purple-tinted background
+  sage: {
+    name: "Sage & Stone",
+    fill: "#C4D4B8",      // Soft sage green
+    outline: "#4A6741",   // Deep forest green
+    hover: "#A8C098",     // Deeper sage
+    selected: "#EBF2E6",  // Very light sage glow
+    background: "#EDF2E8",// Pale green mist
+    empty: "#F0EBE0"      // Warm cream, unread
   },
-  pink: {
-    name: "Rose Garden",
-    fill: "#F4D4E0",      // Light rose pink
-    outline: "#C85A7B",   // Rich rose
-    hover: "#E8B8CC",     // Medium rose pink
-    selected: "#FDF0F5",  // Very light rose with subtle glow
-    background: "#fef8fa" // Light pink-tinted background
+  dusk: {
+    name: "Dusk Atlas",
+    fill: "#D4C0CC",      // Dusty mauve-rose, warm not cold
+    outline: "#7A5068",   // Deep plum-rose
+    hover: "#C0A8B8",     // Deeper mauve
+    selected: "#F5EEF2",  // Very light rose glow
+    background: "#F2EBF0",// Pale dusty rose
+    empty: "#F0EBE0"      // Warm cream, unread
   },
-  green: {
-    name: "Verdant Grove",
-    fill: "#D9F2DC",      // Light mint green
-    outline: "#3C8B5E",   // Rich forest green
-    hover: "#BEE5C3",     // Medium soft green
-    selected: "#F1FBF2",  // Very light mint glow
-    background: "#f4fbf5" // Light green-tinted background
+  sepia: {
+    name: "Sepia & Salt",
+    fill: "#D4B896",      // Warm sepia tan
+    outline: "#6B4423",   // Dark burnt umber
+    hover: "#C0A07A",     // Deeper sepia
+    selected: "#F5EAD8",  // Very light sepia glow
+    background: "#EDE0C8",// Aged parchment
+    empty: "#F0EBE0"      // Warm cream, unread
   }
 };
 

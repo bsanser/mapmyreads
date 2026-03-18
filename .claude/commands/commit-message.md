@@ -29,8 +29,8 @@ Only use the following emojis:
 Use the following format for making the commit message:
 
 ```
-<emoji><type>: <concise_description>
-<optional_body_explaining_why>
+git commit -m '<emoji><type>: <concise_description>
+<optional_body_explaining_why>'
 ```
 
 ## Output:

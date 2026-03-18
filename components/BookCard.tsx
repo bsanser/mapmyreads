@@ -42,39 +42,34 @@ export const BookCard = memo(function BookCard({
   }).slice(0, 8)
 
   return (
-    <div
-      className="notebook-lines relative bg-white border border-gray-300 rounded p-4 hover:shadow-md transition-all min-h-[120px] flex items-start gap-4"
-    >
-      <div className="relative flex-shrink-0" style={{ paddingTop: '10px' }}>
+    <div className="book-card">
+      <div className="book-card-cover">
         <img
           src={b.coverImage ?? '/book-placeholder.png'}
           alt={`Cover of ${b.title}`}
-          className="block w-20 h-32 object-contain rounded shadow-md border border-gray-200 relative z-10 bg-white"
+          className="book-cover-img"
         />
         <img
           src="/paperclip.svg"
           alt=""
-          className="absolute -top-10 -left-4 w-14 h-28 z-30 pointer-events-none"
-          style={{ transform: 'rotate(-20deg)' }}
+          className="book-paperclip"
         />
       </div>
 
-      <div className="flex-1 min-w-0">
-        <p className="font-mono text-gray-900 text-sm leading-tight mb-2" style={{ textShadow: '0 1px 2px rgba(255,255,255,0.8)' }}>{b.title}</p>
-        <p className="font-mono text-gray-700 text-xs mb-1" style={{ textShadow: '0 1px 2px rgba(255,255,255,0.8)' }}>
-          by {b.authors}
-        </p>
+      <div className="book-card-content">
+        <p className="book-title">{b.title}</p>
+        <p className="book-author">by {b.authors}</p>
         {b.yearPublished && (
-          <p className="font-mono text-gray-600 text-xs mb-2" style={{ textShadow: '0 1px 2px rgba(255,255,255,0.8)' }}>{b.yearPublished}</p>
+          <p className="type-meta mb-2" style={{ textShadow: '0 1px 2px oklch(98% 0.008 75 / 0.8)' }}>{b.yearPublished}</p>
         )}
 
-        <div className="font-mono text-gray-600 text-xs" style={{ textShadow: '0 1px 2px rgba(255,255,255,0.8)' }}>
-          <div className="flex items-center gap-2">
-            <span className="font-medium">Author Countries:</span>
+        <div className="type-caption" style={{ textShadow: '0 1px 2px oklch(98% 0.008 75 / 0.8)' }}>
+          <div className="book-country-header">
+            <span className="type-label">Author Countries:</span>
             <button
               type="button"
               onClick={onToggleEdit}
-              className={`text-gray-500 hover:text-gray-700 border rounded p-1 ${isEditing ? 'bg-gray-100 text-gray-900' : ''}`}
+              className={isEditing ? 'book-edit-btn-active' : 'book-edit-btn'}
               title="Edit author countries"
             >
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -84,22 +79,19 @@ export const BookCard = memo(function BookCard({
           </div>
 
           {isEditing ? (
-            <div className="mt-2 space-y-2">
-              <div className="flex flex-wrap gap-2">
+            <div className="book-country-edit-area">
+              <div className="book-country-badges">
                 {b.authorCountries.length === 0 && (
-                  <span className="text-gray-400 text-xs">No countries yet</span>
+                  <span className="type-meta">No countries yet</span>
                 )}
                 {b.authorCountries.map(country => (
-                  <span
-                    key={country}
-                    className="inline-flex items-center gap-1 border border-gray-200 rounded px-2 py-0.5 text-xs bg-white"
-                  >
+                  <span key={country} className="country-badge">
                     {mapISO2ToDisplayName(country)}
                     <button
                       type="button"
                       onClick={() => onRemoveCountry(country)}
-                      className="text-gray-400 hover:text-gray-600"
                       aria-label="Remove country"
+                      className="country-badge-remove"
                     >
                       ×
                     </button>
@@ -122,38 +114,38 @@ export const BookCard = memo(function BookCard({
                   onFocus={() => onShowCountryDropdown(true)}
                   onBlur={onBlur}
                   placeholder="Search country..."
-                  className="w-full border border-gray-300 rounded px-3 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  className="country-input"
                 />
                 {(showCountryDropdown && (countrySearch || suggestions.length > 0)) && (
-                  <div className="absolute z-10 mt-1 w-full max-h-40 overflow-y-auto bg-white border border-gray-200 rounded shadow-lg">
+                  <div className="country-dropdown">
                     {suggestions.map(country => (
                       <button
                         key={country.iso2}
                         type="button"
                         onClick={() => onAddCountry(country.iso2)}
-                        className="flex w-full items-center justify-between px-3 py-2 text-left text-xs hover:bg-blue-50"
+                        className="country-dropdown-item"
                       >
                         <span>{country.name}</span>
                         <span>{getCountryFlag(country.iso2)}</span>
                       </button>
                     ))}
                     {suggestions.length === 0 && (
-                      <div className="px-3 py-2 text-xs text-gray-500">No matches</div>
+                      <div className="country-dropdown-empty">No matches</div>
                     )}
                   </div>
                 )}
               </div>
             </div>
           ) : (
-            <div className="mt-1 flex flex-wrap gap-1">
+            <div className="book-country-tags">
               {b.authorCountries.map((country) => (
                 <button
                   key={country}
                   onClick={() => onCountryClick(country)}
-                  className="text-blue-600 hover:text-blue-800 transition-colors text-xs px-1 py-0.5 rounded hover:bg-blue-50 flex items-center gap-1"
+                  className="country-tag"
                 >
-                  <span className="underline hover:no-underline">{mapISO2ToDisplayName(country)}</span>
-                  <span className="no-underline">{getCountryFlag(country)}</span>
+                  <span className="country-tag-name">{mapISO2ToDisplayName(country)}</span>
+                  <span>{getCountryFlag(country)}</span>
                 </button>
               ))}
             </div>

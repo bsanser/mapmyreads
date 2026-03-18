@@ -1,6 +1,7 @@
 import { mapISO2ToDisplayName } from '../lib/mapUtilities'
-import { BookList } from './BookList'
 import { THEMES } from '../lib/themeManager'
+import { BookList } from './BookList'
+import { MapControls } from './MapControls'
 import { useBooks } from '../contexts/BooksContext'
 import { useTheme } from '../contexts/ThemeContext'
 
@@ -15,10 +16,9 @@ export function MobileBottomSheet({
   onToggleMissingAuthorCountry,
   onClearMissingAuthorCountry
 }: MobileBottomSheetProps) {
-  const { books, selectedCountry, setSelectedCountry } = useBooks()
-  const { currentTheme } = useTheme()
+  const { books, selectedCountry, setSelectedCountry, summaryStats } = useBooks()
+  const { currentTheme, setCurrentTheme } = useTheme()
 
-  // Compute count for "Showing X books" label
   const baseFilteredBooks = selectedCountry
     ? books.filter(book => book.authorCountries.includes(selectedCountry))
     : books
@@ -29,20 +29,55 @@ export function MobileBottomSheet({
   const displayedBookLabel = displayedBookCount === 1 ? 'book' : 'books'
 
   return (
-    <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-40" style={{ height: '33vh' }}>
-      <div className="h-full flex flex-col">
-        <div className="flex-1 overflow-y-auto">
-          <div className="px-6 py-4 space-y-3">
-            <div className="text-xs text-gray-600 mb-4 flex items-center justify-between">
+    <div className="mobile-bottom-sheet-wrapper">
+      <div className="bottom-sheet-inner">
+
+        {/* Drag handle */}
+        <div className="bottom-sheet-handle">
+          <div className="bottom-sheet-handle-bar" />
+        </div>
+
+        {/* Compact stats + theme control */}
+        <div className="bottom-sheet-stats">
+          <div className="bottom-sheet-stat-group">
+            <span className="type-stat">{summaryStats.readBooksCount}</span>
+            <span className="type-stat-label">books</span>
+            <span className="bottom-sheet-stat-divider">·</span>
+            <span className="type-stat">{summaryStats.authorCountriesCovered}</span>
+            <span className="type-stat-label">countries</span>
+            {summaryStats.booksMissingAuthorCountry > 0 && !showMissingAuthorCountry && (
+              <>
+                <span className="bottom-sheet-stat-divider">·</span>
+                <button
+                  type="button"
+                  onClick={onToggleMissingAuthorCountry}
+                  className="bottom-sheet-link"
+                >
+                  {summaryStats.booksMissingAuthorCountry} missing
+                </button>
+              </>
+            )}
+          </div>
+          <MapControls
+            currentTheme={currentTheme}
+            themes={THEMES}
+            onThemeChange={setCurrentTheme}
+            layout="inline"
+          />
+        </div>
+
+        {/* Book list */}
+        <div className="bottom-sheet-scroll">
+          <div className="bottom-sheet-book-list">
+            <div className="bottom-sheet-count-row">
               <span>
-                Showing <span className="font-semibold text-gray-900">{displayedBookCount}</span> {displayedBookLabel}
+                Showing <span className="font-semibold" style={{ color: 'var(--color-ink)' }}>{displayedBookCount}</span> {displayedBookLabel}
                 {showMissingAuthorCountry ? ' without country data' : selectedCountry ? ` from ${mapISO2ToDisplayName(selectedCountry)}` : ''}
               </span>
               {(showMissingAuthorCountry || selectedCountry) && (
                 <button
                   type="button"
-                  className="text-xs underline"
-                  style={{ color: THEMES[currentTheme].outline }}
+                  className="bottom-sheet-link"
                   onClick={() => {
                     setSelectedCountry(null)
                     if (showMissingAuthorCountry) {
@@ -60,6 +95,7 @@ export function MobileBottomSheet({
             />
           </div>
         </div>
+
       </div>
     </div>
   )

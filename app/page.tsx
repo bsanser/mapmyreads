@@ -9,7 +9,6 @@ import { MobileBottomSheet } from '../components/MobileBottomSheet'
 import { DeveloperTools } from '../components/DeveloperTools'
 import { EnrichmentProgress } from '../components/EnrichmentProgress'
 import { THEMES } from '../lib/themeManager'
-import { ReadingAtlasSummary } from '../components/ReadingAtlasSummary'
 import {
   loadProcessedBooks,
   saveProcessedBooks,
@@ -86,8 +85,6 @@ export default function Home() {
             const format = detectCSVFormat(meta.fields || [])
             const parsedBooks = parseCSVData(data, format)
             const csvSummary = generateCsvSummary(parsedBooks)
-
-            console.log('📚 CSV Parsed:', csvSummary)
 
             // SHOW MAP IMMEDIATELY with parsed books (no countries yet)
             setBooks(parsedBooks)
@@ -185,12 +182,10 @@ export default function Home() {
 
         const booksNeedingCovers = processedBooks.filter(b => b.readStatus === 'read' && !b.coverImage)
         if (booksNeedingCovers.length > 0) {
-          console.log(`📷 Loading ${booksNeedingCovers.length} missing READ book covers in batches...`)
           setIsLoadingCovers(true)
           setCoverProgress({ current: 0, total: booksNeedingCovers.length, stage: 'Downloading book covers...' })
 
           enrichBooksWithCoversBatched(processedBooks, (loaded, total, coverMap) => {
-            console.log(`📷 Progress: ${loaded}/${total} READ covers loaded`)
             setBooks(prev => {
               const updated = applyCoverResultsToBooks(prev, coverMap)
               saveProcessedBooks(updated)
@@ -198,7 +193,6 @@ export default function Home() {
             })
             setCoverProgress({ current: loaded, total, stage: `Loading covers: ${loaded}/${total}` })
           }).then(() => {
-            console.log('✅ All book covers loaded!')
             setIsLoadingCovers(false)
             setCoverProgress({ current: 0, total: 0, stage: '' })
           }).catch(error => {
@@ -220,22 +214,12 @@ export default function Home() {
         onFileUpload={handleFile}
         isProcessing={isProcessing}
         error={error}
-        showDeveloperMode={showDeveloperMode}
-        onToggleDeveloperMode={() => setShowDeveloperMode(!showDeveloperMode)}
       />
     )
   }
 
   return (
-    <div className="h-screen relative w-full bg-gray-50 overflow-hidden">
-      <div className="lg:hidden px-4 pt-6">
-        <ReadingAtlasSummary
-          showMissingAuthorCountry={showMissingAuthorCountry}
-          onToggleMissingAuthorCountry={handleToggleMissingAuthorCountry}
-          className="mb-4"
-        />
-      </div>
-
+    <div className="map-page-layout">
       <MapContainer
         onCountryClick={handleCountryClick}
         currentTheme={currentTheme}
