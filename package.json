@@ -11,7 +11,8 @@
     "clean-isbns": "tsx scripts/cleanISBNs.ts",
     "generate-countries": "tsx scripts/generate-countries.ts",
     "clear-cache": "tsx scripts/clear-cache.ts",
-    "test": "vitest run"
+    "test": "vitest run",
+    "postinstall": "prisma generate"   
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
