@@ -72,10 +72,10 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    // Wait for all with a timeout of 25 seconds (Vercel limit is 30s)
+    // Wait for all with a timeout of 9 seconds (Vercel Hobby hard limit is 10s)
     await Promise.race([
       Promise.all(resolvePromises),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 25000))
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 9000))
     ]).catch(error => {
       console.warn('⚠️ Some authors timed out, returning partial results')
     })
