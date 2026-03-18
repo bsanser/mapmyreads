@@ -394,13 +394,20 @@ body {
   /* Warm sepia gradient — anchors readable stage to bottom */
   .hero-overlay {
     @apply absolute inset-0 pointer-events-none;
-    background: linear-gradient(
-      to top,
-      oklch(18% 0.03 60 / 0.88) 0%,
-      oklch(18% 0.03 60 / 0.65) 38%,
-      oklch(18% 0.03 60 / 0.15) 65%,
-      transparent 100%
-    );
+    background:
+      linear-gradient(
+        to bottom,
+        oklch(18% 0.03 60 / 0.3) 0%,
+        oklch(18% 0.03 60 / 0.05) 30%,
+        transparent 50%
+      ),
+      linear-gradient(
+        to top,
+        oklch(18% 0.03 60 / 0.88) 0%,
+        oklch(18% 0.03 60 / 0.65) 38%,
+        oklch(18% 0.03 60 / 0.2) 65%,
+        transparent 100%
+      );
   }
 
   /* Two-column editorial layout anchored to the bottom */
@@ -430,24 +437,27 @@ body {
   .hero-tagline {
     @apply font-sans leading-relaxed;
     font-size: clamp(0.95rem, 1.5vw, 1.125rem);
-    color: oklch(from var(--color-surface) l c h / 0.65);
+    color: oklch(from var(--color-surface) l c h / 0.88);
     max-width: 42ch;
+    text-shadow: 0 2px 4px oklch(0% 0 0 / 0.2);
   }
 
   .hero-sources {
     @apply font-sans text-sm;
-    color: oklch(from var(--color-surface) l c h / 0.45);
+    color: oklch(from var(--color-surface) l c h / 0.8);
+    text-shadow: 0 1px 2px oklch(0% 0 0 / 0.15);
   }
 
   .hero-source-link {
     @apply underline underline-offset-4 transition-colors;
-    color: oklch(from var(--color-surface) l c h / 0.7);
-    text-decoration-color: oklch(from var(--color-surface) l c h / 0.35);
+    color: oklch(from var(--color-surface) l c h / 0.88);
+    text-decoration-color: oklch(from var(--color-surface) l c h / 0.5);
+    text-shadow: 0 1px 2px oklch(0% 0 0 / 0.15);
   }
 
   .hero-source-link:hover {
     color: var(--color-surface);
-    text-decoration-color: oklch(from var(--color-surface) l c h / 0.65);
+    text-decoration-color: oklch(from var(--color-surface) l c h / 0.7);
   }
 
   /* Right: upload action column */
