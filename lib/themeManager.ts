@@ -6,7 +6,8 @@ export const THEMES = {
     outline: "#0A6A89",   // Dark blue
     hover: "#7FB3C7",     // Medium blue
     selected: "#E8F4F8",  // Very light blue with subtle glow
-    background: "#eef3f5" // Light blue-gray background
+    background: "#eef3f5",// Light blue-gray background
+    empty: "#f5f0e8"      // Warm cream for unread countries
   },
   yellow: {
     name: "Golden Hour",
@@ -14,7 +15,8 @@ export const THEMES = {
     outline: "#D4A574",   // Rich golden brown
     hover: "#E8D4A8",     // Medium warm yellow
     selected: "#FDF8E8",  // Very light cream with subtle glow
-    background: "#fefbf3" // Warm off-white background
+    background: "#fefbf3",// Warm off-white background
+    empty: "#f5f0e2"      // Warm parchment for unread countries
   },
   purple: {
     name: "Royal Purple",
@@ -22,7 +24,8 @@ export const THEMES = {
     outline: "#8B5A96",   // Rich purple
     hover: "#D4B8E0",     // Medium lavender
     selected: "#F8F0FC",  // Very light lavender with subtle glow
-    background: "#f9f6fc" // Light purple-tinted background
+    background: "#f9f6fc",// Light purple-tinted background
+    empty: "#f2ede5"      // Warm cream for unread countries
   },
   pink: {
     name: "Rose Garden",
@@ -30,7 +33,8 @@ export const THEMES = {
     outline: "#C85A7B",   // Rich rose
     hover: "#E8B8CC",     // Medium rose pink
     selected: "#FDF0F5",  // Very light rose with subtle glow
-    background: "#fef8fa" // Light pink-tinted background
+    background: "#fef8fa",// Light pink-tinted background
+    empty: "#f5f0e8"      // Warm cream for unread countries
   },
   green: {
     name: "Verdant Grove",
@@ -38,7 +42,8 @@ export const THEMES = {
     outline: "#3C8B5E",   // Rich forest green
     hover: "#BEE5C3",     // Medium soft green
     selected: "#F1FBF2",  // Very light mint glow
-    background: "#f4fbf5" // Light green-tinted background
+    background: "#f4fbf5",// Light green-tinted background
+    empty: "#f2ede5"      // Warm cream for unread countries
   }
 };
 

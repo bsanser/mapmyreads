@@ -42,14 +42,13 @@ export const BookCard = memo(function BookCard({
   }).slice(0, 8)
 
   return (
-    <div
-      className="notebook-lines relative bg-white border border-gray-300 rounded p-4 hover:shadow-md transition-all min-h-[120px] flex items-start gap-4"
-    >
+    <div className="notebook-lines relative surface-card rounded p-4 hover:shadow-md transition-all min-h-[120px] flex items-start gap-4">
       <div className="relative flex-shrink-0" style={{ paddingTop: '10px' }}>
         <img
           src={b.coverImage ?? '/book-placeholder.png'}
           alt={`Cover of ${b.title}`}
-          className="block w-20 h-32 object-contain rounded shadow-md border border-gray-200 relative z-10 bg-white"
+          className="block w-20 h-32 object-contain rounded shadow-md border relative z-10 bg-white"
+          style={{ borderColor: 'var(--color-border)' }}
         />
         <img
           src="/paperclip.svg"
@@ -60,22 +59,23 @@ export const BookCard = memo(function BookCard({
       </div>
 
       <div className="flex-1 min-w-0">
-        <p className="book-title text-gray-900 mb-2" style={{ textShadow: '0 1px 2px rgba(255,255,255,0.8)' }}>{b.title}</p>
-        <p className="book-author text-gray-700 mb-1" style={{ textShadow: '0 1px 2px rgba(255,255,255,0.8)' }}>
+        <p className="book-title mb-2" style={{ textShadow: '0 1px 2px oklch(98% 0.008 75 / 0.8)' }}>{b.title}</p>
+        <p className="book-author mb-1" style={{ textShadow: '0 1px 2px oklch(98% 0.008 75 / 0.8)' }}>
           by {b.authors}
         </p>
         {b.yearPublished && (
-          <p className="type-meta text-gray-500 mb-2" style={{ textShadow: '0 1px 2px rgba(255,255,255,0.8)' }}>{b.yearPublished}</p>
+          <p className="type-meta mb-2" style={{ textShadow: '0 1px 2px oklch(98% 0.008 75 / 0.8)' }}>{b.yearPublished}</p>
         )}
 
-        <div className="type-caption text-gray-600" style={{ textShadow: '0 1px 2px rgba(255,255,255,0.8)' }}>
+        <div className="type-caption" style={{ textShadow: '0 1px 2px oklch(98% 0.008 75 / 0.8)' }}>
           <div className="flex items-center gap-2">
             <span className="type-label">Author Countries:</span>
             <button
               type="button"
               onClick={onToggleEdit}
-              className={`text-gray-500 hover:text-gray-700 border rounded p-1 ${isEditing ? 'bg-gray-100 text-gray-900' : ''}`}
+              className={`transition-colors border rounded p-1 ${isEditing ? 'bg-[var(--color-accent-soft)] border-[var(--color-accent-border)]' : 'border-[var(--color-border)] hover:border-[var(--color-accent-border)]'}`}
               title="Edit author countries"
+              style={{ color: isEditing ? 'var(--color-accent)' : 'var(--color-ink-3)' }}
             >
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16.862 3.487l3.651 3.65m-2.906-4.395L9.208 11.14c-.27.27-.46.61-.55.98l-.89 3.788a.75.75 0 00.914.914l3.788-.89c.37-.09.71-.28.98-.55l8.399-8.398a1.5 1.5 0 000-2.122l-1.95-1.95a1.5 1.5 0 00-2.122 0zM6 19.5h12" />
@@ -87,19 +87,17 @@ export const BookCard = memo(function BookCard({
             <div className="mt-2 space-y-2">
               <div className="flex flex-wrap gap-2">
                 {b.authorCountries.length === 0 && (
-                  <span className="text-gray-400 text-xs">No countries yet</span>
+                  <span className="type-meta">No countries yet</span>
                 )}
                 {b.authorCountries.map(country => (
-                  <span
-                    key={country}
-                    className="inline-flex items-center gap-1 border border-gray-200 rounded px-2 py-0.5 text-xs bg-white"
-                  >
+                  <span key={country} className="country-badge">
                     {mapISO2ToDisplayName(country)}
                     <button
                       type="button"
                       onClick={() => onRemoveCountry(country)}
-                      className="text-gray-400 hover:text-gray-600"
                       aria-label="Remove country"
+                      style={{ color: 'var(--color-ink-3)' }}
+                      className="hover:text-[var(--color-error)]"
                     >
                       ×
                     </button>
@@ -122,23 +120,23 @@ export const BookCard = memo(function BookCard({
                   onFocus={() => onShowCountryDropdown(true)}
                   onBlur={onBlur}
                   placeholder="Search country..."
-                  className="w-full border border-gray-300 rounded px-3 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  className="country-input"
                 />
                 {(showCountryDropdown && (countrySearch || suggestions.length > 0)) && (
-                  <div className="absolute z-10 mt-1 w-full max-h-40 overflow-y-auto bg-white border border-gray-200 rounded shadow-lg">
+                  <div className="country-dropdown">
                     {suggestions.map(country => (
                       <button
                         key={country.iso2}
                         type="button"
                         onClick={() => onAddCountry(country.iso2)}
-                        className="flex w-full items-center justify-between px-3 py-2 text-left text-xs hover:bg-blue-50"
+                        className="country-dropdown-item"
                       >
                         <span>{country.name}</span>
                         <span>{getCountryFlag(country.iso2)}</span>
                       </button>
                     ))}
                     {suggestions.length === 0 && (
-                      <div className="px-3 py-2 text-xs text-gray-500">No matches</div>
+                      <div className="px-3 py-2 type-meta">No matches</div>
                     )}
                   </div>
                 )}
@@ -150,7 +148,7 @@ export const BookCard = memo(function BookCard({
                 <button
                   key={country}
                   onClick={() => onCountryClick(country)}
-                  className="text-blue-600 hover:text-blue-800 transition-colors text-xs px-1 py-0.5 rounded hover:bg-blue-50 flex items-center gap-1"
+                  className="country-tag"
                 >
                   <span className="underline hover:no-underline">{mapISO2ToDisplayName(country)}</span>
                   <span className="no-underline">{getCountryFlag(country)}</span>

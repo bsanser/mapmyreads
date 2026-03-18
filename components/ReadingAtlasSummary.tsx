@@ -30,24 +30,24 @@ export const ReadingAtlasSummary = memo(function ReadingAtlasSummary({
   return (
     <div className={`space-y-4 ${className}`}>
       <div className="space-y-1">
-        <p className="type-eyebrow text-gray-500">Reading Atlas</p>
-        <h2 className="type-heading text-gray-900">Your literary journey</h2>
-        <p className="type-caption text-gray-500">Track progress through books, voices, and cultures.</p>
+        <p className="type-eyebrow">Reading Atlas</p>
+        <h2 className="type-heading">Your literary journey</h2>
+        <p className="type-caption">Track progress through books, voices, and cultures.</p>
       </div>
 
       <div className="grid grid-cols-3 gap-2 text-center pb-1">
         {STAT_CARDS.map(({ label, key }) => (
           <div key={label} className="leading-tight">
-            <span className="type-stat text-gray-900 block">{stats[key]}</span>
-            <span className="type-stat-label text-gray-500">{label}</span>
+            <span className="type-stat block">{stats[key]}</span>
+            <span className="type-stat-label">{label}</span>
           </div>
         ))}
       </div>
 
       {stats.booksMissingAuthorCountry > 0 && (
-        <div className="border border-gray-200 rounded-xl p-3 bg-white shadow-sm">
+        <div className="badge-info">
           <div className="flex items-center gap-3">
-            <div className="text-gray-500">
+            <div style={{ color: 'var(--color-ink-3)' }}>
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M12 9v4m0 4h.01M12 5a7 7 0 110 14 7 7 0 010-14z" />
               </svg>
@@ -55,8 +55,7 @@ export const ReadingAtlasSummary = memo(function ReadingAtlasSummary({
             <button
               type="button"
               onClick={handleMissingClick}
-              className="text-sm font-medium underline underline-offset-4 decoration-dashed"
-              style={{ color: THEMES[currentTheme].outline }}
+              className="type-ui link-accent underline underline-offset-4 decoration-dashed"
             >
               {stats.booksMissingAuthorCountry} book{stats.booksMissingAuthorCountry === 1 ? '' : 's'} without country data
             </button>

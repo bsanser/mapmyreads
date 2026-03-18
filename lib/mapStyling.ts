@@ -9,10 +9,11 @@ export interface WavePatternConfig {
   opacity: number;
 }
 
-export const createWavePatternSVG = (config: WavePatternConfig): string => {
-  const { width, height, strokeColor, strokeWidth, opacity } = config;
-  
+export const createWavePatternSVG = (config: WavePatternConfig & { bgColor: string }): string => {
+  const { width, height, strokeColor, strokeWidth, opacity, bgColor } = config;
+
   return `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
+    <rect width="${width}" height="${height}" fill="${bgColor}"/>
     <path d="M0 4 Q2 0 4 4 T8 4 T12 4 T16 4"
           fill="none"
           stroke="${strokeColor}"
@@ -32,7 +33,8 @@ export const createMapStyle = (currentTheme: ThemeKey): { style: StyleSpecificat
     height: 8,
     strokeColor: theme.outline,
     strokeWidth: 1,
-    opacity: 0.3
+    opacity: 0.3,
+    bgColor: theme.background
   });
   
   // Convert SVG to data URL
@@ -59,8 +61,8 @@ export const createMapStyle = (currentTheme: ThemeKey): { style: StyleSpecificat
         id: "countries-fill",
         type: "fill",
         source: "countries",
-        paint: { 
-          "fill-color": "#ffffff" // Start with white, will be updated after map loads
+        paint: {
+          "fill-color": theme.empty ?? "#f5f0e8" // Warm cream, updated after map loads
         }
       },
       {

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useEnrichment } from '../contexts/EnrichmentContext'
 
-function ProgressBar({ current, total, stage, color = 'bg-blue-600' }: {
+function ProgressBar({ current, total, stage, color = 'var(--color-accent)' }: {
   current: number
   total: number
   stage: string
@@ -12,24 +12,20 @@ function ProgressBar({ current, total, stage, color = 'bg-blue-600' }: {
   return (
     <div className="flex items-start gap-3">
       <div className="flex-shrink-0 mt-1">
-        <div className="animate-spin rounded-full h-4 w-4 border-2 border-gray-300 border-t-blue-600"></div>
+        <div className="animate-spin rounded-full h-4 w-4 border-2" style={{ borderColor: 'var(--color-border)', borderTopColor: color }}></div>
       </div>
 
       <div className="flex-1 min-w-0">
-        <p className="type-caption text-gray-600 mb-1">
-          {stage}
-        </p>
+        <p className="type-caption mb-1">{stage}</p>
 
-        <div className="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
+        <div className="w-full rounded-full h-1.5 overflow-hidden" style={{ backgroundColor: 'var(--color-border-light)' }}>
           <div
-            className={`${color} h-1.5 rounded-full transition-all duration-300 ease-out`}
-            style={{ width: `${percentage}%` }}
+            className="h-1.5 rounded-full transition-all duration-300 ease-out"
+            style={{ width: `${percentage}%`, backgroundColor: color }}
           />
         </div>
 
-        <p className="type-meta text-gray-400 mt-0.5">
-          {current} of {total} ({percentage}%)
-        </p>
+        <p className="type-meta mt-0.5">{current} of {total} ({percentage}%)</p>
       </div>
     </div>
   )
@@ -46,7 +42,7 @@ function DoneMessage() {
   if (!visible) return null
 
   return (
-    <div className="flex items-center gap-2 type-caption text-green-700">
+    <div className="status-success">
       <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
       </svg>
@@ -59,7 +55,6 @@ export function EnrichmentProgress() {
   const { isEnriching, enrichmentProgress, isLoadingCovers, coverProgress } = useEnrichment()
   const [showAuthorsDone, setShowAuthorsDone] = useState(false)
 
-  // Show "done" briefly when authors finish while covers are still loading
   useEffect(() => {
     if (!isEnriching && isLoadingCovers) {
       setShowAuthorsDone(true)
@@ -72,17 +67,15 @@ export function EnrichmentProgress() {
   if (!isEnriching && !isLoadingCovers) return null
 
   return (
-    <div className="fixed bottom-6 right-6 bg-white rounded-lg shadow-lg border border-gray-200 p-4 max-w-xs z-50 animate-slide-up space-y-3">
-      <p className="type-ui text-gray-900">
-        Enriching your data...
-      </p>
+    <div className="surface-float fixed bottom-6 right-6 z-50 animate-slide-up space-y-3">
+      <p className="type-ui">Enriching your data...</p>
 
       {isEnriching && (
         <ProgressBar
           current={enrichmentProgress.current}
           total={enrichmentProgress.total}
           stage={enrichmentProgress.stage}
-          color="bg-blue-600"
+          color="var(--color-accent)"
         />
       )}
 
@@ -93,7 +86,7 @@ export function EnrichmentProgress() {
           current={coverProgress.current}
           total={coverProgress.total}
           stage={coverProgress.stage}
-          color="bg-amber-500"
+          color="oklch(68% 0.16 70)"
         />
       )}
     </div>
