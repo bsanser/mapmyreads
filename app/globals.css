@@ -413,7 +413,7 @@ body {
   /* Two-column editorial layout anchored to the bottom */
   .hero-content {
     @apply relative z-10 flex flex-col lg:flex-row items-end min-h-screen;
-    padding: clamp(2rem, 5vw, 4rem) clamp(1.5rem, 6vw, 5rem);
+    padding: clamp(2rem, 5vw, 4rem) 50px;
     gap: clamp(2rem, 5vw, 5rem);
   }
 
@@ -424,7 +424,13 @@ body {
   }
 
   .hero-brand-mark {
-    @apply flex items-center gap-2 mb-2;
+    @apply flex items-center gap-2;
+    margin-bottom: 0.5rem;
+  }
+
+  /* White icon for hero: full contrast on any background */
+  .hero-logo {
+    filter: brightness(0) invert(1) drop-shadow(0 1px 4px oklch(0% 0 0 / 0.55));
   }
 
   .hero-headline {
@@ -530,6 +536,49 @@ body {
     border: 1px solid oklch(from var(--color-surface) l c h / 0.2);
     color: oklch(from var(--color-surface) l c h / 0.7);
     backdrop-filter: blur(4px);
+  }
+
+  /* ── Hero — mobile: center, tighten spacing ───── */
+
+  @media (max-width: 1023px) {
+    .hero-content {
+      padding: clamp(2rem, 5vw, 4rem) clamp(2rem, 8vw, 5rem);
+      gap: clamp(2.5rem, 5vw, 4rem);
+      justify-content: center;
+    }
+
+    .hero-brand {
+      flex: initial;
+      align-items: center;
+      text-align: center;
+    }
+
+    .hero-brand-mark {
+      margin-bottom: 0.875rem;
+    }
+
+    .hero-headline {
+      text-align: center;
+      margin-bottom: 0.5rem;
+    }
+
+    .hero-tagline {
+      text-align: center;
+      margin-bottom: 0.75rem;
+    }
+
+    .hero-sources {
+      text-align: center;
+    }
+
+    .hero-upload-col {
+      align-items: center;
+    }
+  }
+
+  /* Larger brand text on hero */
+  .hero-eyebrow {
+    font-size: 0.9375rem;
   }
 
   /* ── Storage status bar (hero screen) ────────── */

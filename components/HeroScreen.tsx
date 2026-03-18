@@ -25,9 +25,9 @@ export function HeroScreen({
             <img
               src="/logo.png"
               alt="Map My Reads"
-              className="w-8 h-8 object-contain"
+              className="hero-logo w-9 h-9 object-contain"
             />
-            <span className="type-eyebrow" style={{ color: 'oklch(from var(--color-surface) l c h / 0.55)' }}>
+            <span className="type-eyebrow hero-eyebrow" style={{ color: 'var(--color-surface)', textShadow: '0 1px 3px oklch(0% 0 0 / 0.5)' }}>
               Map My Reads
             </span>
           </div>
