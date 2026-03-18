@@ -108,7 +108,7 @@ export const FeedbackButton = ({ className = '', theme = 'blue' }: FeedbackButto
             </div>
 
             <p className="text-sm text-gray-600 mb-4">
-              Add any suggestions, bugs or improvements you'd like to see. I'm reading 👀
+              Add any suggestions, bugs or improvements you&apos;d like to see. I&apos;m reading 👀
             </p>
 
             <form onSubmit={handleSubmit}>

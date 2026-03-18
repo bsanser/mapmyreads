@@ -76,3 +76,26 @@ Vitest with `node` environment. Tests live in `tests/` and cover pure utility fu
     - Use minimal project dependencies where possible.
     - Use the `git switch -c` command to switch to new branches, not `git checkout`
     - When finishing a task, generate the git commit message immediately based in the command /commit-message but let me be the one staging, and commiting.
+
+## Design Context
+
+### Users
+Avid readers (Goodreads and StoryGraph users) visualizing where in the world their books come from. They use the app in a reflective, personal mood — curious about patterns in what they've read, proud of how far they've travelled through literature.
+
+### Brand Personality
+Warm · Personal · Charming. The app should feel like a beloved personal project someone made for themselves and decided to share. Not slick, not corporate. Think: a beautifully annotated travel journal, or a hand-labeled map pinned above a desk. Emotional goal: **delight and quiet pride**.
+
+### Aesthetic Direction
+**Warm & Indie** — light mode only (for now).
+- **Palette:** No purple or indigo. Warm tones: cream/off-white backgrounds, warm ink for text (never pure black), earthy accents (terracotta, amber, sand, warm sage). Tinted neutrals, never cold grays.
+- **Typography:** Reserve `font-mono` for small metadata only (dates, ISBNs). Use a warm serif for display headings and a clean sans for UI text.
+- **Surfaces:** Off-white, not white. Warm paper-like backgrounds. Soft, warm-tinted borders.
+- **Keep:** The notebook-lines on book cards and the paperclip SVG — they feel handcrafted and should be extended, not removed.
+- **Avoid:** Purple/indigo gradients, cold glassmorphism, generic SaaS dashboard feel.
+
+### Design Principles
+1. **Warmth over polish** — Curated and slightly imperfect beats corporate-slick. Embrace personality details.
+2. **Map is the hero** — Every other element should complement the map, not compete with it.
+3. **Typography carries personality** — Thoughtful font choices communicate indie/literary quality above all else.
+4. **Tinted, never cold** — All neutrals carry a warm tint. No pure black, no unchanged Tailwind cold grays.
+5. **Delight in small moments** — Hover states, transitions, and micro-details are where the personality lives.

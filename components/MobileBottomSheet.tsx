@@ -33,7 +33,7 @@ export function MobileBottomSheet({
       <div className="h-full flex flex-col">
         <div className="flex-1 overflow-y-auto">
           <div className="px-6 py-4 space-y-3">
-            <div className="text-xs text-gray-600 mb-4 flex items-center justify-between">
+            <div className="type-caption text-gray-600 mb-4 flex items-center justify-between">
               <span>
                 Showing <span className="font-semibold text-gray-900">{displayedBookCount}</span> {displayedBookLabel}
                 {showMissingAuthorCountry ? ' without country data' : selectedCountry ? ` from ${mapISO2ToDisplayName(selectedCountry)}` : ''}

@@ -30,16 +30,16 @@ export const ReadingAtlasSummary = memo(function ReadingAtlasSummary({
   return (
     <div className={`space-y-4 ${className}`}>
       <div className="space-y-1">
-        <p className="text-xs uppercase tracking-[0.3em] text-gray-500">Reading Atlas</p>
-        <h2 className="text-2xl font-semibold text-gray-900 leading-tight">Your literary journey</h2>
-        <p className="text-sm text-gray-500">Track progress through books, voices, and cultures.</p>
+        <p className="type-eyebrow text-gray-500">Reading Atlas</p>
+        <h2 className="type-heading text-gray-900">Your literary journey</h2>
+        <p className="type-caption text-gray-500">Track progress through books, voices, and cultures.</p>
       </div>
 
-      <div className="grid grid-cols-3 gap-2 text-center text-gray-900 text-base pb-1">
+      <div className="grid grid-cols-3 gap-2 text-center pb-1">
         {STAT_CARDS.map(({ label, key }) => (
           <div key={label} className="leading-tight">
-            <span className="text-2xl font-semibold tabular-nums block">{stats[key]}</span>
-            <span className="text-[11px] uppercase tracking-[0.25em] text-gray-500">{label}</span>
+            <span className="type-stat text-gray-900 block">{stats[key]}</span>
+            <span className="type-stat-label text-gray-500">{label}</span>
           </div>
         ))}
       </div>

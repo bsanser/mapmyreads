@@ -16,7 +16,7 @@ function ProgressBar({ current, total, stage, color = 'bg-blue-600' }: {
       </div>
 
       <div className="flex-1 min-w-0">
-        <p className="text-xs text-gray-600 mb-1">
+        <p className="type-caption text-gray-600 mb-1">
           {stage}
         </p>
 
@@ -27,7 +27,7 @@ function ProgressBar({ current, total, stage, color = 'bg-blue-600' }: {
           />
         </div>
 
-        <p className="text-xs text-gray-400 mt-0.5">
+        <p className="type-meta text-gray-400 mt-0.5">
           {current} of {total} ({percentage}%)
         </p>
       </div>
@@ -46,7 +46,7 @@ function DoneMessage() {
   if (!visible) return null
 
   return (
-    <div className="flex items-center gap-2 text-xs text-green-700">
+    <div className="flex items-center gap-2 type-caption text-green-700">
       <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
       </svg>
@@ -73,7 +73,7 @@ export function EnrichmentProgress() {
 
   return (
     <div className="fixed bottom-6 right-6 bg-white rounded-lg shadow-lg border border-gray-200 p-4 max-w-xs z-50 animate-slide-up space-y-3">
-      <p className="text-sm font-medium text-gray-900">
+      <p className="type-ui text-gray-900">
         Enriching your data...
       </p>
 

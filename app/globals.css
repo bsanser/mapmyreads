@@ -3,60 +3,114 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
+/* ── Base ─────────────────────────────────────────── */
+
+body {
+  font-family: var(--font-sans, system-ui, sans-serif);
+  font-kerning: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
+/* ── Type System ──────────────────────────────────── */
+
+@layer components {
+  /* Display — Fraunces, hero headlines */
+  .type-display {
+    @apply font-display text-4xl font-bold leading-tight tracking-tight;
+  }
+
+  /* Heading — Fraunces, section headings */
+  .type-heading {
+    @apply font-display text-2xl font-semibold leading-snug;
+  }
+
+  /* Eyebrow — DM Sans, small tracked label above a heading */
+  .type-eyebrow {
+    @apply font-sans text-xs uppercase tracking-widest font-medium;
+  }
+
+  /* Lead — DM Sans, large intro text */
+  .type-lead {
+    @apply font-sans text-xl leading-relaxed;
+  }
+
+  /* Body — DM Sans, standard body text */
+  .type-body {
+    @apply font-sans text-base leading-relaxed;
+  }
+
+  /* UI — DM Sans, interface labels and controls */
+  .type-ui {
+    @apply font-sans text-sm font-medium leading-normal;
+  }
+
+  /* Label — DM Sans, small labels */
+  .type-label {
+    @apply font-sans text-xs font-medium leading-normal;
+  }
+
+  /* Caption — DM Sans, secondary small text */
+  .type-caption {
+    @apply font-sans text-xs leading-normal;
+  }
+
+  /* Meta — monospace, for dates, ISBNs, technical data only */
+  .type-meta {
+    @apply font-mono text-xs leading-normal;
+  }
+
+  /* Stat — large tabular number in reading atlas */
+  .type-stat {
+    @apply font-display text-2xl font-semibold leading-none;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Stat label — tiny uppercase label below a stat */
+  .type-stat-label {
+    @apply font-sans uppercase leading-none;
+    font-size: 0.6875rem; /* 11px */
+    letter-spacing: 0.25em;
+  }
+
+  /* Book card title */
+  .book-title {
+    @apply font-sans font-semibold text-sm leading-tight;
+  }
+
+  /* Book card author */
+  .book-author {
+    @apply font-sans text-xs leading-normal;
+  }
+
+  /* Book card year / metadata */
+  .book-year {
+    @apply font-sans text-xs leading-normal;
   }
 }
 
-body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
-}
+/* ── Scrollbar ────────────────────────────────────── */
 
-/* Custom scrollbar for liquid glass effect */
 .custom-scrollbar::-webkit-scrollbar {
   width: 6px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.1);
+  background: transparent;
   border-radius: 10px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: linear-gradient(45deg, rgba(99, 102, 241, 0.5), rgba(168, 85, 247, 0.5));
+  background: rgba(120, 100, 80, 0.25);
   border-radius: 10px;
-  backdrop-filter: blur(10px);
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(45deg, rgba(99, 102, 241, 0.7), rgba(168, 85, 247, 0.7));
+  background: rgba(120, 100, 80, 0.45);
 }
 
-/* Animation delays for staggered effects */
-.animation-delay-2000 {
-  animation-delay: 2s;
-}
+/* ── Notebook lines (book cards) ──────────────────── */
 
-.animation-delay-4000 {
-  animation-delay: 4s;
-}
-
-/* Notebook-line background for book cards */
 .notebook-lines {
   background-image:
     linear-gradient(to right, rgba(226, 232, 240, 0.3) 1px, transparent 1px),
@@ -70,49 +124,24 @@ body {
   background-position: 0 0, 0 8px;
 }
 
-/* Slide up animation for progress indicator */
+/* ── Animations ───────────────────────────────────── */
+
 @keyframes slide-up {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 .animate-slide-up {
   animation: slide-up 0.3s ease-out;
 }
 
-/* Smooth glass morphism utilities */
-@layer utilities {
-  .glass {
-    backdrop-filter: blur(16px) saturate(180%);
-    background-color: rgba(255, 255, 255, 0.25);
-    border: 1px solid rgba(255, 255, 255, 0.18);
-  }
-  
-  .glass-hover {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-  
-  .glass-hover:hover {
-    backdrop-filter: blur(20px) saturate(200%);
-    background-color: rgba(255, 255, 255, 0.35);
-    transform: translateY(-2px);
-  }
-}
+.animation-delay-2000 { animation-delay: 2s; }
+.animation-delay-4000 { animation-delay: 4s; }
 
-/* Enhanced focus states for accessibility */
+/* ── Focus states ─────────────────────────────────── */
+
 input:focus,
 button:focus {
-  outline: 2px solid rgba(99, 102, 241, 0.5);
+  outline: 2px solid rgba(160, 120, 80, 0.4);
   outline-offset: 2px;
-}
-
-/* Smooth transitions for all interactive elements */
-* {
-  transition: backdrop-filter 0.3s ease;
 }

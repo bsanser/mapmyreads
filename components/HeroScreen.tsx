@@ -18,7 +18,7 @@ export function HeroScreen({
 }: HeroScreenProps) {
   return (
     <div
-      className="relative min-h-screen font-mono overflow-hidden"
+      className="relative min-h-screen overflow-hidden"
       style={{
         backgroundImage: "url('/vintage_world_map.webp')",
         backgroundSize: 'cover',
@@ -37,15 +37,15 @@ export function HeroScreen({
             />
           </div>
           
-          <h1 className="text-4xl font-bold text-gray-900 mb-6">Map Your Reading Journey</h1>
-          <p className="text-xl text-gray-600 mb-8">
+          <h1 className="type-display text-gray-900 mb-6">Map Your Reading Journey</h1>
+          <p className="type-lead text-gray-600 mb-8">
             Upload your reading list to visualize the countries and cultures you&apos;ve explored through literature
           </p>
 
           {/* Export Instructions */}
           <div className="bg-white/80 backdrop-blur-sm border border-gray-300 text-gray-700 px-6 py-4 rounded-lg mb-8 shadow-sm">
-            <h3 className="font-semibold mb-3 text-gray-900">How to export your reading list:</h3>
-            <div className="space-y-2 text-sm">
+            <h3 className="type-ui text-gray-900 mb-3">How to export your reading list:</h3>
+            <div className="type-body space-y-2">
               <p><strong>Goodreads:</strong> Go to your <a href="https://www.goodreads.com/review/import" target="_blank" rel="noopener noreferrer" className="underline hover:text-gray-900 transition-colors">Goodreads Import/Export page</a> and download your library</p>
               <p><strong>StoryGraph:</strong> Visit <a href="https://app.thestorygraph.com/user-export" target="_blank" rel="noopener noreferrer" className="underline hover:text-gray-900 transition-colors">The StoryGraph Export page</a> to download your data</p>
             </div>
@@ -72,8 +72,8 @@ export function HeroScreen({
                 <svg className="w-8 h-8 text-gray-600 mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3-3m3 3l3-3" />
                 </svg>
-                <p className="text-xl font-semibold text-gray-800 mb-3">Upload your reading list</p>
-                <p className="text-gray-600 mb-8 text-center max-w-md">CSV files from Goodreads or StoryGraph</p>
+                <p className="type-heading text-gray-800 mb-3">Upload your reading list</p>
+                <p className="type-caption text-gray-600 mb-8 text-center max-w-md">CSV files from Goodreads or StoryGraph</p>
                 <div className="bg-gray-900 text-white px-8 py-3 rounded font-medium hover:bg-gray-800 transition-colors">
                   Choose File
                 </div>

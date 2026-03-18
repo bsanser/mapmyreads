@@ -13,7 +13,7 @@ interface SummaryStats {
 
 interface BooksContextValue {
   books: Book[]
-  setBooks: (books: Book[]) => void
+  setBooks: (books: Book[] | ((prev: Book[]) => Book[])) => void
   selectedCountry: string | null
   setSelectedCountry: (country: string | null) => void
   summaryStats: SummaryStats

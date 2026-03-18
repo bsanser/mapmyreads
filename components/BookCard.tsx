@@ -60,17 +60,17 @@ export const BookCard = memo(function BookCard({
       </div>
 
       <div className="flex-1 min-w-0">
-        <p className="font-mono text-gray-900 text-sm leading-tight mb-2" style={{ textShadow: '0 1px 2px rgba(255,255,255,0.8)' }}>{b.title}</p>
-        <p className="font-mono text-gray-700 text-xs mb-1" style={{ textShadow: '0 1px 2px rgba(255,255,255,0.8)' }}>
+        <p className="book-title text-gray-900 mb-2" style={{ textShadow: '0 1px 2px rgba(255,255,255,0.8)' }}>{b.title}</p>
+        <p className="book-author text-gray-700 mb-1" style={{ textShadow: '0 1px 2px rgba(255,255,255,0.8)' }}>
           by {b.authors}
         </p>
         {b.yearPublished && (
-          <p className="font-mono text-gray-600 text-xs mb-2" style={{ textShadow: '0 1px 2px rgba(255,255,255,0.8)' }}>{b.yearPublished}</p>
+          <p className="type-meta text-gray-500 mb-2" style={{ textShadow: '0 1px 2px rgba(255,255,255,0.8)' }}>{b.yearPublished}</p>
         )}
 
-        <div className="font-mono text-gray-600 text-xs" style={{ textShadow: '0 1px 2px rgba(255,255,255,0.8)' }}>
+        <div className="type-caption text-gray-600" style={{ textShadow: '0 1px 2px rgba(255,255,255,0.8)' }}>
           <div className="flex items-center gap-2">
-            <span className="font-medium">Author Countries:</span>
+            <span className="type-label">Author Countries:</span>
             <button
               type="button"
               onClick={onToggleEdit}

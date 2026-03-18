@@ -65,7 +65,7 @@ export function DesktopSidebar({ booksToShow, onLoadMore }: DesktopSidebarProps)
       />
 
       {selectedCountry && (
-        <div className="text-xs text-gray-600 mb-3">
+        <div className="type-caption text-gray-600 mb-3">
           Filtering by {getCountryFlag(selectedCountry)} {mapISO2ToDisplayName(selectedCountry)}{' '}
           <button
             onClick={() => setSelectedCountry(null)}
@@ -77,12 +77,12 @@ export function DesktopSidebar({ booksToShow, onLoadMore }: DesktopSidebarProps)
         </div>
       )}
 
-      <div className="text-xs text-gray-600 mb-3">
+      <div className="type-caption text-gray-600 mb-3">
         Showing {displayedBookCount} {displayedBookLabel}
       </div>
 
       {showMissingAuthorCountry && (
-        <div className="text-xs mb-2">
+        <div className="type-caption mb-2">
           <button
             type="button"
             className="underline"

@@ -59,7 +59,7 @@ export function MapControls({
                   onThemeChange?.(key as ThemeKey)
                   setIsThemeDropdownOpen(false)
                 }}
-                className="w-full px-4 py-2 text-left text-sm hover:bg-black/5 transition-colors flex items-center gap-3"
+                className="type-ui w-full px-4 py-2 text-left hover:bg-black/5 transition-colors flex items-center gap-3"
               >
                 <div
                   className="w-4 h-4 rounded border-2 flex-shrink-0"
@@ -68,7 +68,7 @@ export function MapControls({
                     borderColor: theme.outline
                   }}
                 />
-                <span className={key === currentTheme ? 'font-medium text-blue-700' : 'text-gray-700'}>
+                <span className={key === currentTheme ? 'font-semibold' : 'text-gray-700'}>
                   {theme.name}
                 </span>
               </button>
