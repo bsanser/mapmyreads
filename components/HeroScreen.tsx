@@ -87,8 +87,11 @@ export function HeroScreen({
               <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'oklch(from var(--color-surface) l c h / 0.5)' }}>
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v8" />
               </svg>
-              <p className="type-ui" style={{ color: 'oklch(from var(--color-surface) l c h / 0.7)' }}>
+              <p className="hero-dropzone-copy-desktop type-ui" style={{ color: 'oklch(from var(--color-surface) l c h / 0.7)' }}>
                 Drop your CSV file here
+              </p>
+              <p className="hero-dropzone-copy-mobile type-ui" style={{ color: 'oklch(from var(--color-surface) l c h / 0.7)' }}>
+                Tap to choose your CSV file
               </p>
               <span className="btn-hero">Choose File</span>
             </div>

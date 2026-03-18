@@ -484,6 +484,26 @@ body {
     outline-offset: 2px;
   }
 
+  /* Show desktop copy on devices that support hover (desktop) */
+  .hero-dropzone-copy-desktop {
+    display: block;
+  }
+
+  .hero-dropzone-copy-mobile {
+    display: none;
+  }
+
+  /* Show mobile copy on touch devices (no hover) */
+  @media (hover: none) {
+    .hero-dropzone-copy-desktop {
+      display: none;
+    }
+
+    .hero-dropzone-copy-mobile {
+      display: block;
+    }
+  }
+
   /* Cream-on-dark button for the hero */
   .btn-hero {
     @apply px-6 py-2.5 rounded-lg font-medium text-sm transition-colors;
