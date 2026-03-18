@@ -1,6 +1,7 @@
-# Task List Management
-
-Guidelines for managing task lists in markdown files to track progress on completing a PRD
+---
+name: process-task-list
+description: Guidelines for managing task lists in markdown files to track progress on completing a PRD
+---
 
 ## Task Implementation
 - **One sub-task at a time:** Do **NOT** start the next sub‑task until you ask the user for permission and they say "yes" or "y"
@@ -33,7 +34,7 @@ Guidelines for managing task lists in markdown files to track progress on comple
    - List every file created or modified.
    - Give each file a one‑line description of its purpose.
 
-## AI Instructions
+##Instructions
 
 When working with task lists, the AI must:
 

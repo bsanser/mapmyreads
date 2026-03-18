@@ -1,12 +1,20 @@
+---
+description: Generating a Product Requirements Document (PRD)
+---
+
 # Rule: Generating a Product Requirements Document (PRD)
+
+## Initial user prompt
+**$ARGUMENTS**
 
 ## Goal
 
-To guide an AI assistant in creating a detailed Product Requirements Document (PRD) in Markdown format, based on an initial user prompt. The PRD should be clear, actionable, and suitable for a junior developer to understand and implement the feature.
+To guide an AI assistant in creating a detailed Product Requirements Document (PRD) in Markdown format, based on an initial user prompt. 
+The PRD should be clear, actionable, and suitable for a junior developer to understand and implement the feature.
 
 ## Process
 
-1.  **Receive Initial Prompt:** The user provides a brief description or request for a new feature or functionality.
+1.  **Receive Initial Prompt:** The user provides a brief description or request for a new feature or functionality 
 2.  **Ask Clarifying Questions:** Before writing the PRD, the AI *must* ask clarifying questions to gather sufficient detail. The goal is to understand the "what" and "why" of the feature, not necessarily the "how" (which the developer will figure out). Make sure to provide options in letter/number lists so I can respond easily with my selections.
 3.  **Generate PRD:** Based on the initial prompt and the user's answers to the clarifying questions, generate a PRD using the structure outlined below.
 4.  **Save PRD:** Save the generated document as `prd-[feature-name].md` inside the `/tasks` directory.
@@ -37,7 +45,8 @@ The generated PRD should include the following sections:
 6.  **Design Considerations (Optional):** Link to mockups, describe UI/UX requirements, or mention relevant components/styles if applicable.
 7.  **Technical Considerations (Optional):** Mention any known technical constraints, dependencies, or suggestions (e.g., "Should integrate with the existing Auth module").
 8.  **Success Metrics:** How will the success of this feature be measured? (e.g., "Increase user engagement by 10%", "Reduce support tickets related to X").
-9.  **Open Questions:** List any remaining questions or areas needing further clarification.
+9.  **New analytics events:** Do we need to define and create new analytics events to track usage and/or perfomance of the feature? Suggest name of the event, parameters and types of values expected.
+10.  **Open Questions:** List any remaining questions or areas needing further clarification.
 
 ## Target Audience
 
@@ -46,7 +55,7 @@ Assume the primary reader of the PRD is a **junior developer**. Therefore, requi
 ## Output
 
 *   **Format:** Markdown (`.md`)
-*   **Location:** `/tasks/`
+*   **Location:** `/_tasks/`
 *   **Filename:** `prd-[feature-name].md`
 
 ## Final instructions
