@@ -1,102 +1,70 @@
-# Map My Reads 🌍📚
+# Map My Reads
 
-A web application that visualizes your reading journey around the world. Upload your reading list from Goodreads or StoryGraph and see the countries you've explored through literature on an interactive world map.
+A personal project turned public tool. Upload your reading export from Goodreads or StoryGraph and see the world through your books — which countries your authors come from, which literatures you keep returning to, which corners of the map you haven't touched yet.
 
-## Features
+It's a work in progress. Things might be rough around the edges.
 
-- 📖 **CSV Import**: Support for Goodreads and StoryGraph exports
-- 🗺️ **Interactive World Map**: Visualize your reading journey geographically
-- 🔗 **Shareable Links**: Share your reading map with friends (24-hour expiry)
-- 📱 **Responsive Design**: Works beautifully on desktop, tablet, and mobile
-- 🎨 **Multiple Themes**: Choose from different map themes
-- 💬 **Feedback System**: Easy feedback collection without login
-- ☕ **Support**: Buy me a coffee to support the project
+**Live at [mapmyreads.vercel.app](https://mapmyreads.vercel.app)**
 
-## Data Storage Strategy
+---
 
-### Current Implementation (No Login Required)
+## How it works
 
-The application uses a **session-based storage strategy** that allows users to:
+Export your library from [Goodreads](https://www.goodreads.com/review/import) or [StoryGraph](https://app.thestorygraph.com/user-export) and drop the CSV into the app. No account needed — your data stays in your browser.
 
-1. **Upload and Process**: Users upload their CSV files which are processed client-side
-2. **Session Storage**: Processed book data is stored in browser sessionStorage with a unique session ID
-3. **Shareable URLs**: Users can generate shareable links that encode their reading data
-4. **Temporary Storage**: Sessions expire after 24 hours for privacy and storage management
+The app looks up each author on Wikidata to figure out their country of origin, then colours the map accordingly. Book covers come from Open Library. Both are cached so repeat lookups are instant.
 
-### Storage Components
+You can manually correct any country that's wrong or missing, and share your map via a link.
 
-- **`lib/storage.ts`**: Core storage utilities for session management
-- **`types/book.ts`**: TypeScript interfaces for book data
-- **`components/ShareButton.tsx`**: URL generation and sharing functionality
-- **`components/FeedbackButton.tsx`**: Feedback collection system
+---
 
-### Future Implementation (With User Accounts)
+## Running locally
 
-When users create accounts, the system will:
+```bash
+npm install
+npm run dev
+```
 
-1. *!*Database Storage**: Migrate session data to persistent database storage
-2. **User Profiles**: Store user information and reading history
-3. **Enhanced Features**: Reading statistics, book recommendations, social features
-4. **Data Migration**: Seamless transition from session to account-based storage
+You'll need a PostgreSQL database (the app uses it as a cache for author and cover lookups). Copy `.env.example` to `.env` and add your `DATABASE_URL`, then run:
 
-### Database Schema
+```bash
+npx prisma db push
+```
 
-The `prisma/schema.prisma` file defines the future database structure:
+---
 
-- **Users**: User accounts and profiles
-- **Books**: Individual book records with geographic data
-- **Sessions**: Temporary session storage for sharing
-- **Feedback**: User feedback and feature requests
+## Stack
 
-## Getting Started
+- Next.js 14 (App Router)
+- TypeScript
+- Tailwind CSS
+- MapLibre GL
+- Prisma + PostgreSQL (Neon)
+- Wikidata API for author countries
+- Open Library for book covers
 
-1. **Install Dependencies**:
-   ```bash
-   npm install
-   ```
+---
 
-2. **Run Development Server**:
-   ```bash
-   npm run dev
-   ```
+## Roadmap
 
-3. **Upload Your Reading List**:
-   - Export your library from [Goodreads](https://www.goodreads.com/review/import) or [StoryGraph](https://app.thestorygraph.com/user-export)
-   - Upload the CSV file to see your reading map
+This is still early. A lot of things work, but a lot of things could be better.
 
-## Technology Stack
+- **Improve country detection** — right now a big chunk of authors come back with no country, mostly because Wikidata has incomplete entries, historical citizenships that don't map cleanly to modern countries, or the wrong entity gets matched on common names. This needs real work.
+- **Better fallbacks** — when Wikidata fails, try other sources before giving up
+- **User accounts** — save your map between sessions, come back to it, track it over time
+- **Translations** — the app is English-only right now, would love to support Spanish, French, and others
+- **Reading stats** — breakdowns by year, genre, gender, language of original publication
+- **More CSV formats** — beyond Goodreads and StoryGraph
+- **Mobile polish** — it works on mobile but the experience could be a lot better
 
-- **Framework**: Next.js 14 with App Router
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS
-- **Maps**: React Simple Maps with D3
-- **CSV Parsing**: PapaParse
-- **Database**: PostgreSQL with Prisma (future)
+---
 
-## Privacy & Data
+## Privacy
 
-- **No Login Required**: Users can use the app without creating accounts
-- **Client-Side Processing**: CSV files are processed entirely in the browser
-- **Temporary Storage**: Session data expires after 24 hours
-- **No Data Collection**: User data is not stored on servers unless explicitly shared
+Your book data never leaves your browser. The only things that touch the server are author names and ISBNs, used to look up countries and covers. Nothing is tied to you personally.
 
-## Contributing
-
-This project is open to contributions! Areas for improvement:
-
-- Enhanced country detection for books
-- Additional CSV format support
-- Reading statistics and analytics
-- Social features and book recommendations
-- Mobile app development
-
-## Support
-
-If you enjoy using Map My Reads, consider:
-- 🌟 Starring this repository
-- 💬 Providing feedback through the app
-- ☕ [Buying me a coffee](https://buymeacoffee.com)
+---
 
 ## License
 
-MIT License - feel free to use this project for your own reading visualization needs! 
+MIT
