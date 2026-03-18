@@ -104,7 +104,13 @@ export async function POST(request: NextRequest) {
 
     // Step 2: Fetch cache misses from Open Library
     // Process sequentially with rate limiting ONLY between actual API calls
+    // Stop at 9s to return partial results before Vercel Hobby's 10s hard limit
+    const startTime = Date.now()
     for (let i = 0; i < cacheMisses.length; i++) {
+      if (Date.now() - startTime > 9000) {
+        console.warn('⚠️ Timeout reached, returning partial results')
+        break
+      }
       const book = cacheMisses[i]
       const key = book.isbn13 || `${book.title}|${book.author}`
       

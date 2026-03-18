@@ -1,10 +1,10 @@
-// Script to clear all cached data from Supabase
+// Script to clear all cached data from the database
 import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
 async function clearCache() {
-  console.log('🧹 Clearing Supabase cache...\n')
+  console.log('🧹 Clearing database cache...\n')
 
   try {
     // Count before deletion
