@@ -478,6 +478,12 @@ body {
     border-color: oklch(from var(--color-surface) l c h / 0.55);
   }
 
+  /* Keyboard focus: make the containing label show focus ring on the dropzone */
+  label:has(input[type="file"]):focus-visible .hero-dropzone {
+    outline: 2px solid var(--color-accent-border);
+    outline-offset: 2px;
+  }
+
   /* Cream-on-dark button for the hero */
   .btn-hero {
     @apply px-6 py-2.5 rounded-lg font-medium text-sm transition-colors;
