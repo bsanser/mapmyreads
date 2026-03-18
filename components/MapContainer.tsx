@@ -37,8 +37,9 @@ export function MapContainer({
           onThemeChange={onThemeChange}
           themes={themes}
         />
-        <FeedbackButton theme={currentTheme} />
       </div>
+
+      <FeedbackButton />
     </div>
   )
 }

@@ -1,17 +1,15 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { ThemeKey, THEMES } from '../lib/themeManager'
 
 const feedbackEmail = 'bsanser@gmail.com'
 const feedbackSubject = 'Map my reads feedback'
 
 interface FeedbackButtonProps {
   className?: string
-  theme?: ThemeKey
 }
 
-export const FeedbackButton = ({ className = '', theme = 'blue' }: FeedbackButtonProps) => {
+export const FeedbackButton = ({ className = '' }: FeedbackButtonProps) => {
   const [showFeedbackModal, setShowFeedbackModal] = useState(false)
   const [feedback, setFeedback] = useState('')
   const [sending, setSending] = useState(false)
@@ -50,8 +48,6 @@ export const FeedbackButton = ({ className = '', theme = 'blue' }: FeedbackButto
     return `Operating system: ${deviceDetails.os}\nBrowser: ${deviceDetails.browser}\nViewport: ${deviceDetails.viewport}\nUser agent: ${deviceDetails.userAgent}`
   }, [deviceDetails])
 
-  const themeColors = THEMES[theme]
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!feedback.trim()) return
@@ -86,62 +82,58 @@ export const FeedbackButton = ({ className = '', theme = 'blue' }: FeedbackButto
     <>
       <button
         onClick={() => setShowFeedbackModal(true)}
-        className={`text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md transition-all duration-200 flex items-center gap-2 border border-gray-200 ${className}`}
+        className={`feedback-btn ${className}`}
         title="Send feedback"
       >
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="feedback-btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
         </svg>
-        <span className="hidden lg:inline text-sm font-medium">Feedback</span>
+        <span className="feedback-btn-label">Feedback</span>
       </button>
 
       {showFeedbackModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">Add your feedback</h3>
-              <button onClick={handleClose} className="text-gray-400 hover:text-gray-600">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="feedback-modal-overlay">
+          <div className="feedback-modal">
+            <div className="feedback-modal-header">
+              <h3 className="type-heading" style={{ fontSize: '1.125rem' }}>Add your feedback</h3>
+              <button onClick={handleClose} className="map-control-btn" style={{ width: '2rem', height: '2rem', borderRadius: '0.5rem' }}>
+                <svg style={{ width: '1.25rem', height: '1.25rem' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
 
-            <p className="text-sm text-gray-600 mb-4">
+            <p className="feedback-modal-body type-body" style={{ fontSize: '0.875rem' }}>
               Add any suggestions, bugs or improvements you&apos;d like to see. I&apos;m reading 👀
             </p>
 
             <form onSubmit={handleSubmit}>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Your feedback</label>
+              <label className="type-label" style={{ display: 'block', marginBottom: '0.5rem' }}>Your feedback</label>
               <textarea
                 value={feedback}
                 onChange={(e) => setFeedback(e.target.value)}
                 rows={4}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                className="feedback-textarea"
                 placeholder="Share what we could improve..."
                 required
               />
 
-              <div className="mt-4 p-3 text-xs text-gray-600 bg-gray-50 border border-dashed border-gray-200 rounded-md whitespace-pre-line">
+              <div className="feedback-device-info">
                 {deviceInfo}
               </div>
 
-              <div className="flex gap-3 mt-4">
+              <div className="feedback-actions">
                 <button
                   type="submit"
-                  className="flex-1 px-4 py-2 rounded-md hover:shadow-inner transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                  className="feedback-submit-btn"
                   disabled={sending}
-                  style={{
-                    backgroundColor: themeColors.outline,
-                    color: '#fff'
-                  }}
                 >
                   {sending ? 'Opening email...' : 'Send feedback'}
                 </button>
                 <button
                   type="button"
                   onClick={handleClose}
-                  className="flex-1 bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300 transition-colors"
+                  className="feedback-cancel-btn"
                 >
                   Cancel
                 </button>
