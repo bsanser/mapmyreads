@@ -45,7 +45,7 @@ function applyMapStyle(
   const img = new Image();
   img.onload = () => {
     if (!map) return;
-    try { map.removeImage('waves'); } catch (_) { /* not yet added */ }
+    if (map.hasImage('waves')) map.removeImage('waves');
     map.addImage('waves', img);
     map.setPaintProperty('background', 'background-pattern', 'waves');
   };
