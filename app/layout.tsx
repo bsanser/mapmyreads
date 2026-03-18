@@ -19,6 +19,12 @@ const dmSans = DM_Sans({
   weight: ['400', '500', '600'],
 })
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+}
+
 export const metadata: Metadata = {
   title: 'Map my Reads',
   description: 'Generate a map from your reading history',

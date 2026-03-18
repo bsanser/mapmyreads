@@ -9,7 +9,6 @@ import { MobileBottomSheet } from '../components/MobileBottomSheet'
 import { DeveloperTools } from '../components/DeveloperTools'
 import { EnrichmentProgress } from '../components/EnrichmentProgress'
 import { THEMES } from '../lib/themeManager'
-import { ReadingAtlasSummary } from '../components/ReadingAtlasSummary'
 import {
   loadProcessedBooks,
   saveProcessedBooks,
@@ -227,15 +226,7 @@ export default function Home() {
   }
 
   return (
-    <div className="h-screen relative w-full bg-gray-50 overflow-hidden">
-      <div className="lg:hidden px-4 pt-6">
-        <ReadingAtlasSummary
-          showMissingAuthorCountry={showMissingAuthorCountry}
-          onToggleMissingAuthorCountry={handleToggleMissingAuthorCountry}
-          className="mb-4"
-        />
-      </div>
-
+    <div className="map-page-layout">
       <MapContainer
         onCountryClick={handleCountryClick}
         currentTheme={currentTheme}

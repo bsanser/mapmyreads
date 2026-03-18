@@ -21,8 +21,8 @@ export function MapContainer({
   const readBooks = books.filter((book) => book.readStatus === 'read')
 
   return (
-    <div className="relative w-full h-[50vh] lg:h-screen bg-white">
-      <div className="w-full h-full relative pt-4 lg:pt-0">
+    <div className="relative w-full h-full">
+      <div className="w-full h-full">
         <MapLibreMap
           onCountryClick={onCountryClick}
           books={readBooks}
@@ -31,8 +31,7 @@ export function MapContainer({
         />
       </div>
 
-      {/* Map Controls - Desktop overlay */}
-      <div className="hidden lg:flex absolute top-4 right-16 z-10 items-center gap-2">
+      <div className="map-controls-bar">
         <MapControls
           currentTheme={currentTheme}
           onThemeChange={onThemeChange}

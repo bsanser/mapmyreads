@@ -147,6 +147,27 @@ body {
     border: 1px solid var(--color-border);
   }
 
+  /* ── Page layout ──────────────────────────────── */
+
+  .map-page-layout {
+    @apply relative w-full overflow-hidden;
+    height: 100dvh;
+    background-color: var(--color-bg);
+  }
+
+  /* ── Map controls bar ─────────────────────────── */
+
+  .map-controls-bar {
+    @apply absolute top-4 z-10 flex items-center gap-2;
+    right: 1rem;
+  }
+
+  @media (min-width: 1024px) {
+    .map-controls-bar {
+      right: 4rem;
+    }
+  }
+
   /* ── Sidebar ──────────────────────────────────── */
 
   .sidebar-surface {
@@ -363,6 +384,30 @@ body {
   .bottom-sheet {
     background-color: var(--color-surface);
     border-top: 1px solid var(--color-border);
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+
+  .bottom-sheet-handle {
+    @apply flex justify-center pt-2 pb-1 flex-shrink-0;
+  }
+
+  .bottom-sheet-handle-bar {
+    @apply w-8 h-1 rounded-full;
+    background-color: var(--color-border);
+  }
+
+  .bottom-sheet-stats {
+    @apply flex items-center justify-between px-6 py-2 flex-shrink-0;
+    border-bottom: 1px solid var(--color-border-light);
+  }
+
+  .bottom-sheet-stat-group {
+    @apply flex items-center gap-3;
+  }
+
+  .bottom-sheet-stat-divider {
+    @apply text-xs;
+    color: var(--color-border);
   }
 
   /* ── Share modal ──────────────────────────────── */
