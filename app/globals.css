@@ -938,6 +938,5 @@ a:focus-visible {
 @media (max-width: 1023px) {
   .surface-float {
     bottom: calc(28vh + 1rem) !important;
-    max-w-xs;
   }
 }
