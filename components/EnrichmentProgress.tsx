@@ -66,6 +66,24 @@ export function EnrichmentProgress() {
 
   if (!isEnriching && !isLoadingCovers) return null
 
+  // Mobile: compact mode; Desktop: full mode
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 1024
+
+  if (isMobile) {
+    return (
+      <div className="surface-float fixed top-4 right-4 z-50 animate-slide-up p-3" style={{ maxWidth: '280px' }}>
+        <div className="flex items-center gap-2">
+          <div className="animate-spin rounded-full h-3 w-3 border-2" style={{ borderColor: 'var(--color-border)', borderTopColor: 'var(--color-accent)' }}></div>
+          <p className="type-caption">Enriching data...</p>
+        </div>
+        {(isEnriching || isLoadingCovers) && (
+          <p className="type-meta mt-1">{isEnriching ? `Authors: ${enrichmentProgress.current}/${enrichmentProgress.total}` : `Covers: ${coverProgress.current}/${coverProgress.total}`}</p>
+        )}
+      </div>
+    )
+  }
+
+  // Desktop: show both stages with details
   return (
     <div className="surface-float fixed bottom-6 right-6 z-50 animate-slide-up space-y-3">
       <p className="type-ui">Enriching your data...</p>

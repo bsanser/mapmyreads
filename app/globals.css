@@ -785,7 +785,7 @@ body {
 
   .mobile-bottom-sheet-wrapper {
     @apply lg:hidden fixed bottom-0 left-0 right-0 shadow-lg z-40;
-    height: 42vh;
+    height: 28vh;
     background-color: var(--color-surface);
     border-top: 1px solid var(--color-border);
     padding-bottom: max(1rem, env(safe-area-inset-bottom));
@@ -937,6 +937,7 @@ a:focus-visible {
 
 @media (max-width: 1023px) {
   .surface-float {
-    bottom: calc(42vh + 1rem) !important;
+    bottom: calc(28vh + 1rem) !important;
+    max-w-xs;
   }
 }
