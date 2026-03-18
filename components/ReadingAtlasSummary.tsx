@@ -35,10 +35,10 @@ export const ReadingAtlasSummary = memo(function ReadingAtlasSummary({
         <p className="type-caption">Track progress through books, voices, and cultures.</p>
       </div>
 
-      <div className="grid grid-cols-3 gap-2 text-center pb-1">
+      <div className="stats-grid">
         {STAT_CARDS.map(({ label, key }) => (
           <div key={label} className="leading-tight">
-            <span className="type-stat block">{stats[key]}</span>
+            <span className="type-stat" style={{ display: 'block' }}>{stats[key]}</span>
             <span className="type-stat-label">{label}</span>
           </div>
         ))}
@@ -46,7 +46,7 @@ export const ReadingAtlasSummary = memo(function ReadingAtlasSummary({
 
       {stats.booksMissingAuthorCountry > 0 && (
         <div className="badge-info">
-          <div className="flex items-center gap-3">
+          <div className="badge-info-row">
             <div style={{ color: 'var(--color-ink-3)' }}>
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M12 9v4m0 4h.01M12 5a7 7 0 110 14 7 7 0 010-14z" />
@@ -55,7 +55,7 @@ export const ReadingAtlasSummary = memo(function ReadingAtlasSummary({
             <button
               type="button"
               onClick={handleMissingClick}
-              className="type-ui link-accent underline underline-offset-4 decoration-dashed"
+              className="missing-books-link"
             >
               {stats.booksMissingAuthorCountry} book{stats.booksMissingAuthorCountry === 1 ? '' : 's'} without country data
             </button>

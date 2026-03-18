@@ -29,8 +29,8 @@ export function MobileBottomSheet({
   const displayedBookLabel = displayedBookCount === 1 ? 'book' : 'books'
 
   return (
-    <div className="lg:hidden fixed bottom-0 left-0 right-0 bottom-sheet shadow-lg z-40" style={{ height: '42vh' }}>
-      <div className="h-full flex flex-col">
+    <div className="mobile-bottom-sheet-wrapper">
+      <div className="bottom-sheet-inner">
 
         {/* Drag handle */}
         <div className="bottom-sheet-handle">
@@ -51,7 +51,7 @@ export function MobileBottomSheet({
                 <button
                   type="button"
                   onClick={onToggleMissingAuthorCountry}
-                  className="type-caption link-accent underline"
+                  className="bottom-sheet-link"
                 >
                   {summaryStats.booksMissingAuthorCountry} missing
                 </button>
@@ -67,9 +67,9 @@ export function MobileBottomSheet({
         </div>
 
         {/* Book list */}
-        <div className="flex-1 overflow-y-auto">
-          <div className="px-6 py-3 space-y-3">
-            <div className="type-caption flex items-center justify-between">
+        <div className="bottom-sheet-scroll">
+          <div className="bottom-sheet-book-list">
+            <div className="bottom-sheet-count-row">
               <span>
                 Showing <span className="font-semibold" style={{ color: 'var(--color-ink)' }}>{displayedBookCount}</span> {displayedBookLabel}
                 {showMissingAuthorCountry ? ' without country data' : selectedCountry ? ` from ${mapISO2ToDisplayName(selectedCountry)}` : ''}
@@ -77,7 +77,7 @@ export function MobileBottomSheet({
               {(showMissingAuthorCountry || selectedCountry) && (
                 <button
                   type="button"
-                  className="type-caption link-accent underline"
+                  className="bottom-sheet-link"
                   onClick={() => {
                     setSelectedCountry(null)
                     if (showMissingAuthorCountry) {

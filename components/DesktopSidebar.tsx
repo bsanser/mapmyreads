@@ -46,8 +46,7 @@ export function DesktopSidebar({ booksToShow, onLoadMore }: DesktopSidebarProps)
 
   return (
     <div
-      className="hidden lg:block absolute top-20 left-4 sidebar-surface custom-scrollbar"
-      style={{ zIndex: 50 }}
+      className="desktop-sidebar sidebar-surface custom-scrollbar"
       onScroll={(e) => {
         const target = e.target as HTMLDivElement
         const { scrollTop, scrollHeight, clientHeight } = target
@@ -67,7 +66,8 @@ export function DesktopSidebar({ booksToShow, onLoadMore }: DesktopSidebarProps)
           Filtering by {getCountryFlag(selectedCountry)} {mapISO2ToDisplayName(selectedCountry)}{' '}
           <button
             onClick={() => setSelectedCountry(null)}
-            className="link-accent underline ml-1"
+            className="link-accent"
+            style={{ marginLeft: '0.25rem' }}
           >
             Show all
           </button>
@@ -82,7 +82,7 @@ export function DesktopSidebar({ booksToShow, onLoadMore }: DesktopSidebarProps)
         <div className="type-caption mb-2">
           <button
             type="button"
-            className="link-accent underline"
+            className="link-accent"
             onClick={() => {
               setShowMissingAuthorCountry(false)
               setSelectedCountry(null)

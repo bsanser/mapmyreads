@@ -21,8 +21,8 @@ export function MapContainer({
   const readBooks = books.filter((book) => book.readStatus === 'read')
 
   return (
-    <div className="relative w-full h-full">
-      <div className="w-full h-full">
+    <div className="map-container-root">
+      <div className="map-canvas-wrapper">
         <MapLibreMap
           onCountryClick={onCountryClick}
           books={readBooks}

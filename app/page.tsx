@@ -86,8 +86,6 @@ export default function Home() {
             const parsedBooks = parseCSVData(data, format)
             const csvSummary = generateCsvSummary(parsedBooks)
 
-            console.log('📚 CSV Parsed:', csvSummary)
-
             // SHOW MAP IMMEDIATELY with parsed books (no countries yet)
             setBooks(parsedBooks)
             setBooksToShow(10)
@@ -184,12 +182,10 @@ export default function Home() {
 
         const booksNeedingCovers = processedBooks.filter(b => b.readStatus === 'read' && !b.coverImage)
         if (booksNeedingCovers.length > 0) {
-          console.log(`📷 Loading ${booksNeedingCovers.length} missing READ book covers in batches...`)
           setIsLoadingCovers(true)
           setCoverProgress({ current: 0, total: booksNeedingCovers.length, stage: 'Downloading book covers...' })
 
           enrichBooksWithCoversBatched(processedBooks, (loaded, total, coverMap) => {
-            console.log(`📷 Progress: ${loaded}/${total} READ covers loaded`)
             setBooks(prev => {
               const updated = applyCoverResultsToBooks(prev, coverMap)
               saveProcessedBooks(updated)
@@ -197,7 +193,6 @@ export default function Home() {
             })
             setCoverProgress({ current: loaded, total, stage: `Loading covers: ${loaded}/${total}` })
           }).then(() => {
-            console.log('✅ All book covers loaded!')
             setIsLoadingCovers(false)
             setCoverProgress({ current: 0, total: 0, stage: '' })
           }).catch(error => {
@@ -219,8 +214,6 @@ export default function Home() {
         onFileUpload={handleFile}
         isProcessing={isProcessing}
         error={error}
-        showDeveloperMode={showDeveloperMode}
-        onToggleDeveloperMode={() => setShowDeveloperMode(!showDeveloperMode)}
       />
     )
   }

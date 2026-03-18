@@ -47,7 +47,7 @@ export function MapControls({
         </button>
 
         {isThemeDropdownOpen && (
-          <div className="map-dropdown absolute top-full right-0 mt-1 z-50 min-w-[160px]">
+          <div className="map-theme-dropdown map-dropdown">
             {Object.entries(themes).map(([key, theme]) => (
               <button
                 key={key}

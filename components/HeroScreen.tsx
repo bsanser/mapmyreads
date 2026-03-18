@@ -4,8 +4,6 @@ interface HeroScreenProps {
   onFileUpload: (e: React.ChangeEvent<HTMLInputElement>) => void
   isProcessing: boolean
   error: string
-  showDeveloperMode: boolean
-  onToggleDeveloperMode: () => void
 }
 
 export function HeroScreen({
