@@ -57,7 +57,7 @@ function applyMapStyle(
 export const MapLibreMap = memo(function MapLibreMap({
   onCountryClick,
   books = [],
-  currentTheme: propCurrentTheme = 'blue',
+  currentTheme: propCurrentTheme = 'sepia',
   themes: propThemes = THEMES
 }: MapLibreMapProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
