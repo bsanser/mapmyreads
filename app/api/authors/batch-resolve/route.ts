@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
           where: { normalizedName: normalized }
         })
 
-        if (cached) {
+        if (cached && cached.resolved) {
           results[authorName] = cached.countries
           console.log(`✅ Cache hit: ${authorName} → ${cached.countries.join(', ')}`)
         } else {
@@ -51,14 +51,20 @@ export async function POST(request: NextRequest) {
       try {
         console.log(`🌐 Fetching from Wikidata: ${authorName}`)
         const countries = await detectAuthorCountriesByName(authorName)
-        
+
         // Store in cache (best-effort — ignore DB errors)
         try {
-          await prisma.authorCache.create({
-            data: {
+          await prisma.authorCache.upsert({
+            where: { normalizedName: normalized },
+            update: {
+              countries: countries,
+              resolved: countries.length > 0
+            },
+            create: {
               name: authorName,
               normalizedName: normalized,
               countries: countries,
+              resolved: countries.length > 0,
               source: 'wikidata'
             }
           })
