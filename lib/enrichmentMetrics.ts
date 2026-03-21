@@ -79,6 +79,13 @@ export const enrichmentMetrics = {
     metrics.totalCovers = totalCovers
   },
 
+  /** Get author enrichment duration in seconds */
+  getAuthorsDuration(): string {
+    if (metrics.uploadStart === null || metrics.authorsComplete === null) return '0.00'
+    const ms = metrics.authorsComplete - metrics.uploadStart
+    return (ms / 1000).toFixed(2)
+  },
+
   /** Log a summary table to the console, with budget warnings */
   logSummary() {
     const rows = [

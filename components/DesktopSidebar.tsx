@@ -4,6 +4,7 @@ import { ReadingAtlasSummary } from './ReadingAtlasSummary'
 import { BookList } from './BookList'
 import { useBooks } from '../contexts/BooksContext'
 import { useTheme } from '../contexts/ThemeContext'
+import { useEnrichment } from '../contexts/EnrichmentContext'
 
 interface DesktopSidebarProps {
   booksToShow: number
@@ -13,6 +14,7 @@ interface DesktopSidebarProps {
 export function DesktopSidebar({ booksToShow, onLoadMore }: DesktopSidebarProps) {
   const { books, selectedCountry, setSelectedCountry, summaryStats } = useBooks()
   const { currentTheme } = useTheme()
+  const { isEnriching } = useEnrichment()
 
   const [showMissingAuthorCountry, setShowMissingAuthorCountry] = useState(false)
 
@@ -58,6 +60,7 @@ export function DesktopSidebar({ booksToShow, onLoadMore }: DesktopSidebarProps)
       <ReadingAtlasSummary
         showMissingAuthorCountry={showMissingAuthorCountry}
         onToggleMissingAuthorCountry={handleMissingAuthorCountryFilter}
+        isEnriching={isEnriching}
         className="mb-4"
       />
 
@@ -74,12 +77,11 @@ export function DesktopSidebar({ booksToShow, onLoadMore }: DesktopSidebarProps)
         </div>
       )}
 
-      <div className="type-caption mb-3">
-        Showing {displayedBookCount} {displayedBookLabel}
-      </div>
-
-      {showMissingAuthorCountry && (
-        <div className="type-caption mb-2">
+      <div className="type-caption mb-3 flex items-center justify-between gap-2">
+        <span>
+          Showing {displayedBookCount} {displayedBookLabel}
+        </span>
+        {showMissingAuthorCountry && (
           <button
             type="button"
             className="link-accent"
@@ -88,10 +90,10 @@ export function DesktopSidebar({ booksToShow, onLoadMore }: DesktopSidebarProps)
               setSelectedCountry(null)
             }}
           >
-            Show all books
+            Show all
           </button>
-        </div>
-      )}
+        )}
+      </div>
 
       <BookList
         showMissingAuthorCountry={showMissingAuthorCountry}

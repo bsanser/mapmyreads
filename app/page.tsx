@@ -141,6 +141,44 @@ export default function Home() {
             enrichmentMetrics.authorsComplete(authorSummary.uniqueAuthors, authorSummary.apiLookups)
             enrichmentMetrics.logSummary()
 
+            // Log enrichment results
+            const coveragePct = authorSummary.readBooks > 0
+              ? ((authorSummary.readBooksWithResolvedAuthors / authorSummary.readBooks) * 100).toFixed(1)
+              : '0.0'
+
+            const enrichmentReport = {
+              source: format,
+              total_books: authorSummary.totalBooks,
+              read_books: authorSummary.readBooks,
+              books_with_countries: authorSummary.readBooksWithResolvedAuthors,
+              books_coverage_pct: coveragePct,
+              unique_authors: authorSummary.uniqueAuthors,
+              cache_hits: authorSummary.cacheHits,
+              cache_misses: authorSummary.cacheMisses,
+              duration_sec: enrichmentMetrics.getAuthorsDuration()
+            }
+
+            // Log to console
+            console.log('\n📚 Enrichment Report')
+            console.table({
+              'Source': enrichmentReport.source,
+              'Total books': enrichmentReport.total_books,
+              'Read books': enrichmentReport.read_books,
+              'Books with countries': enrichmentReport.books_with_countries,
+              'Coverage %': enrichmentReport.books_coverage_pct + '%',
+              'Unique authors': enrichmentReport.unique_authors,
+              'Cache hits': enrichmentReport.cache_hits,
+              'Cache misses': enrichmentReport.cache_misses,
+              'Duration (s)': enrichmentReport.duration_sec
+            })
+
+            // Send to logging endpoint
+            fetch('/api/logs/enrichment', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(enrichmentReport)
+            }).catch(err => console.warn('⚠️ Failed to log enrichment metrics:', err))
+
             setIsEnriching(false)
             setEnrichmentProgress({ current: 0, total: 0, stage: '' })
 
