@@ -5,3 +5,4 @@
 {"timestamp":"2026-03-21T12:15:02.037Z","source":"storygraph","total_books":14,"read_books":5,"books_with_countries":4,"books_coverage_pct":"80.0","unique_authors":5,"cache_hits":4,"cache_misses":1,"duration_sec":"0.78"}
 {"timestamp":"2026-03-21T12:18:39.003Z","source":"storygraph","total_books":14,"read_books":5,"books_with_countries":4,"books_coverage_pct":"80.0","unique_authors":5,"cache_hits":4,"cache_misses":1,"duration_sec":"1.19"}
 {"timestamp":"2026-03-21T12:22:16.218Z","source":"storygraph","total_books":207,"read_books":80,"books_with_countries":60,"books_coverage_pct":"75.0","unique_authors":69,"cache_hits":0,"cache_misses":69,"duration_sec":"44.73"}
+{"timestamp":"2026-03-21T13:12:38.814Z","source":"storygraph","total_books":207,"read_books":80,"books_with_countries":75,"books_coverage_pct":"93.8","unique_authors":69,"cache_hits":48,"cache_misses":21,"duration_sec":"38.96"}

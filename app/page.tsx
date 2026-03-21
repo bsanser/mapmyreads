@@ -45,6 +45,7 @@ export default function Home() {
   const [isProcessing, setIsProcessing] = useState(false)
   const [booksToShow, setBooksToShow] = useState<number>(10)
   const [showMissingAuthorCountry, setShowMissingAuthorCountry] = useState(false)
+  const [isSheetExpanded, setIsSheetExpanded] = useState(true)
 
   const booksLoadedRef = useRef(false)
 
@@ -257,7 +258,7 @@ export default function Home() {
   }
 
   return (
-    <div className="map-page-layout">
+    <div className={`map-page-layout${isSheetExpanded ? '' : ' sheet-collapsed'}`}>
       <MapContainer
         onCountryClick={handleCountryClick}
         currentTheme={currentTheme}
@@ -271,6 +272,8 @@ export default function Home() {
       />
 
       <MobileBottomSheet
+        isExpanded={isSheetExpanded}
+        onToggleExpanded={() => setIsSheetExpanded(prev => !prev)}
         showMissingAuthorCountry={showMissingAuthorCountry}
         onToggleMissingAuthorCountry={handleToggleMissingAuthorCountry}
         onClearMissingAuthorCountry={handleClearMissingAuthorCountry}

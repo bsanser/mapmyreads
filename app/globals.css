@@ -242,6 +242,21 @@ body {
 
   .map-canvas-wrapper {
     @apply w-full h-full;
+    touch-action: none;
+  }
+
+  /* On mobile the bottom sheet occupies 40vh — cap the map to the remaining space */
+  @media (max-width: 1023px) {
+    .map-container-root,
+    .map-canvas-wrapper {
+      height: 60vh;
+      transition: height 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+    }
+
+    .sheet-collapsed .map-container-root,
+    .sheet-collapsed .map-canvas-wrapper {
+      height: calc(100dvh - 4.5rem);
+    }
   }
 
   /* ── Map controls bar ─────────────────────────── */
@@ -786,10 +801,16 @@ body {
 
   .mobile-bottom-sheet-wrapper {
     @apply lg:hidden fixed bottom-0 left-0 right-0 shadow-lg z-40;
-    height: 28vh;
+    height: 40vh;
+    overflow: hidden;
     background-color: var(--color-surface);
     border-top: 1px solid var(--color-border);
     padding-bottom: max(1rem, env(safe-area-inset-bottom));
+    transition: height 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+  }
+
+  .bottom-sheet-collapsed {
+    height: 4.5rem;
   }
 
   .bottom-sheet-inner {
@@ -803,6 +824,13 @@ body {
   .bottom-sheet-handle-bar {
     @apply w-8 h-1 rounded-full;
     background-color: var(--color-border);
+  }
+
+  .bottom-sheet-caret {
+    width: 1.25rem;
+    height: 1.25rem;
+    color: var(--color-border);
+    transform-origin: center;
   }
 
   .bottom-sheet-stats {
@@ -838,14 +866,56 @@ body {
   }
 
   .bottom-sheet-book-list {
-    @apply px-6 py-3 space-y-3;
+    @apply px-6 pt-3 pb-3 space-y-3;
   }
 
   .bottom-sheet-count-row {
-    @apply flex items-center justify-between;
+    @apply flex-shrink-0 px-6 py-2;
     font-size: 0.75rem;
     line-height: 1rem;
     color: var(--color-ink-3);
+    border-bottom: 1px solid var(--color-border-light);
+  }
+
+  .bottom-sheet-count-main {
+    @apply flex items-center justify-between gap-3;
+  }
+
+  .bottom-sheet-count-lines {
+    @apply flex flex-col gap-1;
+  }
+
+  .bottom-sheet-missing-link {
+    @apply text-left;
+  }
+
+  .feedback-btn-inline {
+    @apply flex items-center justify-center flex-shrink-0;
+    color: var(--color-ink-3);
+    transition: color 0.15s ease;
+  }
+
+  .feedback-btn-inline:hover {
+    color: var(--color-ink-2);
+  }
+
+  .feedback-btn-inline .feedback-btn-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  /* ── Mobile enrichment indicator ─────────────── */
+
+  .mobile-enrichment-indicator {
+    @apply lg:hidden fixed z-50 flex items-center justify-center;
+    bottom: calc(40vh + 0.75rem);
+    right: 1rem;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 50%;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border-light);
+    box-shadow: 0 1px 4px oklch(0% 0 0 / 0.08);
   }
 
   /* ── Share modal ──────────────────────────────── */

@@ -39,7 +39,7 @@ export function MapContainer({
         />
       </div>
 
-      <FeedbackButton />
+      <FeedbackButton className="hidden lg:flex" />
     </div>
   )
 }
