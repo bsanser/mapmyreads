@@ -92,7 +92,7 @@ body {
 
   /* Caption — DM Sans, secondary small text */
   .type-caption {
-    @apply font-sans text-xs leading-normal;
+    @apply font-sans text-sm leading-normal;
     color: var(--color-ink-3);
   }
 
@@ -119,14 +119,14 @@ body {
 
   /* Book card title */
   .book-title {
-    @apply font-sans font-semibold text-sm leading-tight mb-2;
+    @apply font-sans font-bold text-base leading-tight mb-2;
     color: var(--color-ink);
     text-shadow: 0 1px 2px oklch(98% 0.008 75 / 0.8);
   }
 
   /* Book card author */
   .book-author {
-    @apply font-sans text-xs leading-normal mb-1;
+    @apply font-sans text-sm leading-normal mb-1;
     color: var(--color-ink-2);
     text-shadow: 0 1px 2px oklch(98% 0.008 75 / 0.8);
   }
@@ -648,7 +648,7 @@ body {
   /* ── Country tags (clickable) ─────────────────── */
 
   .country-tag {
-    @apply text-xs px-1 py-0.5 rounded transition-colors flex items-center gap-1;
+    @apply text-sm px-1 py-0.5 rounded transition-colors flex items-center gap-1;
     color: var(--color-accent);
   }
 
@@ -702,7 +702,8 @@ body {
     color: var(--color-ink-2);
   }
 
-  .country-dropdown-item:hover {
+  .country-dropdown-item:hover,
+  .country-dropdown-item-focused {
     background-color: var(--color-accent-soft);
     color: var(--color-ink);
   }

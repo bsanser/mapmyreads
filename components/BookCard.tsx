@@ -1,4 +1,4 @@
-import { memo } from 'react'
+import { memo, useState, useEffect } from 'react'
 import { Book } from '../types/book'
 import { getCountryFlag, mapISO2ToDisplayName } from '../lib/mapUtilities'
 import { COUNTRIES } from '../lib/countries'
@@ -31,6 +31,15 @@ export const BookCard = memo(function BookCard({
   onShowCountryDropdown,
   onBlur,
 }: BookCardProps) {
+  const [focusedSuggestionIndex, setFocusedSuggestionIndex] = useState<number>(-1)
+
+  // Reset focused index when dropdown closes
+  useEffect(() => {
+    if (!showCountryDropdown) {
+      setFocusedSuggestionIndex(-1)
+    }
+  }, [showCountryDropdown])
+
   const searchTerm = countrySearch.trim().toLowerCase()
   const suggestions = COUNTRIES.filter(country => {
     if (b.authorCountries.includes(country.iso2)) return false
@@ -69,11 +78,14 @@ export const BookCard = memo(function BookCard({
             <button
               type="button"
               onClick={onToggleEdit}
-              className={isEditing ? 'book-edit-btn-active' : 'book-edit-btn'}
+              className="book-edit-btn"
               title="Edit author countries"
             >
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16.862 3.487l3.651 3.65m-2.906-4.395L9.208 11.14c-.27.27-.46.61-.55.98l-.89 3.788a.75.75 0 00.914.914l3.788-.89c.37-.09.71-.28.98-.55l8.399-8.398a1.5 1.5 0 000-2.122l-1.95-1.95a1.5 1.5 0 00-2.122 0zM6 19.5h12" />
+                {isEditing
+                  ? <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
+                  : <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4.5v15m7.5-7.5h-15" />
+                }
               </svg>
             </button>
           </div>
@@ -81,9 +93,6 @@ export const BookCard = memo(function BookCard({
           {isEditing ? (
             <div className="book-country-edit-area">
               <div className="book-country-badges">
-                {b.authorCountries.length === 0 && (
-                  <span className="type-meta">No countries yet</span>
-                )}
                 {b.authorCountries.map(country => (
                   <span key={country} className="country-badge">
                     {mapISO2ToDisplayName(country)}
@@ -102,12 +111,29 @@ export const BookCard = memo(function BookCard({
                 <input
                   type="text"
                   value={countrySearch}
-                  onChange={e => onCountrySearchChange(e.target.value)}
+                  onChange={e => {
+                    onCountrySearchChange(e.target.value)
+                    setFocusedSuggestionIndex(-1)
+                  }}
                   onKeyDown={e => {
-                    if (e.key === 'Enter') {
+                    if (e.key === 'ArrowDown') {
                       e.preventDefault()
-                      if (suggestions.length > 0) {
+                      setFocusedSuggestionIndex(prev =>
+                        prev < suggestions.length - 1 ? prev + 1 : 0
+                      )
+                    } else if (e.key === 'ArrowUp') {
+                      e.preventDefault()
+                      setFocusedSuggestionIndex(prev =>
+                        prev > 0 ? prev - 1 : suggestions.length - 1
+                      )
+                    } else if (e.key === 'Enter') {
+                      e.preventDefault()
+                      if (focusedSuggestionIndex >= 0 && focusedSuggestionIndex < suggestions.length) {
+                        onAddCountry(suggestions[focusedSuggestionIndex].iso2)
+                        setFocusedSuggestionIndex(-1)
+                      } else if (suggestions.length > 0) {
                         onAddCountry(suggestions[0].iso2)
+                        setFocusedSuggestionIndex(-1)
                       }
                     }
                   }}
@@ -118,12 +144,15 @@ export const BookCard = memo(function BookCard({
                 />
                 {(showCountryDropdown && (countrySearch || suggestions.length > 0)) && (
                   <div className="country-dropdown">
-                    {suggestions.map(country => (
+                    {suggestions.map((country, index) => (
                       <button
                         key={country.iso2}
                         type="button"
-                        onClick={() => onAddCountry(country.iso2)}
-                        className="country-dropdown-item"
+                        onClick={() => {
+                          onAddCountry(country.iso2)
+                          setFocusedSuggestionIndex(-1)
+                        }}
+                        className={`country-dropdown-item ${index === focusedSuggestionIndex ? 'country-dropdown-item-focused' : ''}`}
                       >
                         <span>{country.name}</span>
                         <span>{getCountryFlag(country.iso2)}</span>

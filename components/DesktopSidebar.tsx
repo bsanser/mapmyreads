@@ -77,12 +77,11 @@ export function DesktopSidebar({ booksToShow, onLoadMore }: DesktopSidebarProps)
         </div>
       )}
 
-      <div className="type-caption mb-3">
-        Showing {displayedBookCount} {displayedBookLabel}
-      </div>
-
-      {showMissingAuthorCountry && (
-        <div className="type-caption mb-2">
+      <div className="type-caption mb-3 flex items-center justify-between gap-2">
+        <span>
+          Showing {displayedBookCount} {displayedBookLabel}
+        </span>
+        {showMissingAuthorCountry && (
           <button
             type="button"
             className="link-accent"
@@ -91,10 +90,10 @@ export function DesktopSidebar({ booksToShow, onLoadMore }: DesktopSidebarProps)
               setSelectedCountry(null)
             }}
           >
-            Show all books
+            Show all
           </button>
-        </div>
-      )}
+        )}
+      </div>
 
       <BookList
         showMissingAuthorCountry={showMissingAuthorCountry}
