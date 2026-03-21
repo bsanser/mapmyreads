@@ -682,7 +682,7 @@ body {
   /* ── Country tags (clickable) ─────────────────── */
 
   .country-tag {
-    @apply text-sm px-1 py-0.5 rounded transition-colors flex items-center gap-1;
+    @apply text-sm pl-0 pr-1 py-0.5 rounded transition-colors flex items-center gap-1;
     color: var(--color-accent);
   }
 
