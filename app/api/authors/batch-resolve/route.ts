@@ -5,6 +5,51 @@ import { normalizeAuthorName } from '../../../../lib/authorUtils'
 
 export const dynamic = 'force-dynamic'
 
+// Concurrency limiter with optional delay between requests
+async function withConcurrencyLimit<T>(
+  tasks: (() => Promise<T>)[],
+  maxConcurrent: number,
+  delayMs: number = 100
+): Promise<T[]> {
+  const results: T[] = []
+  let running = 0
+  let completed = 0
+
+  return new Promise((resolve, reject) => {
+    const execute = async (index: number) => {
+      running++
+      try {
+        results[index] = await tasks[index]()
+        completed++
+      } catch (error) {
+        reject(error)
+      }
+      running--
+
+      // Add delay between requests to be polite to external APIs
+      if (completed < tasks.length) {
+        await new Promise(r => setTimeout(r, delayMs))
+      }
+
+      // Start next task if available and under limit
+      if (completed < tasks.length && running < maxConcurrent) {
+        execute(completed)
+      }
+
+      // Resolve when all tasks complete
+      if (completed === tasks.length && running === 0) {
+        resolve(results)
+      }
+    }
+
+    // Start initial batch
+    const initialTasks = Math.min(maxConcurrent, tasks.length)
+    for (let i = 0; i < initialTasks; i++) {
+      execute(i)
+    }
+  })
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { authors }: { authors: string[] } = await request.json()
@@ -45,8 +90,8 @@ export async function POST(request: NextRequest) {
 
     console.log(`📊 Cache hits: ${Object.keys(results).length}, misses: ${cacheMisses.length}`)
 
-    // Step 2: Resolve cache misses from Wikidata (in parallel with limit)
-    const resolvePromises = cacheMisses.map(async (authorName) => {
+    // Step 2: Resolve cache misses from Wikidata (with concurrency limit of 2, 150ms delay between requests)
+    const tasks = cacheMisses.map(authorName => async () => {
       const normalized = normalizeAuthorName(authorName)
       if (!normalized) return
 
@@ -80,11 +125,12 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    // Wait for all with a timeout of 9 seconds (Vercel Hobby hard limit is 10s)
+    // Execute with concurrency limit (max 2 parallel, 150ms delay between requests)
+    // Timeout is 9 seconds (Vercel Hobby hard limit is 10s)
     await Promise.race([
-      Promise.all(resolvePromises),
+      withConcurrencyLimit(tasks, 2, 150),
       new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 9000))
-    ]).catch(error => {
+    ]).catch(() => {
       console.warn('⚠️ Some authors timed out, returning partial results')
     })
 

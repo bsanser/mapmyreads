@@ -14,8 +14,7 @@ git status
 git diff --staged
 ```
 
-## Commit types with emojis:
-Only use the following emojis:
+## Commit types:
 
 - `feat:` - New feature
 - `fix:` - Bug fix

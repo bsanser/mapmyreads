@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
       unique_authors: data.unique_authors,
       cache_hits: data.cache_hits,
       cache_misses: data.cache_misses,
-      duration_ms: data.duration_ms
+      duration_sec: data.duration_sec
     }
 
     // Get today's date for filename

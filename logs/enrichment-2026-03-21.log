@@ -1,0 +1,2 @@
+{"timestamp":"2026-03-21T11:20:34.782Z","source":"storygraph","total_books":207,"read_books":80,"books_with_countries":44,"books_coverage_pct":"55.0","unique_authors":69,"cache_hits":0,"cache_misses":69,"duration_ms":11197}
+{"timestamp":"2026-03-21T11:44:53.754Z","source":"storygraph","total_books":207,"read_books":80,"books_with_countries":73,"books_coverage_pct":"91.3","unique_authors":69,"cache_hits":30,"cache_misses":39,"duration_sec":"75.84"}

@@ -155,7 +155,7 @@ export default function Home() {
               unique_authors: authorSummary.uniqueAuthors,
               cache_hits: authorSummary.cacheHits,
               cache_misses: authorSummary.cacheMisses,
-              duration_ms: enrichmentMetrics.getAuthorsDuration()
+              duration_sec: enrichmentMetrics.getAuthorsDuration()
             }
 
             // Log to console
@@ -169,7 +169,7 @@ export default function Home() {
               'Unique authors': enrichmentReport.unique_authors,
               'Cache hits': enrichmentReport.cache_hits,
               'Cache misses': enrichmentReport.cache_misses,
-              'Duration (ms)': enrichmentReport.duration_ms
+              'Duration (s)': enrichmentReport.duration_sec
             })
 
             // Send to logging endpoint
