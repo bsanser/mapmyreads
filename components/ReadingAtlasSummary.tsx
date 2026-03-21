@@ -6,6 +6,7 @@ import { useTheme } from '../contexts/ThemeContext'
 interface ReadingAtlasSummaryProps {
   showMissingAuthorCountry: boolean
   onToggleMissingAuthorCountry?: (event?: MouseEvent<HTMLButtonElement>) => void
+  isEnriching?: boolean
   className?: string
 }
 
@@ -18,6 +19,7 @@ const STAT_CARDS = [
 export const ReadingAtlasSummary = memo(function ReadingAtlasSummary({
   showMissingAuthorCountry,
   onToggleMissingAuthorCountry,
+  isEnriching = false,
   className = ''
 }: ReadingAtlasSummaryProps) {
   const { summaryStats: stats } = useBooks()
@@ -44,7 +46,7 @@ export const ReadingAtlasSummary = memo(function ReadingAtlasSummary({
         ))}
       </div>
 
-      {stats.booksMissingAuthorCountry > 0 && (
+      {!isEnriching && stats.booksMissingAuthorCountry > 0 && (
         <div className="badge-info">
           <div className="badge-info-row">
             <div style={{ color: 'var(--color-ink-3)' }}>

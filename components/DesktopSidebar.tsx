@@ -4,6 +4,7 @@ import { ReadingAtlasSummary } from './ReadingAtlasSummary'
 import { BookList } from './BookList'
 import { useBooks } from '../contexts/BooksContext'
 import { useTheme } from '../contexts/ThemeContext'
+import { useEnrichment } from '../contexts/EnrichmentContext'
 
 interface DesktopSidebarProps {
   booksToShow: number
@@ -13,6 +14,7 @@ interface DesktopSidebarProps {
 export function DesktopSidebar({ booksToShow, onLoadMore }: DesktopSidebarProps) {
   const { books, selectedCountry, setSelectedCountry, summaryStats } = useBooks()
   const { currentTheme } = useTheme()
+  const { isEnriching } = useEnrichment()
 
   const [showMissingAuthorCountry, setShowMissingAuthorCountry] = useState(false)
 
@@ -58,6 +60,7 @@ export function DesktopSidebar({ booksToShow, onLoadMore }: DesktopSidebarProps)
       <ReadingAtlasSummary
         showMissingAuthorCountry={showMissingAuthorCountry}
         onToggleMissingAuthorCountry={handleMissingAuthorCountryFilter}
+        isEnriching={isEnriching}
         className="mb-4"
       />
 
