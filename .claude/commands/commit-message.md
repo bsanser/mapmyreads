@@ -17,26 +17,25 @@ git diff --staged
 ## Commit types with emojis:
 Only use the following emojis:
 
-- ✨ `feat:` - New feature
-- 🐞 `fix:` - Bug fix
-- 🔨 `refactor:`- Refactoring code
-- 📝 `docs:`- Documentation
-- 🎨 `style:` - Styling/formatting
-- 🧪 `test:`- Tests
-- ⚡ `perf:`- Performance
+- `feat:` - New feature
+- `fix:` - Bug fix
+- `refactor:`- Refactoring code
+- `docs:`- Documentation
+- `style:` - Styling/formatting
+- `test:`- Tests
+- `perf:`- Performance
 
 ## Format:
 Use the following format for making the commit message:
 
 ```
-git commit -m '<emoji><type>: <concise_description>
-<optional_body_explaining_why>'
+git commit -m '<type>: <concise_description>
 ```
 
 ## Output:
 
 1. Show summary of changes currently staged
-2. Propose commit message with appropriate emoji
+2. Propose commit message
 3. Ask for confirmation before committing
 
 DO NOT auto-commit - wait for user approval, and only commit if the user says so.

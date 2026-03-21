@@ -3,6 +3,8 @@ import { prisma } from '../../../../lib/prisma'
 import { detectAuthorCountriesByName } from '../../../../lib/countryDetection'
 import { normalizeAuthorName } from '../../../../lib/authorUtils'
 
+export const dynamic = 'force-dynamic'
+
 export async function POST(request: NextRequest) {
   try {
     const { authors }: { authors: string[] } = await request.json()

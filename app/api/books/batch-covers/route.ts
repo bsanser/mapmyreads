@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '../../../../lib/prisma'
 
+export const dynamic = 'force-dynamic'
+
 const OPEN_LIBRARY_COVERS = 'https://covers.openlibrary.org/b'
 const OPEN_LIBRARY_SEARCH = 'https://openlibrary.org/search.json'
 
