@@ -5,7 +5,7 @@ allowed-tools: Bash(git status:*), Bash(git diff --staged), Bash(git commit:*)
 
 ## Your task:
 
-Analyze above staged git changes and create a commit message. Use present tense and explain "why" something has chanvged, not just "what" has changed
+Analyze above staged git changes and create a commit message. 
 
 ## Run these commands:
 
@@ -28,7 +28,7 @@ git diff --staged
 Use the following format for making the commit message:
 
 ```
-git commit -m '<type>: <concise_description>
+git commit -m '<type>: <concise_description>'
 ```
 
 ## Output:

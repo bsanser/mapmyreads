@@ -111,9 +111,14 @@ books (from BooksContext)
         ▼
   MapLibreMap (memo)
         │
+        ├── booksRef (useRef)            ← caches latest books for load callback
+        │
         ├── on init:  createMapStyle(theme) → MapLibre map instance
+        │   └── map.on('load', ...) uses booksRef.current
+        │       (fixes race condition when localStorage loads books before map)
         │
         └── on [books, theme] change:
+              booksRef.current = books   ← keep ref in sync
               applyMapStyle()
                 ├── setPaintProperty background-color
                 ├── setPaintProperty outline/label colors
@@ -140,13 +145,29 @@ Book.authors  (raw string, e.g. "Donna Tartt, Elena Ferrante")
         ▼
   POST /api/authors/batch-resolve
         │
-        ▼
-  Wikidata SPARQL
-  → raw country name / ISO2
+        ├─ Wikidata search API (1 call)
         │
-        ▼
-  normalizeCountryCode()      lib/countryDetection.ts
-  COUNTRY_KEYWORDS lookup
+        ├─────────────────────────────────────────────┐
+        │                                             │
+        │ FAST PATH (Problem 3)                       │
+        │ Extract nationality from description        │
+        │ e.g. "American novelist" → USA              │
+        ▼                                             │
+  extractCountryFromDescription()                     │
+  lib/countryDetection.ts                            │
+  Pattern match AUTHOR_NATIONALITY_KEYWORDS           │
+        │                                             │
+        │ Match found? Return early.                  │
+        │ (skips 3 API calls per author)              │
+        │                                             │
+        └─────────────┬──────────────────────────────┘
+                      │
+                      │ No match in description
+                      ▼
+  Wikidata SPARQL (3 more calls)
+  1. P27 (citizenship)
+  2. P19 (birthplace) if no citizenship
+  3. Labels for country names
         │
         ▼
   ISO2 codes stored on Book.authorCountries[]
@@ -161,7 +182,53 @@ Book.authors  (raw string, e.g. "Donna Tartt, Elena Ferrante")
 
 ---
 
-## 6. Persistence
+## 6. Wikidata API Optimization (Problem 2)
+
+```
+withConcurrencyLimit(tasks, maxConcurrent, delayMs)
+        │
+        ├── Max 2 parallel Wikidata requests
+        ├── 150ms delay between requests
+        └── Prevents "thundering herd" throttling
+
+Purpose: 8 authors × 4 API calls = 32 concurrent requests → throttled by Wikidata
+Solution: Queue executor with backoff → 2 concurrent with delay → completes in time
+
+Implemented in: app/api/authors/batch-resolve/route.ts
+```
+
+---
+
+## 7. Enrichment Observability Logging (Problem 4)
+
+```
+After enrichment completes:
+
+app/page.tsx
+        │
+        ├── Calculate enrichment report:
+        │   ├── coverage % = (books_with_countries / read_books) × 100
+        │   ├── cache_hits, cache_misses (from batch-resolve response)
+        │   ├── duration_sec (from enrichmentMetrics.getAuthorsDuration())
+        │   └── source, unique_authors, total_books
+        │
+        └── POST /api/logs/enrichment
+                │
+                ├── Server receives metrics
+                │
+                └── Write JSON line to logs/enrichment-YYYY-MM-DD.log
+                    Format: {timestamp, source, total_books, read_books,
+                             books_with_countries, books_coverage_pct,
+                             unique_authors, cache_hits, cache_misses, duration_sec}
+
+Also logged to browser console (table format) for immediate visibility.
+
+Purpose: Track improvement over time, measure cache effectiveness, identify bottlenecks
+```
+
+---
+
+## 8. Persistence
 
 ```
 localStorage  (primary)
@@ -178,6 +245,9 @@ sessionStorage (fallback)
 
 Server-side Prisma cache (PostgreSQL, optional)
         ├── bookMetadataCache  ← coverUrl by isbn13 or title+author
-        └── authorCache        ← ISO2 codes by author name
+        └── authorCache        ← ISO2 codes by author name (includes resolved flag)
             App degrades gracefully if DB is unavailable.
+
+FUTURE: author_country_overrides table (planned in _plans/user_country_overrides.md)
+        └── sessionId + userId for anonymous → account migration
 ```

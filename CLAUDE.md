@@ -5,97 +5,246 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ```bash
-npm run dev          # Start dev server
+npm run dev          # Start dev server (http://localhost:3000)
 npm run dev:clean    # Clear cache + start dev
 npm run build        # Production build
 npm run lint         # Run ESLint
 npm run test         # Run all Vitest unit tests
-```
-
-To run a single test file:
-```bash
-npx vitest run tests/csvParser.test.ts
+npx vitest run tests/csvParser.test.ts  # Run single test file
+npx prisma db push  # Apply schema changes to database
 ```
 
 ## Architecture Overview
 
-**Map My Reads** is a Next.js 14 App Router app that visualizes a user's reading history on an interactive world map. No login is required — users upload a Goodreads or StoryGraph CSV export.
+**Map My Reads** is a Next.js 14 App Router app that visualizes reading history on an interactive world map. No login required — users upload a Goodreads or StoryGraph CSV export. The app is client-first with optional server-side caching.
 
-### Data Flow
+### High-Level Data Flow
 
-1. User uploads CSV → `lib/csvParser.ts` detects format and parses it client-side
-2. Books render immediately on the map with blank countries
-3. Two enrichment processes run in parallel (progress tracked via `EnrichmentContext`):
-   - **Author countries**: `lib/authorCountryService.ts` → `POST /api/authors/batch-resolve` → Wikidata API → cached in `AuthorCache` (Prisma)
-   - **Book covers**: `lib/bookCoverService.ts` → `POST /api/books/batch-covers` → Open Library API → cached in `BookMetadataCache` (Prisma)
-4. Enriched books are saved to `localStorage` via `lib/storage.ts`
-5. Users can share their map via a URL-encoded, base64-compressed payload
+```
+User uploads CSV
+    ↓
+Parse (Goodreads or StoryGraph format)
+    ↓
+Display books immediately on map (no countries yet)
+    ↓
+Two parallel enrichment processes:
+├── Author countries: CSV → Wikidata SPARQL → Prisma cache → map colors
+└── Book covers: CSV → Open Library API → Prisma cache → book thumbnails
+    ↓
+Results saved to localStorage
+    ↓
+User can share map via URL-encoded payload
+```
 
-### State Management
+### Key Architectural Decisions
+
+**Client-first data handling**: Books live in `BooksContext`, displayed instantly. Enrichment is *async and optional* — the app is usable even if Wikidata is down.
+
+**Shared server cache**: Prisma stores author countries and book covers keyed by author name / ISBN. One entry per author/book, shared across all anonymous users. Poisoned entries (failed lookups) are marked with a `resolved: false` field so retries can happen on next upload.
+
+**No user accounts yet**: Sessions are anonymous. Users identified by browser localStorage only. Future account system will use `sessionId` + optional `userId` fields for seamless migration.
+
+---
+
+## State Management
 
 Three React contexts in `contexts/`:
-- **BooksContext** — global `books[]` array, `selectedCountry`, and summary stats
-- **EnrichmentContext** — progress tracking for the author/cover loading UI
-- **ThemeContext** — active map theme
 
-### API Routes (server-side)
+### BooksContext
+- `books[]` — full library, updated as enrichment completes
+- `selectedCountry` — clicked country (ISO2 code), used to filter map and sidebar
+- `summaryStats` — derived counts (readBooks, distinctAuthors, authorCountriesCovered, booksMissingAuthorCountry)
+- `updateBookCountries(bookIndex, newCountries)` — manual country override
 
-Both routes in `app/api/` follow the same pattern:
-1. Check Prisma cache (DB hit → return immediately)
+### EnrichmentContext
+- `isEnriching` — author resolution running
+- `enrichmentProgress` — `{ current, total, stage }` for progress UI
+- `isLoadingCovers` — cover fetching running
+- `coverProgress` — `{ current, total, stage }` for progress UI
+
+### ThemeContext
+- `currentTheme` — active map theme (sepia, blue, yellow, pink, purple, green)
+
+---
+
+## API Routes (Server-Side)
+
+All routes in `app/api/` follow the same pattern:
+1. Check Prisma cache (instant return if hit)
 2. Call external API for cache misses
 3. Write results back to cache (best-effort, non-fatal on DB error)
-4. Return partial results on timeout (25s Vercel limit)
+4. Return partial results on timeout (9s limit for Vercel)
 
-### Key Library Files
+### POST `/api/authors/batch-resolve`
+
+Resolves author names to ISO2 country codes via Wikidata.
+
+**Input**: `{ authors: string[] }`
+
+**Flow**:
+1. Prisma cache check (returns `{ [authorName]: iso2[] }`)
+2. Cache misses go through `withConcurrencyLimit()` (max 2 concurrent, 150ms delay)
+3. For each author:
+   - Search Wikidata for entity ID + description
+   - **Fast path (Problem 3)**: extract nationality from description (e.g. "American novelist" → USA) — skips 3 API calls
+   - **Slow path**: if no description match, fetch P27 (citizenship) → P19 (birthplace) → country labels
+4. Upsert to `author_cache` with `resolved: true` (or `false` if failed)
+
+**Response**: `{ [authorName]: { iso2: string[] }, cacheHits, cacheMisses, duration_ms }`
+
+**Why concurrency limiting?** Without it, 8 authors × 4 API calls = 32 concurrent Wikidata requests → throttled. Solution: queue with 2-concurrent + 150ms backoff.
+
+### POST `/api/books/batch-covers`
+
+Fetches book covers from Open Library.
+
+**Input**: `{ books: { isbn13, title, authors }[] }`
+
+**Flow**:
+1. Prisma cache check
+2. Cache misses: try ISBN lookup first, fallback to title+author
+3. Store in `book_metadata_cache`
+
+### POST `/api/logs/enrichment`
+
+Persists enrichment metrics to daily log files (observability).
+
+**Input**: `{ source, total_books, read_books, books_with_countries, unique_authors, cache_hits, cache_misses, duration_sec }`
+
+**Output**: writes JSON line to `logs/enrichment-YYYY-MM-DD.log`
+
+---
+
+## Key Library Files
 
 | File | Responsibility |
 |------|---------------|
-| `lib/csvParser.ts` | Goodreads + StoryGraph CSV parsing |
-| `lib/countryDetection.ts` | Wikidata SPARQL queries for author birthplace/nationality |
-| `lib/authorCountryService.ts` | Orchestrates batch author resolution with progress callbacks |
+| `lib/csvParser.ts` | Goodreads + StoryGraph CSV parsing, format detection |
+| `lib/countryDetection.ts` | Wikidata SPARQL queries for author countries, description extraction, nationality keyword matching |
+| `lib/authorCountryService.ts` | Orchestrates batch author resolution with progress callbacks, tracks cache hits/misses |
 | `lib/bookCoverService.ts` | Open Library cover fetching (ISBN first, title+author fallback) |
-| `lib/storage.ts` | localStorage/sessionStorage persistence + share URL encoding |
-| `lib/mapUtilities.ts` | Country name ↔ ISO2 code conversions |
-| `lib/heatmapEngine.ts` | Heat map generation from country read counts |
-| `lib/themeManager.ts` | MapLibre map theme definitions |
+| `lib/storage.ts` | localStorage/sessionStorage persistence, share URL encoding/decoding |
+| `lib/mapUtilities.ts` | Country name ↔ ISO2 code conversions, flag emoji |
+| `lib/heatmapEngine.ts` | Generates MapLibre heatmap style from book read counts |
+| `lib/themeManager.ts` | MapLibre map theme definitions (sepia, blue, yellow, etc.) |
+| `lib/enrichmentMetrics.ts` | Tracks start/end times for profiling, formats duration in seconds |
 
-### Database
+---
 
-PostgreSQL via Prisma. Schema in `prisma/schema.prisma`. The DB is currently used **only as a cache** — `AuthorCache` and `BookMetadataCache` tables. The `User`, `Book`, `Session`, `SessionBook` models are defined for a future login system but are not yet active.
+## Database
 
-### TypeScript
+PostgreSQL via Prisma 7 (driver adapter pattern). Database is *optional* — app works without it.
 
-`strict` mode is **off**. The primary type is `Book` in `types/book.ts` — all components and lib functions work with this type.
+**Current schema**:
+- `authorCache` — author name → ISO2 codes, includes `resolved: boolean` flag
+- `bookMetadataCache` — ISBN13 → cover URL
+- `User`, `Session`, `SessionBook` — defined but not yet active (planned for account system)
 
-### Testing
+**Future**: `AuthorCountryOverride` table (documented in `_plans/user_country_overrides.md`) for persistent user edits without accounts.
 
-Vitest with `node` environment. Tests live in `tests/` and cover pure utility functions (`csvParser`, `heatmapEngine`, `mapUtilities`, `applyAuthorCountries`, `applyCoverResults`). There are no component or integration tests.
+**Connection**: Set `DATABASE_URL` in `.env`. Prisma 7 requires:
+```typescript
+// lib/prisma.ts uses @prisma/adapter-pg for connection pooling
+import { PrismaPg } from '@prisma/adapter-pg'
+const adapter = new PrismaPg(process.env.DATABASE_URL)
+new PrismaClient({ adapter })
+```
 
-## Other information
-    - Do NOT apply tailwind classes directly in component templates unless essential or just 1 at most. If an element needs more than a single tailwind class, combine them into a custom class using the `@apply`directive.
-    - Use minimal project dependencies where possible.
-    - Use the `git switch -c` command to switch to new branches, not `git checkout`
-    - When finishing a task, generate the git commit message immediately based in the command /commit-message but let me be the one staging, and commiting.
+---
+
+## TypeScript
+
+`strict` mode is **off** (set in `tsconfig.json`). Primary type is `Book` in `types/book.ts` — all components and lib functions work with this type.
+
+---
+
+## Testing
+
+Vitest with `node` environment. Tests in `tests/` cover pure utility functions:
+- `csvParser` — parsing logic
+- `heatmapEngine` — heatmap generation
+- `mapUtilities` — country name conversions
+- `applyAuthorCountries`, `applyCoverResults` — data application
+
+No component or integration tests yet.
+
+---
+
+## UI & Styling
+
+**Tailwind**: Use minimal direct classes. If an element needs >1 class, combine into a custom `@apply` class in `app/globals.css`.
+
+**Typography**: Warm indie aesthetic (serif display font, sans body). See `.impeccable.md` for design context and `app/globals.css` for type scale.
+
+**Layout**: Map is the hero. Sidebars and overlays are lightweight and secondary.
+
+---
+
+## Git Workflow
+
+- Use `git switch -c <branch>` to create branches (not `git checkout`)
+- Write commit messages with context: explain *why* not just *what*
+- Use `/commit-message` skill to draft messages from diffs
+- Stage files manually (don't auto-commit)
+
+---
+
+## Recent Optimizations (This Session)
+
+### Problem 1: Poisoned Cache
+**Issue**: Failed Wikidata lookups were cached as `countries: []`, blocking retries.
+**Solution**: Added `resolved: boolean` field to `authorCache`. Only cache misses have `resolved: false`, allowing retries on next upload.
+
+### Problem 2: Wikidata Throttling
+**Issue**: 8 authors × 4 API calls = 32 concurrent requests → throttled by Wikidata.
+**Solution**: `withConcurrencyLimit()` function limits to 2 concurrent with 150ms delay between requests.
+**Location**: `app/api/authors/batch-resolve/route.ts`
+
+### Problem 3: Description Extraction
+**Issue**: Even with concurrency limiting, enrichment was slow (needed 4 API calls per author).
+**Solution**: Extract nationality directly from Wikidata description field (e.g. "American novelist" → USA). Most authors match, skipping 3 API calls.
+**Expected**: ~75% fewer Wikidata calls per author.
+**Location**: `lib/countryDetection.ts:extractCountryFromDescription()`
+
+### Problem 4: Enrichment Observability
+**Issue**: No visibility into enrichment effectiveness or cache performance.
+**Solution**: Log coverage %, cache hits/misses, duration to `logs/enrichment-YYYY-MM-DD.log` + browser console.
+**Locations**: `app/page.tsx` (reporting), `app/api/logs/enrichment/route.ts` (persistence), `lib/enrichmentMetrics.ts` (timing)
+
+### Bug: Map Coloring Race Condition
+**Issue**: When books loaded from localStorage before map initialized, countries showed in sidebar but map didn't color.
+**Solution**: Use `booksRef` (useRef) to keep latest books accessible to map load callback, avoiding stale closure.
+**Location**: `components/MapLibreMap.tsx`
+
+---
 
 ## Design Context
 
-### Users
-Avid readers (Goodreads and StoryGraph users) visualizing where in the world their books come from. They use the app in a reflective, personal mood — curious about patterns in what they've read, proud of how far they've travelled through literature.
+See `.impeccable.md` for comprehensive design system. Key principles:
+1. **Warmth over polish** — curated, slightly imperfect, handcrafted feel
+2. **Map is the hero** — every other element complements it
+3. **Typography carries personality** — warm serif for display, clean sans for UI
+4. **Tinted, never cold** — all neutrals carry warm tint (no pure black, no cold grays)
+5. **Delight in small moments** — hover states, transitions, micro-interactions are where personality lives
 
-### Brand Personality
-Warm · Personal · Charming. The app should feel like a beloved personal project someone made for themselves and decided to share. Not slick, not corporate. Think: a beautifully annotated travel journal, or a hand-labeled map pinned above a desk. Emotional goal: **delight and quiet pride**.
+---
 
-### Aesthetic Direction
-**Warm & Indie** — light mode only (for now).
-- **Palette:** No purple or indigo. Warm tones: cream/off-white backgrounds, warm ink for text (never pure black), earthy accents (terracotta, amber, sand, warm sage). Tinted neutrals, never cold grays.
-- **Typography:** Reserve `font-mono` for small metadata only (dates, ISBNs). Use a warm serif for display headings and a clean sans for UI text.
-- **Surfaces:** Off-white, not white. Warm paper-like backgrounds. Soft, warm-tinted borders.
-- **Keep:** The notebook-lines on book cards and the paperclip SVG — they feel handcrafted and should be extended, not removed.
-- **Avoid:** Purple/indigo gradients, cold glassmorphism, generic SaaS dashboard feel.
+## User Country Overrides (Planned)
 
-### Design Principles
-1. **Warmth over polish** — Curated and slightly imperfect beats corporate-slick. Embrace personality details.
-2. **Map is the hero** — Every other element should complement the map, not compete with it.
-3. **Typography carries personality** — Thoughtful font choices communicate indie/literary quality above all else.
-4. **Tinted, never cold** — All neutrals carry a warm tint. No pure black, no unchanged Tailwind cold grays.
-5. **Delight in small moments** — Hover states, transitions, and micro-details are where the personality lives.
+See `_plans/user_country_overrides.md` for architecture design. No implementation yet, but keep this in mind for future work:
+- Users can edit book countries via plus/minus icon
+- Edits need to persist across CSV re-uploads
+- No login system required (anonymous sessions with optional account migration)
+- Design: session ID in localStorage + server-side `author_country_overrides` table
+
+---
+
+## Common Patterns
+
+**Batch processing**: Authors/books are resolved in batches (8 authors, 10 books) to balance API efficiency vs memory. See `authorCountryService.ts` and `bookCoverService.ts`.
+
+**Progress callbacks**: Long-running enrichment uses callback functions to report progress. Allows real-time UI updates via `EnrichmentContext`.
+
+**Graceful degradation**: DB unavailable? App still works from localStorage. Wikidata down? Books display without countries. Covers not found? Placeholder image used.
+
+**ISO2 everywhere**: Internal country codes are ISO2 (GB, US, ES). Display names and map matching use these codes. Conversion functions in `mapUtilities.ts`.
