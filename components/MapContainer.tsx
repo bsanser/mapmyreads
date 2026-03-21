@@ -1,7 +1,6 @@
 import { MapLibreMap } from './MapLibreMap'
 import { MapControls } from './MapControls'
 import { ThemeKey, THEMES } from '../lib/themeManager'
-import { FeedbackButton } from './FeedbackButton'
 import { useBooks } from '../contexts/BooksContext'
 
 interface MapContainerProps {
@@ -39,7 +38,6 @@ export function MapContainer({
         />
       </div>
 
-      <FeedbackButton className="hidden lg:flex" />
     </div>
   )
 }

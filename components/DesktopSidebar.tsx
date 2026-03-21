@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { getCountryFlag, mapISO2ToDisplayName } from '../lib/mapUtilities'
 import { ReadingAtlasSummary } from './ReadingAtlasSummary'
 import { BookList } from './BookList'
+import { FeedbackButton } from './FeedbackButton'
 import { useBooks } from '../contexts/BooksContext'
 import { useTheme } from '../contexts/ThemeContext'
 import { useEnrichment } from '../contexts/EnrichmentContext'
@@ -81,18 +82,21 @@ export function DesktopSidebar({ booksToShow, onLoadMore }: DesktopSidebarProps)
         <span>
           Showing {displayedBookCount} {displayedBookLabel}
         </span>
-        {showMissingAuthorCountry && (
-          <button
-            type="button"
-            className="link-accent"
-            onClick={() => {
-              setShowMissingAuthorCountry(false)
-              setSelectedCountry(null)
-            }}
-          >
-            Show all
-          </button>
-        )}
+        <div className="flex items-center gap-2">
+          {showMissingAuthorCountry && (
+            <button
+              type="button"
+              className="link-accent"
+              onClick={() => {
+                setShowMissingAuthorCountry(false)
+                setSelectedCountry(null)
+              }}
+            >
+              Show all
+            </button>
+          )}
+          <FeedbackButton iconOnly />
+        </div>
       </div>
 
       <BookList
