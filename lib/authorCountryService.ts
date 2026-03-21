@@ -13,6 +13,8 @@ export type AuthorCountrySummary = {
   uniqueCountriesWithReadAuthors: number
   apiLookups: number
   authorsWithMoreThanOneCountry: number
+  cacheHits: number
+  cacheMisses: number
 }
 
 /**
@@ -89,6 +91,8 @@ export const resolveAuthorCountriesBackend = async (
   // Accumulate all author→countries results across batches
   const fullAuthorCountryMap: Record<string, string[]> = {}
   let totalApiLookups = 0
+  let totalCacheHits = 0
+  let totalCacheMisses = 0
   let resolvedCount = 0
   let currentBooks = books
 
@@ -111,6 +115,8 @@ export const resolveAuthorCountriesBackend = async (
       // Merge batch results into full map
       Object.assign(fullAuthorCountryMap, batchResults)
       totalApiLookups += data.stats.cacheMisses
+      totalCacheHits += data.stats.cacheHits
+      totalCacheMisses += data.stats.cacheMisses
 
       resolvedCount += batch.length
       console.log(`📊 Batch done: ${resolvedCount}/${totalAuthors} authors resolved`)
@@ -161,7 +167,9 @@ export const resolveAuthorCountriesBackend = async (
     apiLookups: totalApiLookups,
     authorsWithMoreThanOneCountry: Object.values(fullAuthorCountryMap).filter(
       countries => new Set(countries.filter(Boolean)).size > 1
-    ).length
+    ).length,
+    cacheHits: totalCacheHits,
+    cacheMisses: totalCacheMisses
   }
 
   if (onProgress) {
