@@ -62,6 +62,7 @@ export const MapLibreMap = memo(function MapLibreMap({
 }: MapLibreMapProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
+  const booksRef = useRef(books);
   const [mapStatus, setMapStatus] = useState<'loading' | 'ready' | 'error'>('loading');
 
   // Init effect — runs once. Creates map, wires events, applies initial style on load.
@@ -89,7 +90,7 @@ export const MapLibreMap = memo(function MapLibreMap({
 
     map.on('load', () => {
       setMapStatus('ready');
-      applyMapStyle(map, propCurrentTheme, books, propThemes);
+      applyMapStyle(map, propCurrentTheme, booksRef.current, propThemes);
     });
 
     return () => {
@@ -101,6 +102,7 @@ export const MapLibreMap = memo(function MapLibreMap({
 
   // Update effect — runs whenever books or theme change after init.
   useEffect(() => {
+    booksRef.current = books;
     if (!mapRef.current) return;
     applyMapStyle(mapRef.current, propCurrentTheme, books, propThemes);
   }, [books, propCurrentTheme, propThemes]);

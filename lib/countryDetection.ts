@@ -156,7 +156,7 @@ const fetchJson = async <T>(url: string): Promise<T> => {
   return response.json()
 }
 
-const searchAuthorEntityId = async (authorName: string): Promise<string | null> => {
+const searchAuthorEntityId = async (authorName: string): Promise<{ id: string; description?: string } | null> => {
   const url = buildWikidataURL({
     action: 'wbsearchentities',
     search: authorName,
@@ -167,7 +167,9 @@ const searchAuthorEntityId = async (authorName: string): Promise<string | null> 
   })
 
   const data: any = await fetchJson(url)
-  return data?.search?.[0]?.id || null
+  const result = data?.search?.[0]
+  if (!result?.id) return null
+  return { id: result.id, description: result.description }
 }
 
 const extractIdsFromClaims = (claims: any, property: string): string[] => {
@@ -219,10 +221,32 @@ const fetchCountryIdsFromBirthPlaces = async (placeIds: string[]): Promise<strin
   return Array.from(ids)
 }
 
+const extractCountryFromDescription = (description: string): string[] => {
+  if (!description) return []
+  const lower = description.toLowerCase()
+  const countries: string[] = []
+  for (const [country, keywords] of Object.entries(AUTHOR_NATIONALITY_KEYWORDS)) {
+    for (const keyword of keywords) {
+      if (new RegExp(`\\b${keyword}\\b`).test(lower)) {
+        countries.push(country)
+        break
+      }
+    }
+  }
+  return countries
+}
+
 const fetchAuthorCountryNames = async (authorName: string): Promise<string[]> => {
   try {
-    const entityId = await searchAuthorEntityId(authorName)
-    if (!entityId) return []
+    const result = await searchAuthorEntityId(authorName)
+    if (!result) return []
+    const { id: entityId, description } = result
+
+    // Fast path: extract nationality from description (e.g. "American novelist") — skips 3 API calls
+    if (description) {
+      const fromDescription = extractCountryFromDescription(description)
+      if (fromDescription.length > 0) return fromDescription
+    }
 
     const entities = await fetchClaimsForEntities([entityId])
     const claims = entities[entityId]?.claims
