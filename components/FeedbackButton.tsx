@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
+import { createPortal } from 'react-dom'
 
 const feedbackEmail = 'bsanser@gmail.com'
 const feedbackSubject = 'Map my reads feedback'
@@ -92,11 +93,11 @@ export const FeedbackButton = ({ className = '', iconOnly = false }: FeedbackBut
         {!iconOnly && <span className="feedback-btn-label">Feedback</span>}
       </button>
 
-      {showFeedbackModal && (
+      {showFeedbackModal && typeof document !== 'undefined' && createPortal(
         <div className="feedback-modal-overlay">
           <div className="feedback-modal">
             <div className="feedback-modal-header">
-              <h3 className="type-heading" style={{ fontSize: '1.125rem' }}>Add your feedback</h3>
+              <h3 className="type-heading" style={{ fontSize: '1.125rem' }}>Add your feedback <span style={{ fontSize: '0.7em', color: 'var(--color-accent)', fontWeight: 500 }}>· Work in progress</span></h3>
               <button onClick={handleClose} className="map-control-btn" style={{ width: '2rem', height: '2rem', borderRadius: '0.5rem' }}>
                 <svg style={{ width: '1.25rem', height: '1.25rem' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -107,6 +108,10 @@ export const FeedbackButton = ({ className = '', iconOnly = false }: FeedbackBut
             <p className="feedback-modal-body type-body" style={{ fontSize: '0.875rem' }}>
               Add any suggestions, bugs or improvements you&apos;d like to see. I&apos;m reading 👀
             </p>
+
+            <div className="feedback-wip-notice">
+              This form doesn&apos;t work yet — but it&apos;s coming soon!
+            </div>
 
             <form onSubmit={handleSubmit}>
               <label className="type-label" style={{ display: 'block', marginBottom: '0.5rem' }}>Your feedback</label>
@@ -119,6 +124,9 @@ export const FeedbackButton = ({ className = '', iconOnly = false }: FeedbackBut
                 required
               />
 
+              <p className="feedback-device-label">
+                Your device info
+              </p>
               <div className="feedback-device-info">
                 {deviceInfo}
               </div>
@@ -141,7 +149,8 @@ export const FeedbackButton = ({ className = '', iconOnly = false }: FeedbackBut
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   )
