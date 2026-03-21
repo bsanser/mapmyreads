@@ -7,9 +7,10 @@ const feedbackSubject = 'Map my reads feedback'
 
 interface FeedbackButtonProps {
   className?: string
+  iconOnly?: boolean
 }
 
-export const FeedbackButton = ({ className = '' }: FeedbackButtonProps) => {
+export const FeedbackButton = ({ className = '', iconOnly = false }: FeedbackButtonProps) => {
   const [showFeedbackModal, setShowFeedbackModal] = useState(false)
   const [feedback, setFeedback] = useState('')
   const [sending, setSending] = useState(false)
@@ -82,13 +83,13 @@ export const FeedbackButton = ({ className = '' }: FeedbackButtonProps) => {
     <>
       <button
         onClick={() => setShowFeedbackModal(true)}
-        className={`feedback-btn ${className}`}
+        className={iconOnly ? `feedback-btn-inline ${className}` : `feedback-btn ${className}`}
         title="Send feedback"
       >
         <svg className="feedback-btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
         </svg>
-        <span className="feedback-btn-label">Feedback</span>
+        {!iconOnly && <span className="feedback-btn-label">Feedback</span>}
       </button>
 
       {showFeedbackModal && (

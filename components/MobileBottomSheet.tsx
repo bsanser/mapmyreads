@@ -1,23 +1,36 @@
+import { useRef } from 'react'
 import { mapISO2ToDisplayName } from '../lib/mapUtilities'
-import { THEMES } from '../lib/themeManager'
 import { BookList } from './BookList'
-import { MapControls } from './MapControls'
+import { FeedbackButton } from './FeedbackButton'
 import { useBooks } from '../contexts/BooksContext'
-import { useTheme } from '../contexts/ThemeContext'
 
 interface MobileBottomSheetProps {
+  isExpanded: boolean
+  onToggleExpanded: () => void
   showMissingAuthorCountry: boolean
   onToggleMissingAuthorCountry: () => void
   onClearMissingAuthorCountry: () => void
 }
 
 export function MobileBottomSheet({
+  isExpanded,
+  onToggleExpanded,
   showMissingAuthorCountry,
   onToggleMissingAuthorCountry,
   onClearMissingAuthorCountry
 }: MobileBottomSheetProps) {
   const { books, selectedCountry, setSelectedCountry, summaryStats } = useBooks()
-  const { currentTheme, setCurrentTheme } = useTheme()
+  const touchStartY = useRef<number>(0)
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartY.current = e.touches[0].clientY
+  }
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    const delta = e.changedTouches[0].clientY - touchStartY.current
+    if (delta > 40 && isExpanded) onToggleExpanded()
+    else if (delta < -40 && !isExpanded) onToggleExpanded()
+  }
 
   const baseFilteredBooks = selectedCountry
     ? books.filter(book => book.authorCountries.includes(selectedCountry))
@@ -29,47 +42,50 @@ export function MobileBottomSheet({
   const displayedBookLabel = displayedBookCount === 1 ? 'book' : 'books'
 
   return (
-    <div className="mobile-bottom-sheet-wrapper">
+    <div className={`mobile-bottom-sheet-wrapper${isExpanded ? '' : ' bottom-sheet-collapsed'}`}>
       <div className="bottom-sheet-inner">
 
         {/* Drag handle */}
-        <div className="bottom-sheet-handle">
+        <div
+          className="bottom-sheet-handle"
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        >
           <div className="bottom-sheet-handle-bar" />
         </div>
 
-        {/* Compact stats + theme control */}
-        <div className="bottom-sheet-stats">
+        {/* Compact stats + caret — swipe or tap to toggle */}
+        <div
+          className="bottom-sheet-stats"
+          onClick={onToggleExpanded}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+          style={{ cursor: 'pointer' }}
+        >
           <div className="bottom-sheet-stat-group">
             <span className="type-stat">{summaryStats.readBooksCount}</span>
             <span className="type-stat-label">books</span>
             <span className="bottom-sheet-stat-divider">·</span>
             <span className="type-stat">{summaryStats.authorCountriesCovered}</span>
             <span className="type-stat-label">countries</span>
-            {summaryStats.booksMissingAuthorCountry > 0 && !showMissingAuthorCountry && (
-              <>
-                <span className="bottom-sheet-stat-divider">·</span>
-                <button
-                  type="button"
-                  onClick={onToggleMissingAuthorCountry}
-                  className="bottom-sheet-link"
-                >
-                  {summaryStats.booksMissingAuthorCountry} missing
-                </button>
-              </>
-            )}
           </div>
-          <MapControls
-            currentTheme={currentTheme}
-            themes={THEMES}
-            onThemeChange={setCurrentTheme}
-            layout="inline"
-          />
+          <svg
+            className="bottom-sheet-caret"
+            viewBox="0 0 16 16"
+            fill="none"
+            style={{
+              transform: isExpanded ? 'rotate(0deg)' : 'rotate(180deg)',
+              transition: 'transform 0.35s cubic-bezier(0.32, 0.72, 0, 1)'
+            }}
+          >
+            <path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
         </div>
 
-        {/* Book list */}
-        <div className="bottom-sheet-scroll">
-          <div className="bottom-sheet-book-list">
-            <div className="bottom-sheet-count-row">
+        {/* Anchored count row — with "X missing" below and feedback icon on the right */}
+        <div className="bottom-sheet-count-row">
+          <div className="bottom-sheet-count-main">
+            <div className="bottom-sheet-count-lines">
               <span>
                 Showing <span className="font-semibold" style={{ color: 'var(--color-ink)' }}>{displayedBookCount}</span> {displayedBookLabel}
                 {showMissingAuthorCountry ? ' without country data' : selectedCountry ? ` from ${mapISO2ToDisplayName(selectedCountry)}` : ''}
@@ -80,19 +96,30 @@ export function MobileBottomSheet({
                   className="bottom-sheet-link"
                   onClick={() => {
                     setSelectedCountry(null)
-                    if (showMissingAuthorCountry) {
-                      onClearMissingAuthorCountry()
-                    }
+                    if (showMissingAuthorCountry) onClearMissingAuthorCountry()
                   }}
                 >
                   All books
                 </button>
               )}
+              {summaryStats.booksMissingAuthorCountry > 0 && !showMissingAuthorCountry && (
+                <button
+                  type="button"
+                  onClick={onToggleMissingAuthorCountry}
+                  className="bottom-sheet-link bottom-sheet-missing-link"
+                >
+                  {summaryStats.booksMissingAuthorCountry} books without country
+                </button>
+              )}
             </div>
+            <FeedbackButton iconOnly />
+          </div>
+        </div>
 
-            <BookList
-              showMissingAuthorCountry={showMissingAuthorCountry}
-            />
+        {/* Scrollable book list */}
+        <div className="bottom-sheet-scroll">
+          <div className="bottom-sheet-book-list">
+            <BookList showMissingAuthorCountry={showMissingAuthorCountry} />
           </div>
         </div>
 
