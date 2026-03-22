@@ -337,33 +337,12 @@ body {
     box-shadow: 0 0 0 2px var(--color-accent-soft);
   }
 
-  .feedback-wip-notice {
-    @apply rounded-lg px-3 py-2 text-xs mb-4;
-    background-color: oklch(94% 0.04 70);
-    border: 1px solid oklch(85% 0.06 70);
-    color: oklch(45% 0.08 50);
-  }
-
-  .feedback-device-label {
-    @apply text-xs mt-4 mb-1;
-    color: var(--color-ink-3);
-    font-style: italic;
-  }
-
-  .feedback-device-info {
-    @apply rounded-lg p-3 text-xs whitespace-pre-line;
-    background-color: var(--color-surface-warm);
-    border: 1px dashed var(--color-border-light);
-    color: var(--color-ink-3);
-    font-family: var(--font-mono, monospace);
-  }
-
   .feedback-actions {
     @apply flex gap-3 mt-4;
   }
 
   .feedback-submit-btn {
-    @apply flex-1 rounded-lg px-4 py-2 font-medium text-sm transition-colors disabled:opacity-60 disabled:cursor-not-allowed;
+    @apply flex-1 rounded-lg px-4 py-2 font-medium text-sm transition-colors;
     background-color: var(--color-accent);
     color: var(--color-surface);
   }
