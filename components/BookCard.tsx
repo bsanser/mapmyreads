@@ -148,7 +148,7 @@ export const BookCard = memo(function BookCard({
                       <button
                         key={country.iso2}
                         type="button"
-                        onClick={() => {
+                        onMouseDown={() => {
                           onAddCountry(country.iso2)
                           setFocusedSuggestionIndex(-1)
                         }}
