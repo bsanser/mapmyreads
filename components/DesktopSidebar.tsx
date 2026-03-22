@@ -30,6 +30,12 @@ export function DesktopSidebar({ booksToShow, onLoadMore }: DesktopSidebarProps)
     }
   }, [selectedCountry])
 
+  useEffect(() => {
+    if (showMissingAuthorCountry && summaryStats.booksMissingAuthorCountry === 0) {
+      setShowMissingAuthorCountry(false)
+    }
+  }, [summaryStats.booksMissingAuthorCountry, showMissingAuthorCountry])
+
   const handleMissingAuthorCountryFilter = () => {
     if (summaryStats.booksMissingAuthorCountry === 0) return
     if (!showMissingAuthorCountry && selectedCountry) {

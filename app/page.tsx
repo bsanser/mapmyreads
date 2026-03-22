@@ -69,6 +69,14 @@ export default function Home() {
     }
   }
 
+  // Auto-disable missing author country filter when all books have countries
+  useEffect(() => {
+    const booksWithoutCountries = books.filter(b => b.readStatus === 'read' && b.authorCountries.length === 0)
+    if (showMissingAuthorCountry && booksWithoutCountries.length === 0) {
+      setShowMissingAuthorCountry(false)
+    }
+  }, [books, showMissingAuthorCountry])
+
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     setError('')
     setIsProcessing(true)
