@@ -108,7 +108,7 @@ export const MapLibreMap = memo(function MapLibreMap({
   }, [books, propCurrentTheme, propThemes]);
 
   return (
-    <div className="w-full h-full">
+    <div className="w-full h-full relative">
       <div
         ref={mapContainer}
         className="w-full h-full"
@@ -131,6 +131,12 @@ export const MapLibreMap = memo(function MapLibreMap({
             </div>
           </div>
         )}
+      </div>
+
+      {/* Map watermark */}
+      <div className="absolute bottom-6 right-6 flex items-center gap-3 pointer-events-none" style={{ opacity: 0.85 }}>
+        <img src="/logo.png" alt="Map My Reads" className="w-8 h-8" />
+        <span className="text-sm font-medium" style={{ color: 'var(--color-ink)' }}>Map My Reads</span>
       </div>
     </div>
   );

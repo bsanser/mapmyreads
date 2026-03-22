@@ -32,7 +32,6 @@ export const ReadingAtlasSummary = memo(function ReadingAtlasSummary({
   return (
     <div className={`space-y-4 ${className}`}>
       <div className="space-y-1">
-        <p className="type-eyebrow">Reading Atlas</p>
         <h2 className="type-heading">Your literary journey</h2>
         <p className="type-caption">Track progress through books, voices, and cultures.</p>
       </div>
