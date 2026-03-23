@@ -4,7 +4,7 @@ A personal project turned public tool. Upload your reading export from Goodreads
 
 It's a work in progress. Things might be rough around the edges.
 
-**Live at [mapmyreads.vercel.app](https://mapmyreads.vercel.app)**
+**Live at [mapmyreads.com](https://mapmyreads.com)**
 
 ---
 
@@ -48,14 +48,11 @@ npx prisma db push
 ## Roadmap
 
 This is still early. A lot of things work, but a lot of things could be better.
-
-- **Improve country detection** — right now a big chunk of authors come back with no country, mostly because Wikidata has incomplete entries, historical citizenships that don't map cleanly to modern countries, or the wrong entity gets matched on common names. This needs real work.
-- **Better fallbacks** — when Wikidata fails, try other sources before giving up
+- **Adding books** — after the initial upload of books in the csv, add a mechanism for users to keep their maps updated
 - **User accounts** — save your map between sessions, come back to it, track it over time
 - **Translations** — the app is English-only right now, would love to support Spanish, French, and others
 - **Reading stats** — breakdowns by year, genre, gender, language of original publication
 - **More CSV formats** — beyond Goodreads and StoryGraph
-- **Mobile polish** — it works on mobile but the experience could be a lot better
 
 ---
 
