@@ -34,10 +34,10 @@ Based on [`_roadmap/prd_sentry.md`](../_roadmap/prd_sentry.md)
 
 ## Tasks
 
-- [ ] 1.0 Install and configure the Sentry SDK `sonnet` — setup and config, follows a clear wizard-driven process
-  - [ ] 1.1 Create a free account at sentry.io and set up a new project — select **Next.js** as the platform. Copy the DSN from the project settings.
-  - [ ] 1.2 Run `npx @sentry/wizard@latest -i nextjs` in the project root. The wizard will generate `sentry.client.config.ts`, `sentry.server.config.ts`, `sentry.edge.config.ts`, and update `next.config.js` automatically.
-  - [ ] 1.3 Add the following to `.env.local` (never commit this file):
+- [x] 1.0 Install and configure the Sentry SDK `sonnet` — setup and config, follows a clear wizard-driven process
+  - [x] 1.1 Create a free account at sentry.io and set up a new project — select **Next.js** as the platform. Copy the DSN from the project settings.
+  - [x] 1.2 Run `npx @sentry/wizard@latest -i nextjs` in the project root. The wizard will generate `sentry.client.config.ts`, `sentry.server.config.ts`, `sentry.edge.config.ts`, and update `next.config.js` automatically.
+  - [x] 1.3 Add the following to `.env.local` (never commit this file):
     ```
     NEXT_PUBLIC_SENTRY_DSN=<your DSN>
     SENTRY_DSN=<your DSN>
@@ -45,8 +45,8 @@ Based on [`_roadmap/prd_sentry.md`](../_roadmap/prd_sentry.md)
     SENTRY_PROJECT=<your project slug>
     SENTRY_AUTH_TOKEN=<token from Sentry Settings > Auth Tokens>
     ```
-  - [ ] 1.4 Add the same variables to the Vercel dashboard (Settings > Environment Variables). Additionally add `NEXT_PUBLIC_SENTRY_RELEASE=$VERCEL_GIT_COMMIT_SHA` — Vercel provides `VERCEL_GIT_COMMIT_SHA` automatically at build time, so errors can be correlated with specific deploys.
-  - [ ] 1.5 Update `sentry.client.config.ts` to match this config (replace the wizard-generated defaults):
+  - [x] 1.4 Add the same variables to the Vercel dashboard (Settings > Environment Variables). Additionally add `NEXT_PUBLIC_SENTRY_RELEASE=$VERCEL_GIT_COMMIT_SHA` — Vercel provides `VERCEL_GIT_COMMIT_SHA` automatically at build time, so errors can be correlated with specific deploys.
+  - [x] 1.5 Update `sentry.client.config.ts` to match this config (replace the wizard-generated defaults):
     ```typescript
     import * as Sentry from '@sentry/nextjs'
 
@@ -60,7 +60,7 @@ Based on [`_roadmap/prd_sentry.md`](../_roadmap/prd_sentry.md)
       integrations: [Sentry.replayIntegration()],
     })
     ```
-  - [ ] 1.6 Update `sentry.server.config.ts` to match this config:
+  - [x] 1.6 Update `sentry.server.config.ts` to match this config:
     ```typescript
     import * as Sentry from '@sentry/nextjs'
 
@@ -71,21 +71,21 @@ Based on [`_roadmap/prd_sentry.md`](../_roadmap/prd_sentry.md)
       tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
     })
     ```
-  - [ ] 1.7 Confirm `next.config.js` was updated by the wizard and includes `withSentryConfig()`. Ensure `hideSourceMaps: true` is set so source maps are uploaded but not included in the public bundle.
-  - [ ] 1.8 Start the dev server (`npm run dev`) and visit the wizard's test page (usually `/sentry-example-page`). Trigger the test error and confirm it appears in the Sentry dashboard within 30 seconds.
+  - [x] 1.7 Confirm `next.config.js` was updated by the wizard and includes `withSentryConfig()`. Ensure `hideSourceMaps: true` is set so source maps are uploaded but not included in the public bundle.
+  - [x] 1.8 Start the dev server (`npm run dev`) and visit the wizard's test page (usually `/sentry-example-page`). Trigger the test error and confirm it appears in the Sentry dashboard within 30 seconds.
 
-- [ ] 2.0 Instrument API routes with error capture and custom performance spans `sonnet` — needs to read existing code patterns and make targeted additions; requirements are clear from the PRD
-  - [ ] 2.1 In `lib/countryDetection.ts`: find where Wikidata HTTP responses are handled. Add explicit checks:
+- [x] 2.0 Instrument API routes with error capture and custom performance spans `sonnet` — needs to read existing code patterns and make targeted additions; requirements are clear from the PRD
+  - [x] 2.1 In `lib/countryDetection.ts`: find where Wikidata HTTP responses are handled. Add explicit checks:
     - If the response status is `429`, call `Sentry.captureMessage('wikidata_rate_limited', 'warning')` with fields `author_batch_size`, `concurrent_limit` (currently 2), and `delay_ms` (currently 150).
     - For any other non-200 response, call `Sentry.captureException(error)` and add a tag `failure_type: 'api_error'` and `http_status: response.status`.
-  - [ ] 2.2 In `app/api/authors/batch-resolve/route.ts`: find the Prisma cache lookup and write blocks (they likely have `try/catch` that silently swallows DB errors). In the `catch`, add:
+  - [x] 2.2 In `app/api/authors/batch-resolve/route.ts`: find the Prisma cache lookup and write blocks (they likely have `try/catch` that silently swallows DB errors). In the `catch`, add:
     ```typescript
     Sentry.captureMessage('db_unavailable', 'warning', {
       tags: { component: 'db', operation: 'cache_read' }, // or cache_write
       extra: { route: '/api/authors/batch-resolve', error_message: String(error) }
     })
     ```
-  - [ ] 2.3 In `lib/authorCountryService.ts`: wrap the main resolution function body in a `Sentry.startSpan()` call so the full enrichment duration is traced:
+  - [x] 2.3 In `lib/authorCountryService.ts`: wrap the main resolution function body in a `Sentry.startSpan()` call so the full enrichment duration is traced:
     ```typescript
     return await Sentry.startSpan(
       { name: 'enrichment.author_countries', op: 'enrichment' },
@@ -101,29 +101,29 @@ Based on [`_roadmap/prd_sentry.md`](../_roadmap/prd_sentry.md)
       }
     )
     ```
-  - [ ] 2.4 In `app/api/books/batch-covers/route.ts`: same as 2.2 — find the Prisma catch block and emit a `db_unavailable` captureMessage with `operation: 'cache_read'` or `'cache_write'` and `route: '/api/books/batch-covers'`.
-  - [ ] 2.5 In `lib/bookCoverService.ts`: find the `console.warn` calls on cover fetch failures. Replace each with `Sentry.captureException(error)` tagged with `component: 'open_library'` and `http_status` where available.
-  - [ ] 2.6 In `lib/bookCoverService.ts`: wrap the main cover fetch function body in a `Sentry.startSpan()` call similar to 2.3, with attributes: `covers.total_books`, `covers.covers_found`, `covers.cache_hits`, `covers.duration_ms`.
+  - [x] 2.4 In `app/api/books/batch-covers/route.ts`: same as 2.2 — find the Prisma catch block and emit a `db_unavailable` captureMessage with `operation: 'cache_read'` or `'cache_write'` and `route: '/api/books/batch-covers'`.
+  - [x] 2.5 In `lib/bookCoverService.ts`: find the `console.warn` calls on cover fetch failures. Replace each with `Sentry.captureException(error)` tagged with `component: 'open_library'` and `http_status` where available.
+  - [x] 2.6 In `lib/bookCoverService.ts`: wrap the main cover fetch function body in a `Sentry.startSpan()` call similar to 2.3, with attributes: `covers.total_books`, `covers.covers_found`, `covers.cache_hits`, `covers.duration_ms`.
 
-- [ ] 3.0 Instrument client-side code `sonnet` — same pattern as 2.0; locate error handlers across 4 files and add captures
-  - [ ] 3.1 In `lib/csvParser.ts`: find the main parse function. Wrap the body in a try/catch (if not already). In the catch, call `Sentry.captureException(error)` and attach context:
+- [x] 3.0 Instrument client-side code `sonnet` — same pattern as 2.0; locate error handlers across 4 files and add captures
+  - [x] 3.1 In `lib/csvParser.ts`: find the main parse function. Wrap the body in a try/catch (if not already). In the catch, call `Sentry.captureException(error)` and attach context:
     ```typescript
     Sentry.captureException(error, {
       tags: { component: 'csv_parser', detected_format: detectedFormat },
       extra: { row_count: rowsParsed }
     })
     ```
-  - [ ] 3.2 In `lib/storage.ts`: find the share URL decode logic (base64 decode). In the catch block, call `Sentry.captureException(error)` tagged with `component: 'share_url'`.
-  - [ ] 3.3 In `lib/storage.ts`: find any localStorage read/write operations. If they can throw (e.g. quota exceeded), add `Sentry.captureException(error)` tagged with `component: 'storage'` in the catch block.
-  - [ ] 3.4 In `components/MapLibreMap.tsx`: find the map initialisation or `onLoad`/`onError` handlers. Add a Sentry capture on map load failure:
+  - [x] 3.2 In `lib/storage.ts`: find the share URL decode logic (base64 decode). In the catch block, call `Sentry.captureException(error)` tagged with `component: 'share_url'`.
+  - [x] 3.3 In `lib/storage.ts`: find any localStorage read/write operations. If they can throw (e.g. quota exceeded), add `Sentry.captureException(error)` tagged with `component: 'storage'` in the catch block.
+  - [x] 3.4 In `components/MapLibreMap.tsx`: find the map initialisation or `onLoad`/`onError` handlers. Add a Sentry capture on map load failure:
     ```typescript
     Sentry.captureException(error, {
       tags: { component: 'map' }
     })
     ```
 
-- [ ] 4.0 Replace file-based enrichment logging with Sentry events `haiku` — mechanical replacement: swap one fetch call for a captureMessage, delete a dead file
-  - [ ] 4.1 In `app/page.tsx` (around line 185): find the `fetch('/api/logs/enrichment', ...)` call. Delete it and replace with:
+- [x] 4.0 Replace file-based enrichment logging with Sentry events `haiku` — mechanical replacement: swap one fetch call for a captureMessage, delete a dead file
+  - [x] 4.1 In `app/page.tsx` (around line 185): find the `fetch('/api/logs/enrichment', ...)` call. Delete it and replace with:
     ```typescript
     Sentry.captureMessage('enrichment_completed', 'info', {
       extra: {
@@ -142,15 +142,15 @@ Based on [`_roadmap/prd_sentry.md`](../_roadmap/prd_sentry.md)
     })
     ```
     Use the variable names already in scope at that point in `page.tsx`.
-  - [ ] 4.2 In `app/page.tsx`: add a similar `Sentry.captureMessage('covers_completed', 'info', { extra: { ... } })` call when cover fetching finishes. Fields: `total_books`, `covers_found`, `cache_hits`, `duration_sec`, `timeout_hit`.
-  - [ ] 4.3 Delete `app/api/logs/enrichment/route.ts` — it is now fully replaced. Add a `console.log` in `app/page.tsx` with the same data for local dev visibility.
+  - [x] 4.2 In `app/page.tsx`: add a similar `Sentry.captureMessage('covers_completed', 'info', { extra: { ... } })` call when cover fetching finishes. Fields: `total_books`, `covers_found`, `cache_hits`, `duration_sec`, `timeout_hit`.
+  - [x] 4.3 Delete `app/api/logs/enrichment/route.ts` — it is now fully replaced. Add a `console.log` in `app/page.tsx` with the same data for local dev visibility.
 
-- [ ] 5.0 Configure alert rules in the Sentry dashboard `opus` — translating multi-window burn rate logic into Sentry's alert UI requires reasoning about SLO mechanics; no code, but the most conceptually complex task
-  - [ ] 5.1 **Fast burn — Author enrichment critical**: In Sentry > Alerts > Create Alert > Metric Alert. Set condition: error rate on `/api/authors/batch-resolve` > 20% of requests over 5 minutes. Add a second condition that the 1-hour window is also elevated. Severity: Critical. Action: email.
-  - [ ] 5.2 **Slow burn — Author enrichment warning**: Same as 5.1 but threshold 5%, short window 30 minutes, long window 6 hours. Severity: Warning. Action: email.
-  - [ ] 5.3 **Database failure**: In Sentry > Alerts > Create Alert > Issue Alert. Trigger: any issue with tag `component:db`. Condition: first time seen. Severity: Warning. Action: email.
-  - [ ] 5.4 **Map load failure**: Issue Alert. Trigger: any issue with tag `component:map`. Condition: first occurrence AND more than 2 occurrences per hour as a separate rule. Severity: Critical on first occurrence. Action: email.
-  - [ ] 5.5 **Enrichment hard timeout**: Metric Alert. Trigger: custom metric from span data where `enrichment.duration_ms > 9000`. Condition: more than 3 occurrences in 10 minutes. Severity: Warning. Action: email.
-  - [ ] 5.6 **New issue**: Confirm the default "Alert me on every new issue" rule in Sentry is enabled. This fires the first time any new error fingerprint is seen. No changes needed if already on.
-  - [ ] 5.7 **Wikidata rate limiting**: Issue Alert. Trigger: event with tag `failure_type:rate_limited`. Condition: more than 5 occurrences in 10 minutes. Severity: Warning. Action: email.
-  - [ ] 5.8 Verify all 7 alert rules are delivering to the correct email address by checking each rule's action in the Sentry dashboard. Optionally trigger a test alert using Sentry's "Send Test Notification" button.
+- [x] 5.0 Configure alert rules in the Sentry dashboard `opus` — translating multi-window burn rate logic into Sentry's alert UI requires reasoning about SLO mechanics; no code, but the most conceptually complex task
+  - [x] 5.1 **Fast burn — Author enrichment critical**: In Sentry > Alerts > Create Alert > Metric Alert. Set condition: error rate on `/api/authors/batch-resolve` > 20% of requests over 5 minutes. Add a second condition that the 1-hour window is also elevated. Severity: Critical. Action: email.
+  - [x] 5.2 **Slow burn — Author enrichment warning**: Same as 5.1 but threshold 5%, short window 30 minutes, long window 6 hours. Severity: Warning. Action: email.
+  - [x] 5.3 **Database failure**: In Sentry > Alerts > Create Alert > Issue Alert. Trigger: any issue with tag `component:db`. Condition: first time seen. Severity: Warning. Action: email.
+  - [x] 5.4 **Map load failure**: Issue Alert. Trigger: any issue with tag `component:map`. Condition: first occurrence AND more than 2 occurrences per hour as a separate rule. Severity: Critical on first occurrence. Action: email.
+  - [x] 5.5 **Enrichment hard timeout**: Metric Alert. Trigger: custom metric from span data where `enrichment.duration_ms > 9000`. Condition: more than 3 occurrences in 10 minutes. Severity: Warning. Action: email.
+  - [x] 5.6 **New issue**: Confirm the default "Alert me on every new issue" rule in Sentry is enabled. This fires the first time any new error fingerprint is seen. No changes needed if already on.
+  - [x] 5.7 **Wikidata rate limiting**: Issue Alert. Trigger: event with tag `failure_type:rate_limited`. Condition: more than 5 occurrences in 10 minutes. Severity: Warning. Action: email.
+  - [x] 5.8 Verify all 7 alert rules are delivering to the correct email address by checking each rule's action in the Sentry dashboard. Optionally trigger a test alert using Sentry's "Send Test Notification" button.
