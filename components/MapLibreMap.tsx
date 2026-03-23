@@ -1,4 +1,5 @@
 "use client";
+import * as Sentry from "@sentry/nextjs";
 import "maplibre-gl/dist/maplibre-gl.css";
 import maplibregl from "maplibre-gl";
 import { memo, useEffect, useRef, useState } from "react";
@@ -69,6 +70,9 @@ export const MapLibreMap = memo(function MapLibreMap({
   useEffect(() => {
     if (typeof window === 'undefined') return;
     if (!mapContainer.current) {
+      Sentry.captureException(new Error('MapLibre container ref is null — map cannot initialise'), {
+        tags: { component: 'map' }
+      });
       setMapStatus('error');
       return;
     }
@@ -91,6 +95,13 @@ export const MapLibreMap = memo(function MapLibreMap({
     map.on('load', () => {
       setMapStatus('ready');
       applyMapStyle(map, propCurrentTheme, booksRef.current, propThemes);
+    });
+
+    map.on('error', (e) => {
+      Sentry.captureException(e.error ?? new Error('MapLibre unknown error'), {
+        tags: { component: 'map' }
+      });
+      setMapStatus('error');
     });
 
     return () => {
