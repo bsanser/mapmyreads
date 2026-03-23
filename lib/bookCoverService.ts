@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/nextjs'
 import { Book } from '../types/book'
 
 // Load covers in small batches to avoid overwhelming the API
@@ -19,6 +20,8 @@ export const enrichBooksWithCoversBatched = async (
   books: Book[],
   onBatchComplete?: (loadedCount: number, totalCount: number, coverMap: Record<string, string | null>) => void
 ): Promise<Book[]> => {
+  const startTime = Date.now()
+  return Sentry.startSpan({ name: 'enrichment.book_covers', op: 'enrichment' }, async (span) => {
   // Only fetch covers for read books
   const booksNeedingCovers = books.filter(b => b.readStatus === 'read' && !b.coverImage)
   
@@ -72,7 +75,9 @@ export const enrichBooksWithCoversBatched = async (
         }
       }
     } catch (error) {
-      console.warn(`⚠️ Batch ${Math.floor(i / BATCH_SIZE) + 1} failed:`, error)
+      Sentry.captureException(error, {
+        tags: { component: 'cover_service' }
+      })
     }
 
     // No delay needed - rate limiting happens in the API per actual API call
@@ -81,6 +86,14 @@ export const enrichBooksWithCoversBatched = async (
     }
   }
 
-  console.log(`✅ Cover loading complete: ${loadedCount}/${booksNeedingCovers.length} loaded`)
-  return enrichedBooks
+    console.log(`✅ Cover loading complete: ${loadedCount}/${booksNeedingCovers.length} loaded`)
+
+    span.setAttributes({
+      'covers.total_books': booksNeedingCovers.length,
+      'covers.loaded_count': loadedCount,
+      'covers.duration_ms': Date.now() - startTime,
+    })
+
+    return enrichedBooks
+  })
 }

@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/nextjs'
 import { Book, CSVFormat, cleanISBN, parseDate, parseReadStatus } from '../types/book'
 
 // Detect CSV format based on headers
@@ -12,7 +13,11 @@ export const detectCSVFormat = (headers: string[]): CSVFormat => {
     return 'storygraph'
   }
   
-  throw new Error('Unknown CSV format. Please upload a Goodreads or StoryGraph export.')
+  const err = new Error('Unknown CSV format. Please upload a Goodreads or StoryGraph export.')
+  Sentry.captureException(err, {
+    tags: { component: 'csv_parser', detected_format: 'unknown' }
+  })
+  throw err
 }
 
 // Parse Goodreads CSV row
@@ -92,7 +97,15 @@ export const parseCSVRow = (row: Record<string, string>, format: CSVFormat): Boo
 
 // Parse entire CSV data
 export const parseCSVData = (data: Record<string, string>[], format: CSVFormat): Book[] => {
-  return data
-    .map(row => parseCSVRow(row, format))
-    .filter(book => book.title !== 'Untitled' && book.authors !== 'Unknown') // Filter out invalid rows
+  try {
+    return data
+      .map(row => parseCSVRow(row, format))
+      .filter(book => book.title !== 'Untitled' && book.authors !== 'Unknown')
+  } catch (error) {
+    Sentry.captureException(error, {
+      tags: { component: 'csv_parser', detected_format: format },
+      extra: { row_count: data.length }
+    })
+    throw error
+  }
 }

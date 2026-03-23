@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/nextjs'
 import { Book } from '../types/book'
 
 // Updated storage strategy for Replit + no-login users
@@ -18,13 +19,13 @@ export const saveProcessedBooks = (books: Book[]): void => {
     localStorage.setItem(STORAGE_KEYS.PROCESSED_BOOKS, JSON.stringify(books))
     localStorage.setItem(STORAGE_KEYS.LAST_PROCESSED, new Date().toISOString())
   } catch (error) {
-    console.error('❌ Error saving to localStorage:', error)
+    Sentry.captureException(error, { tags: { component: 'storage', operation: 'localStorage_write' } })
     // Fallback to sessionStorage if localStorage is full
     try {
       sessionStorage.setItem(STORAGE_KEYS.PROCESSED_BOOKS, JSON.stringify(books))
       sessionStorage.setItem(STORAGE_KEYS.LAST_PROCESSED, new Date().toISOString())
     } catch (fallbackError) {
-      console.error('❌ Error saving to sessionStorage:', fallbackError)
+      Sentry.captureException(fallbackError, { tags: { component: 'storage', operation: 'sessionStorage_write' } })
     }
   }
 }
@@ -68,7 +69,7 @@ export const loadProcessedBooks = (): Book[] | null => {
 
     return null
   } catch (error) {
-    console.error('❌ Error loading processed books:', error)
+    Sentry.captureException(error, { tags: { component: 'storage', operation: 'localStorage_read' } })
     return null
   }
 }
@@ -143,7 +144,10 @@ export const extractShareableData = (): Book[] | null => {
     
     return books
   } catch (error) {
-    console.error('❌ Error extracting shareable data:', error)
+    Sentry.captureException(error, {
+      tags: { component: 'share_url' },
+      extra: { error_message: String(error) }
+    })
     return null
   }
 }

@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/nextjs'
 import { Book } from '../types/book'
 import { splitAuthorNames, normalizeAuthorName } from './authorUtils'
 
@@ -57,6 +58,8 @@ export const resolveAuthorCountriesBackend = async (
   onProgress?: (current: number, total: number) => void,
   onBatchComplete?: (batchResults: Record<string, string[]>) => void
 ): Promise<{ booksWithCountries: Book[]; summary: AuthorCountrySummary }> => {
+  const startTime = Date.now()
+  return Sentry.startSpan({ name: 'enrichment.author_countries', op: 'enrichment' }, async (span) => {
   const readBooks = books.filter(book => book.readStatus === 'read')
   const readBooksWithAuthors = readBooks.filter(
     book => Boolean(book.authors && book.authors.trim().length > 0)
@@ -180,8 +183,16 @@ export const resolveAuthorCountriesBackend = async (
     console.warn('⚠️ Author resolution complete but zero countries found — Wikidata API may be unavailable')
   }
 
-  return {
-    booksWithCountries: currentBooks,
-    summary
-  }
+    span.setAttributes({
+      'enrichment.total_authors': totalAuthors,
+      'enrichment.cache_hits': totalCacheHits,
+      'enrichment.cache_misses': totalCacheMisses,
+      'enrichment.duration_ms': Date.now() - startTime,
+    })
+
+    return {
+      booksWithCountries: currentBooks,
+      summary
+    }
+  })
 }

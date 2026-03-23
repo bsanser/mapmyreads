@@ -1,5 +1,6 @@
 'use client'
 
+import * as Sentry from '@sentry/nextjs'
 import { useState, useEffect, useRef } from 'react'
 import Papa from 'papaparse'
 import { HeroScreen } from '../components/HeroScreen'
@@ -181,12 +182,22 @@ export default function Home() {
               'Duration (s)': enrichmentReport.duration_sec
             })
 
-            // Send to logging endpoint
-            fetch('/api/logs/enrichment', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(enrichmentReport)
-            }).catch(err => console.warn('⚠️ Failed to log enrichment metrics:', err))
+            // Log enrichment metrics to Sentry
+            Sentry.captureMessage('enrichment_completed', 'info' as any, {
+              extra: {
+                source: enrichmentReport.source,
+                total_books: enrichmentReport.total_books,
+                read_books: enrichmentReport.read_books,
+                books_with_countries: enrichmentReport.books_with_countries,
+                unique_authors: enrichmentReport.unique_authors,
+                cache_hits: enrichmentReport.cache_hits,
+                cache_misses: enrichmentReport.cache_misses,
+                duration_sec: enrichmentReport.duration_sec,
+                coverage_pct: enrichmentReport.books_coverage_pct,
+                timeout_hit: false,
+                zero_countries_warning: enrichmentReport.books_with_countries === 0
+              }
+            })
 
             setIsEnriching(false)
             setEnrichmentProgress({ current: 0, total: 0, stage: '' })

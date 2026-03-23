@@ -23,8 +23,9 @@ To guide an AI assistant in creating a detailed, step-by-step task list in Markd
 5.  **Wait for Confirmation:** Pause and wait for the user to respond with "Go".
 6.  **Phase 2: Generate Sub-Tasks:** Once the user confirms, break down each parent task into smaller, actionable sub-tasks necessary to complete the parent task. Ensure sub-tasks logically follow from the parent task, cover the implementation details implied by the PRD, and consider existing codebase patterns where relevant without being constrained by them.
 7.  **Identify Relevant Files:** Based on the tasks and PRD, identify potential files that will need to be created or modified. List these under the `Relevant Files` section, including corresponding test files if applicable.
-8.  **Generate Final Output:** Combine the parent tasks, sub-tasks, relevant files, and notes into the final Markdown structure.
-9.  **Save Task List:** Save the generated document in the `/tasks/` directory with the filename `tasks-[prd-file-name].md`, where `[prd-file-name]` matches the base name of the input PRD file (e.g., if the input was `prd-user-profile-editing.md`, the output is `tasks-prd-user-profile-editing.md`).
+8. **Identify Optimal Claude Model:** Based on the tasks and PRD, recommend the optimal model to carry out the task or subtask in the most efficient way so we optimise performance, speed and cost.
+9.  **Generate Final Output:** Combine the parent tasks, sub-tasks, relevant files, and notes into the final Markdown structure.
+10.  **Save Task List:** Save the generated document in the `/tasks/` directory with the filename `tasks-[prd-file-name].md`, where `[prd-file-name]` matches the base name of the input PRD file (e.g., if the input was `prd-user-profile-editing.md`, the output is `tasks-prd-user-profile-editing.md`).
 
 ## Output Format
 
@@ -47,11 +48,11 @@ The generated task list _must_ follow this structure:
 
 ## Tasks
 
-- [ ] 1.0 Parent Task Title
-  - [ ] 1.1 [Sub-task description 1.1]
-  - [ ] 1.2 [Sub-task description 1.2]
+- [ ] 1.0 Parent Task Title - 
+  - [ ] 1.1 [Sub-task description 1.1] -  <recommended_claude_model>
+  - [ ] 1.2 [Sub-task description 1.2] -  <recommended_claude_model>
 - [ ] 2.0 Parent Task Title
-  - [ ] 2.1 [Sub-task description 2.1]
+  - [ ] 2.1 [Sub-task description 2.1] -  <recommended_claude_model>
 - [ ] 3.0 Parent Task Title (may not require sub-tasks if purely structural or configuration)
 ```
 
