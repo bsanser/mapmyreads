@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/nextjs'
 import type { Metadata } from 'next'
 import { Fraunces, DM_Sans } from 'next/font/google'
 import './globals.css'
@@ -25,17 +26,20 @@ export const viewport = {
   viewportFit: 'cover',
 }
 
-export const metadata: Metadata = {
-  title: 'Map my Reads',
-  description: 'Generate a map from your reading history',
-  icons: {
-    icon: [
-      { url: '/logo.png', type: 'image/png' }
-    ],
-    apple: '/logo.png',
-  },
-  other: {
-    'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: https:; connect-src 'self' https:; font-src 'self' https:;"
+export function generateMetadata(): Metadata {
+  return {
+    title: 'Map my Reads',
+    description: 'Generate a map from your reading history',
+    icons: {
+      icon: [
+        { url: '/logo.png', type: 'image/png' }
+      ],
+      apple: '/logo.png',
+    },
+    other: {
+      'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: https:; connect-src 'self' https:; font-src 'self' https:;",
+      ...Sentry.getTraceData(),
+    },
   }
 }
 

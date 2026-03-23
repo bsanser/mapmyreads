@@ -1,15 +1,29 @@
 # Map My Reads — Roadmap
 
-[x]  UI / Style Refresh
-[] Deploy to production
-[] Analytics (PostHog)
-[] Submitting Feedback
-[] Allow users to edit book details Book Details
-[] Allow users to add Books Manually
-[] Create backend
-[] Add more filters (currently showing just all read books. Maybe we want to add other categories: read books in year 2020 ). Uhhh this could be a RAG even. So instead of a filter, users search using the chat.
-[] Sharing map with friends
+## Done
+[x] UI / Style Refresh
+[x] Submitting Feedback
+[x] Deploy to production
+
+## Pre-launch (before marketing)
+[] Error tracking (Sentry)
+[] Analytics (PostHog) + replace file-based enrichment logging
+[] OG image for share links (map preview thumbnail)
+[] Mobile responsiveness audit
+[] Add books manually (client-side, localStorage)
+[] Edit book country (client-side, localStorage)
+[] Sharing map with friends (polish + OG image)
+
+## Growth
 [] Buy me a coffee
 [] Make roadmap public (allow votes)
+
+## Backend & persistence
+[] Anonymous sessions (server-side persistence, survive browser clear)
+[] User accounts (cross-device sync, optional)
+
+## Features
+[] More filters (by year, by genre, etc.)
+[] Natural language search / RAG ("books I read in 2020")
 [] Implement tests
 

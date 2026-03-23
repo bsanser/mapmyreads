@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/nextjs'
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '../../../../lib/prisma'
 
@@ -47,7 +48,9 @@ async function fetchCoverUrl(book: BookRequest): Promise<string | null> {
 
     return null
   } catch (error) {
-    console.warn(`Error fetching cover for "${book.title}":`, error)
+    Sentry.captureException(error, {
+      tags: { component: 'open_library' }
+    })
     return null
   }
 }
@@ -96,8 +99,12 @@ export async function POST(request: NextRequest) {
         } else {
           cacheMisses.push(book)
         }
-      } catch {
+      } catch (dbError) {
         // DB unavailable — treat as cache miss
+        Sentry.captureMessage('db_unavailable', 'warning' as any, {
+          tags: { component: 'db', operation: 'cache_read' },
+          extra: { route: '/api/books/batch-covers', error_message: String(dbError) }
+        })
         cacheMisses.push(book)
       }
     }
@@ -131,7 +138,12 @@ export async function POST(request: NextRequest) {
               source: 'openlibrary'
             }
           })
-        } catch { /* cache write failure is non-fatal */ }
+        } catch (dbError) {
+          Sentry.captureMessage('db_unavailable', 'warning' as any, {
+            tags: { component: 'db', operation: 'cache_write' },
+            extra: { route: '/api/books/batch-covers', error_message: String(dbError) }
+          })
+        }
 
         results[key] = coverUrl
         console.log(`💾 Cached: ${book.title} → ${coverUrl ? 'found' : 'not found'}`)

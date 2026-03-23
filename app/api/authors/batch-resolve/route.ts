@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/nextjs'
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '../../../../lib/prisma'
 import { detectAuthorCountriesByName } from '../../../../lib/countryDetection'
@@ -82,8 +83,12 @@ export async function POST(request: NextRequest) {
         } else {
           cacheMisses.push(authorName)
         }
-      } catch {
+      } catch (dbError) {
         // DB unavailable — treat as cache miss
+        Sentry.captureMessage('db_unavailable', 'warning' as any, {
+          tags: { component: 'db', operation: 'cache_read' },
+          extra: { route: '/api/authors/batch-resolve', error_message: String(dbError) }
+        })
         cacheMisses.push(authorName)
       }
     }
@@ -115,7 +120,12 @@ export async function POST(request: NextRequest) {
               source: 'wikidata'
             }
           })
-        } catch { /* cache write failure is non-fatal */ }
+        } catch (dbError) {
+          Sentry.captureMessage('db_unavailable', 'warning' as any, {
+            tags: { component: 'db', operation: 'cache_write' },
+            extra: { route: '/api/authors/batch-resolve', error_message: String(dbError) }
+          })
+        }
 
         results[authorName] = countries
         console.log(`💾 Cached: ${authorName} → ${countries.join(', ') || 'none'}`)

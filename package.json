@@ -18,6 +18,7 @@
     "@prisma/adapter-pg": "^7.5.0",
     "@prisma/client": "^7.5.0",
     "@react-spring/web": "^10.0.1",
+    "@sentry/nextjs": "^10.45.0",
     "@types/maplibre-gl": "^1.13.2",
     "@types/pg": "^8.20.0",
     "country-code-lookup": "^0.1.3",

@@ -1,4 +1,5 @@
 // Country detection for books and authors
+import * as Sentry from '@sentry/nextjs'
 import { Book } from '../types/book'
 import { splitAuthorNames, normalizeAuthorName } from './authorUtils'
 import { mapDisplayNameToISO2 } from './mapUtilities'
@@ -151,7 +152,9 @@ const buildWikidataURL = (params: Record<string, string>) => {
 const fetchJson = async <T>(url: string): Promise<T> => {
   const response = await fetch(url)
   if (!response.ok) {
-    throw new Error(`Wikidata request failed: ${response.status}`)
+    const err = new Error(`Wikidata request failed: ${response.status}`) as any
+    err.status = response.status
+    throw err
   }
   return response.json()
 }
@@ -264,8 +267,17 @@ const fetchAuthorCountryNames = async (authorName: string): Promise<string[]> =>
     if (countryIds.length === 0) return []
 
     return await fetchLabelsForEntities(countryIds)
-  } catch (error) {
-    console.warn(`Wikidata author lookup failed for "${authorName}":`, error)
+  } catch (error: any) {
+    if (error?.status === 429) {
+      Sentry.captureMessage('wikidata_rate_limited', 'warning' as any, {
+        extra: { concurrent_limit: 2, delay_ms: 150 }
+      })
+    } else {
+      Sentry.captureException(error, {
+        tags: { component: 'wikidata', failure_type: error?.status ? 'api_error' : 'unknown' },
+        extra: { http_status: error?.status }
+      })
+    }
     return []
   }
 }
