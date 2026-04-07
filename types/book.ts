@@ -19,8 +19,11 @@ export type Book = {
   coverImage: string | null
   
   // Metadata
-  source: 'goodreads' | 'storygraph'
+  source: 'goodreads' | 'storygraph' | 'manual'
   originalData: Record<string, any> // Keep original CSV row for debugging
+
+  // Transient UI state — must never be persisted to localStorage
+  isResolvingCountry?: boolean
 }
 
 export type CSVFormat = 'goodreads' | 'storygraph'
