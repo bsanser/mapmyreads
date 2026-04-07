@@ -12,9 +12,10 @@ interface AddBookModalProps {
   isOpen: boolean
   onClose: () => void
   addBook: (book: Book) => 'added' | 'duplicate'
+  onBookAdded?: (book: Book) => void
 }
 
-export default function AddBookModal({ isOpen, onClose, addBook }: AddBookModalProps) {
+export default function AddBookModal({ isOpen, onClose, addBook, onBookAdded }: AddBookModalProps) {
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<SearchBookResult[]>([])
   const [isLoading, setIsLoading] = useState(false)
@@ -90,6 +91,7 @@ export default function AddBookModal({ isOpen, onClose, addBook }: AddBookModalP
       setDuplicateMessage('This book is already in your library.')
     } else {
       onClose()
+      onBookAdded?.(book)
     }
   }
 
@@ -99,6 +101,7 @@ export default function AddBookModal({ isOpen, onClose, addBook }: AddBookModalP
       setDuplicateMessage('This book is already in your library.')
     } else {
       onClose()
+      onBookAdded?.(book)
     }
   }
 

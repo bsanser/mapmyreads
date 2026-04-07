@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Papa from 'papaparse'
+import { Book } from '../types/book'
 import { HeroScreen } from '../components/HeroScreen'
 import { MapContainer } from '../components/MapContainer'
 import { DesktopSidebar } from '../components/DesktopSidebar'
@@ -32,7 +33,7 @@ import AddBookModal from '../components/AddBookModal'
 
 export default function Home() {
   // Context state
-  const { books, setBooks, selectedCountry, setSelectedCountry, addBook } = useBooks()
+  const { books, setBooks, selectedCountry, setSelectedCountry, addBook, updateBookCountries } = useBooks()
   const { currentTheme, setCurrentTheme } = useTheme()
   const {
     setIsEnriching,
@@ -51,6 +52,60 @@ export default function Home() {
   const [isAddBookModalOpen, setIsAddBookModalOpen] = useState(false)
 
   const booksLoadedRef = useRef(false)
+
+  // Task 4.1-4.3: Optimistic book add with background enrichment
+  const handleManualBookAdd = async (book: Book) => {
+    // Book is already in state via addBook() called from AddBookModal
+    // Save immediately (isResolvingCountry will be stripped by saveProcessedBooks)
+    setBooks(prev => {
+      saveProcessedBooks(prev)
+      return prev
+    })
+
+    // 10-second timeout: if enrichment doesn't resolve, clear the resolving flag
+    const timeoutId = setTimeout(() => {
+      setBooks(prev =>
+        prev.map(b =>
+          (b.isbn13 && book.isbn13 ? b.isbn13 === book.isbn13 : b.title === book.title && b.authors === book.authors)
+            ? { ...b, isResolvingCountry: false }
+            : b
+        )
+      )
+    }, 10000)
+
+    // Background: resolve author country
+    resolveAuthorCountriesBackend(
+      [book],
+      undefined,
+      (batchResults) => {
+        clearTimeout(timeoutId)
+        updateBookCountries(book, Object.values(batchResults).flat())
+        setBooks(prev =>
+          prev.map(b =>
+            (b.isbn13 && book.isbn13 ? b.isbn13 === book.isbn13 : b.title === book.title && b.authors === book.authors)
+              ? { ...b, isResolvingCountry: false }
+              : b
+          )
+        )
+      }
+    ).catch(() => {
+      clearTimeout(timeoutId)
+      setBooks(prev =>
+        prev.map(b =>
+          (b.isbn13 && book.isbn13 ? b.isbn13 === book.isbn13 : b.title === book.title && b.authors === book.authors)
+            ? { ...b, isResolvingCountry: false }
+            : b
+        )
+      )
+    })
+
+    // Background: fetch cover if not already present
+    if (!book.coverImage) {
+      enrichBooksWithCoversBatched([book], (_loaded, _total, coverMap) => {
+        setBooks(prev => applyCoverResultsToBooks(prev, coverMap))
+      }).catch(() => {})
+    }
+  }
 
   const handleToggleMissingAuthorCountry = () => {
     setShowMissingAuthorCountry(prev => !prev)
@@ -309,6 +364,7 @@ export default function Home() {
         isOpen={isAddBookModalOpen}
         onClose={() => setIsAddBookModalOpen(false)}
         addBook={addBook}
+        onBookAdded={handleManualBookAdd}
       />
     </div>
   )

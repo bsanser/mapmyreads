@@ -165,13 +165,17 @@ export const BookCard = memo(function BookCard({
                 )}
               </div>
             </div>
+          ) : b.isResolvingCountry ? (
+            <div className="book-country-tags">
+              <div className="shimmer" style={{ width: '80px', height: '20px' }} />
+            </div>
           ) : (
             <div className="book-country-tags">
               {b.authorCountries.map((country) => (
                 <button
                   key={country}
                   onClick={() => onCountryClick(country)}
-                  className="country-tag"
+                  className={`country-tag animate-slide-up`}
                 >
                   <span className="country-tag-name">{mapISO2ToDisplayName(country)}</span>
                   <span>{getCountryFlag(country)}</span>
