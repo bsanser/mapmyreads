@@ -27,10 +27,12 @@ import { enrichmentMetrics } from '../lib/enrichmentMetrics'
 import { useBooks } from '../contexts/BooksContext'
 import { useTheme } from '../contexts/ThemeContext'
 import { useEnrichment } from '../contexts/EnrichmentContext'
+import AddBookFAB from '../components/AddBookFAB'
+import AddBookModal from '../components/AddBookModal'
 
 export default function Home() {
   // Context state
-  const { books, setBooks, selectedCountry, setSelectedCountry } = useBooks()
+  const { books, setBooks, selectedCountry, setSelectedCountry, addBook } = useBooks()
   const { currentTheme, setCurrentTheme } = useTheme()
   const {
     setIsEnriching,
@@ -46,6 +48,7 @@ export default function Home() {
   const [booksToShow, setBooksToShow] = useState<number>(10)
   const [showMissingAuthorCountry, setShowMissingAuthorCountry] = useState(false)
   const [isSheetExpanded, setIsSheetExpanded] = useState(true)
+  const [isAddBookModalOpen, setIsAddBookModalOpen] = useState(false)
 
   const booksLoadedRef = useRef(false)
 
@@ -294,6 +297,19 @@ export default function Home() {
       />
 
       <EnrichmentProgress />
+
+      <AddBookFAB
+        onClick={() => {
+          setIsSheetExpanded(false)
+          setIsAddBookModalOpen(true)
+        }}
+      />
+
+      <AddBookModal
+        isOpen={isAddBookModalOpen}
+        onClose={() => setIsAddBookModalOpen(false)}
+        addBook={addBook}
+      />
     </div>
   )
 }
