@@ -2,6 +2,9 @@
 import { Book } from '../types/book'
 import { splitAuthorNames, normalizeAuthorName } from './authorUtils'
 import { mapDisplayNameToISO2 } from './mapUtilities'
+import { COUNTRIES } from './countries'
+
+const VALID_ISO2 = new Set(COUNTRIES.map(c => c.iso2))
 
 // Country name mapping for map display
 const COUNTRY_NAME_MAPPING: Record<string, string> = {
@@ -285,7 +288,7 @@ export const detectAuthorCountriesByName = async (authorName: string): Promise<s
     new Set(
       countryNames
         .map(name => mapDisplayNameToISO2(name))
-        .filter(Boolean)
+        .filter(code => VALID_ISO2.has(code))
     )
   )
 

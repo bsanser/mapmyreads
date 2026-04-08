@@ -35,7 +35,7 @@ import Toast from '../components/Toast'
 
 export default function Home() {
   // Context state
-  const { books, setBooks, selectedCountry, setSelectedCountry, addBook, updateBookCountries } = useBooks()
+  const { books, setBooks, selectedCountry, setSelectedCountry, addBook } = useBooks()
   const { currentTheme, setCurrentTheme } = useTheme()
   const {
     setIsEnriching,
@@ -82,14 +82,14 @@ export default function Home() {
       undefined,
       (batchResults) => {
         clearTimeout(timeoutId)
-        updateBookCountries(book, Object.values(batchResults).flat())
-        setBooks(prev =>
-          prev.map(b =>
+        setBooks(prev => {
+          const updated = applyAuthorCountriesToBooks(prev, batchResults)
+          return updated.map(b =>
             (b.isbn13 && book.isbn13 ? b.isbn13 === book.isbn13 : b.title === book.title && b.authors === book.authors)
               ? { ...b, isResolvingCountry: false }
               : b
           )
-        )
+        })
       }
     ).catch(() => {
       clearTimeout(timeoutId)
@@ -373,6 +373,7 @@ export default function Home() {
           setIsSheetExpanded(false)
           setIsAddBookModalOpen(true)
         }}
+        themeColor={THEMES[currentTheme].outline}
       />
 
       <AddBookModal

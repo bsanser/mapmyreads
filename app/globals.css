@@ -245,11 +245,11 @@ body {
     touch-action: none;
   }
 
-  /* On mobile the bottom sheet occupies 40vh — cap the map to the remaining space */
+  /* On mobile the bottom sheet occupies 33vh — cap the map to the remaining space */
   @media (max-width: 1023px) {
     .map-container-root,
     .map-canvas-wrapper {
-      height: 60vh;
+      height: 67vh;
       transition: height 0.35s cubic-bezier(0.32, 0.72, 0, 1);
     }
 
@@ -799,7 +799,7 @@ body {
 
   .mobile-bottom-sheet-wrapper {
     @apply lg:hidden fixed bottom-0 left-0 right-0 shadow-lg z-40;
-    height: 40vh;
+    height: 33vh;
     overflow: hidden;
     background-color: var(--color-surface);
     border-top: 1px solid var(--color-border);
@@ -1025,9 +1025,10 @@ a:focus-visible {
 
 .fab-add-book {
   position: fixed;
-  z-index: 40;
+  z-index: 55;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.4rem;
   padding: 0.6rem 1rem;
   background: var(--color-ink);
@@ -1039,7 +1040,7 @@ a:focus-visible {
   font-weight: 600;
   cursor: pointer;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
-  transition: background 0.15s, transform 0.1s;
+  transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
 
   /* Desktop: bottom-left below sidebar */
   bottom: 1.5rem;
@@ -1052,30 +1053,58 @@ a:focus-visible {
 }
 
 .fab-icon {
-  font-size: 1.1rem;
-  line-height: 1;
+  width: 1.25rem;
+  height: 1.25rem;
+  flex-shrink: 0;
 }
 
-/* Tablet: bottom-right */
+/* Tablet: circle icon-only, same as mobile */
 @media (min-width: 640px) and (max-width: 1023px) {
   .fab-add-book {
-    bottom: 5rem;
-    right: 1rem;
+    right: 1.25rem;
     left: auto;
-  }
-}
-
-/* Mobile: icon-only circle */
-@media (max-width: 639px) {
-  .fab-add-book {
-    bottom: 5rem;
-    right: 1rem;
-    left: auto;
-    padding: 0.75rem;
+    bottom: calc(33vh - 1.5rem);
+    width: 3rem;
+    height: 3rem;
+    padding: 0;
     border-radius: 50%;
+    box-shadow: 0 0 0 3px var(--color-bg), 0 2px 10px rgba(0, 0, 0, 0.22);
+    transition: background 0.15s, transform 0.1s, bottom 0.35s cubic-bezier(0.32, 0.72, 0, 1);
   }
   .fab-label {
     display: none;
+  }
+}
+
+/* Tablet: follow sheet when it collapses */
+@media (min-width: 640px) and (max-width: 1023px) {
+  .sheet-collapsed .fab-add-book {
+    bottom: calc(4.5rem - 1.5rem);
+  }
+}
+
+/* Mobile: circle floating at top-right of bottom sheet */
+@media (max-width: 639px) {
+  .fab-add-book {
+    right: 1.25rem;
+    left: auto;
+    bottom: calc(33vh - 1.5rem);
+    width: 3rem;
+    height: 3rem;
+    padding: 0;
+    border-radius: 50%;
+    box-shadow: 0 0 0 3px var(--color-bg), 0 2px 10px rgba(0, 0, 0, 0.22);
+    transition: background 0.15s, transform 0.1s, bottom 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+  }
+  .fab-label {
+    display: none;
+  }
+}
+
+/* Mobile: follow sheet when it collapses */
+@media (max-width: 639px) {
+  .sheet-collapsed .fab-add-book {
+    bottom: calc(4.5rem - 1.5rem);
   }
 }
 

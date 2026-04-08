@@ -31,10 +31,8 @@ function applyMapStyle(
   // Background
   map.setPaintProperty('background', 'background-color', themeColors.background);
 
-  // Country outlines + labels
+  // Country outlines
   map.setPaintProperty('countries-outline', 'line-color', themeColors.outline);
-  map.setPaintProperty('country-labels', 'text-color', themeColors.outline);
-  map.setPaintProperty('country-labels', 'text-halo-color', themeColors.background);
 
   // Heatmap fill
   const heatmapStyle = generateHeatmapStyle(books, themeColors);

@@ -3,6 +3,8 @@ import { Book } from '../types/book'
 import { getCountryFlag, mapISO2ToDisplayName } from '../lib/mapUtilities'
 import { COUNTRIES } from '../lib/countries'
 
+const VALID_ISO2 = new Set(COUNTRIES.map(c => c.iso2))
+
 
 interface BookCardProps {
   book: Book
@@ -171,7 +173,7 @@ export const BookCard = memo(function BookCard({
             </div>
           ) : (
             <div className="book-country-tags">
-              {b.authorCountries.map((country) => (
+              {b.authorCountries.filter(c => VALID_ISO2.has(c)).map((country) => (
                 <button
                   key={country}
                   onClick={() => onCountryClick(country)}

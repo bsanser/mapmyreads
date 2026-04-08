@@ -69,25 +69,9 @@ export const createMapStyle = (currentTheme: ThemeKey): { style: StyleSpecificat
         id: "countries-outline",
         type: "line",
         source: "countries",
-        paint: { 
-          "line-color": theme.outline, 
-          "line-width": 2 
-        }
-      },
-      {
-        id: "country-labels",
-        type: "symbol",
-        source: "countries",
-        layout: {
-          "text-field": ["get", "ADMIN"],
-          "text-font": ["Open Sans Regular","Arial Unicode MS Regular"],
-          "text-size": 12,
-          "text-allow-overlap": false
-        },
-        paint: { 
-          "text-color": theme.outline, 
-          "text-halo-color": theme.background, 
-          "text-halo-width": 1.2 
+        paint: {
+          "line-color": theme.outline,
+          "line-width": 2
         }
       }
     ]

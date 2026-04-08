@@ -15,6 +15,7 @@ export function MapControls({
   onThemeChange,
 }: MapControlsProps) {
   const [isOverflowOpen, setIsOverflowOpen] = useState(false)
+  const [feedbackOpen, setFeedbackOpen] = useState(false)
   const overflowRef = useRef<HTMLDivElement>(null)
 
   // Close on click-outside and Escape
@@ -49,11 +50,14 @@ export function MapControls({
         aria-label="More options"
         aria-expanded={isOverflowOpen}
       >
-        {/* Three-dot ellipsis icon */}
-        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--color-ink-2)' }}>
-          <circle cx="5" cy="12" r="2" />
-          <circle cx="12" cy="12" r="2" />
-          <circle cx="19" cy="12" r="2" />
+        {/* Settings icon */}
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" viewBox="0 0 24 24" style={{ color: 'var(--color-ink-2)' }}>
+          <line x1="4" y1="6" x2="20" y2="6" />
+          <line x1="4" y1="12" x2="20" y2="12" />
+          <line x1="4" y1="18" x2="20" y2="18" />
+          <circle cx="9" cy="6" r="2" fill="var(--color-surface)" />
+          <circle cx="15" cy="12" r="2" fill="var(--color-surface)" />
+          <circle cx="9" cy="18" r="2" fill="var(--color-surface)" />
         </svg>
       </button>
 
@@ -88,11 +92,27 @@ export function MapControls({
           <div className="overflow-menu-divider" />
 
           {/* Feedback row */}
-          <div className="overflow-menu-item" onClick={() => setIsOverflowOpen(false)}>
-            <FeedbackButton />
-          </div>
+          <button
+            className="overflow-menu-item"
+            onClick={() => {
+              setIsOverflowOpen(false)
+              setFeedbackOpen(true)
+            }}
+          >
+            <svg className="feedback-btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--color-ink-2)' }}>
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            </svg>
+            <span className="type-ui">Send feedback</span>
+          </button>
         </div>
       )}
+
+      {/* Always mounted so modal survives overflow close */}
+      <FeedbackButton
+        externalOpen={feedbackOpen}
+        onExternalClose={() => setFeedbackOpen(false)}
+        className="sr-only"
+      />
     </div>
   )
 }

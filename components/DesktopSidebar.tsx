@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from 'react'
 import { getCountryFlag, mapISO2ToDisplayName } from '../lib/mapUtilities'
 import { ReadingAtlasSummary } from './ReadingAtlasSummary'
 import { BookList } from './BookList'
-import { FeedbackButton } from './FeedbackButton'
 import { useBooks } from '../contexts/BooksContext'
 import { useTheme } from '../contexts/ThemeContext'
 import { useEnrichment } from '../contexts/EnrichmentContext'
@@ -101,7 +100,6 @@ export function DesktopSidebar({ booksToShow, onLoadMore }: DesktopSidebarProps)
               Show all
             </button>
           )}
-          <FeedbackButton iconOnly />
         </div>
       </div>
 
