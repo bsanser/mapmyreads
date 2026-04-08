@@ -9,9 +9,10 @@ import { useEnrichment } from '../contexts/EnrichmentContext'
 interface DesktopSidebarProps {
   booksToShow: number
   onLoadMore: () => void
+  onAddBook?: () => void
 }
 
-export function DesktopSidebar({ booksToShow, onLoadMore }: DesktopSidebarProps) {
+export function DesktopSidebar({ booksToShow, onLoadMore, onAddBook }: DesktopSidebarProps) {
   const { books, selectedCountry, setSelectedCountry, summaryStats } = useBooks()
   const { currentTheme } = useTheme()
   const { isEnriching } = useEnrichment()
@@ -98,6 +99,20 @@ export function DesktopSidebar({ booksToShow, onLoadMore }: DesktopSidebarProps)
               }}
             >
               Show all
+            </button>
+          )}
+          {onAddBook && (
+            <button
+              type="button"
+              className="sidebar-add-book-btn"
+              onClick={onAddBook}
+              aria-label="Add book"
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+              Add book
             </button>
           )}
         </div>

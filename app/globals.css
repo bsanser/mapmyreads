@@ -1058,6 +1058,38 @@ a:focus-visible {
   flex-shrink: 0;
 }
 
+/* Desktop: hide fixed FAB (inline button in sidebar used instead) */
+@media (min-width: 1024px) {
+  .fab-add-book {
+    display: none;
+  }
+}
+
+/* ── Sidebar inline add book button ──────────────────── */
+
+.sidebar-add-book-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.2rem 0.5rem;
+  background: transparent;
+  border: 1px solid var(--color-ink-3);
+  border-radius: 9999px;
+  color: var(--color-ink-2);
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+  white-space: nowrap;
+}
+
+.sidebar-add-book-btn:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+  background: color-mix(in oklch, var(--color-accent) 8%, transparent);
+}
+
 /* Tablet: circle icon-only, same as mobile */
 @media (min-width: 640px) and (max-width: 1023px) {
   .fab-add-book {

@@ -350,6 +350,7 @@ export default function Home() {
       <DesktopSidebar
         booksToShow={booksToShow}
         onLoadMore={handleLoadMore}
+        onAddBook={() => setIsAddBookModalOpen(true)}
       />
 
       <MobileBottomSheet
