@@ -10,9 +10,10 @@ interface DesktopSidebarProps {
   booksToShow: number
   onLoadMore: () => void
   onAddBook?: () => void
+  isReadOnly?: boolean
 }
 
-export function DesktopSidebar({ booksToShow, onLoadMore, onAddBook }: DesktopSidebarProps) {
+export function DesktopSidebar({ booksToShow, onLoadMore, onAddBook, isReadOnly = false }: DesktopSidebarProps) {
   const { books, selectedCountry, setSelectedCountry, summaryStats } = useBooks()
   const { currentTheme } = useTheme()
   const { isEnriching } = useEnrichment()
@@ -101,7 +102,7 @@ export function DesktopSidebar({ booksToShow, onLoadMore, onAddBook }: DesktopSi
               Show all
             </button>
           )}
-          {onAddBook && (
+          {onAddBook && !isReadOnly && (
             <button
               type="button"
               className="sidebar-add-book-btn"

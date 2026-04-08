@@ -30,15 +30,18 @@ export function BooksProvider({ children }: { children: ReactNode }) {
   const [selectedCountry, setSelectedCountry] = useState<string | null>(null)
   const { syncBooks } = useSession()
 
-  // Sync to DB whenever books change, but skip the initial empty state on mount
-  // to avoid wiping the DB before localStorage books are loaded.
+  // Sync to DB whenever books change, but:
+  // - Skip initial empty state (avoid wiping DB before localStorage hydration)
+  // - Skip on /map/[uuid] pages (read-only views of someone else's session)
   const hasBooks = useRef(false)
   useEffect(() => {
+    const isReadOnlyPage = typeof window !== 'undefined' && window.location.pathname.startsWith('/map/')
+    if (isReadOnlyPage) return
+
     if (books.length > 0) {
       hasBooks.current = true
       syncBooks(books)
     } else if (hasBooks.current) {
-      // Books were cleared intentionally — sync the empty state
       syncBooks(books)
     }
   }, [books])

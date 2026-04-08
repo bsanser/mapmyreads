@@ -1,25 +1,18 @@
 'use client'
 
 import { useState } from 'react'
+import { useSession } from '../contexts/SessionContext'
 
-export const ShareButton = ({ books, className = '' }: { books: any[], className?: string }) => {
+export const ShareButton = ({ className = '' }: { className?: string }) => {
   const [showShareModal, setShowShareModal] = useState(false)
+  const { sessionId } = useSession()
 
   const handleShare = () => {
     setShowShareModal(true)
   }
 
   const generateShareableLink = () => {
-    // Create a shareable link with the current book data
-    const shareableData = {
-      books: books.filter(book => book.readStatus === 'read'),
-      timestamp: new Date().toISOString()
-    }
-    
-    const encodedData = btoa(JSON.stringify(shareableData))
-    const shareableUrl = `${window.location.origin}?data=${encodedData}`
-    
-    return shareableUrl
+    return `${window.location.origin}/map/${sessionId}`
   }
 
   const copyToClipboard = async (text: string) => {
