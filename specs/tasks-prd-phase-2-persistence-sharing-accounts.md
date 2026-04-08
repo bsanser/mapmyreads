@@ -132,15 +132,15 @@ Model key:
 ### 4.0 Token utilities
 `Model: Sonnet`
 
-- [ ] 4.1 [RED] Create `tests/magicLink.test.ts`. Write unit tests for a `generateMagicToken()` function: returns a 64-char hex string. Write tests for `isTokenExpired(expiresAt: Date)`: returns true if date is in the past, false if in the future. Write tests for `createTokenRecord(email, sessionId?)`: returns a `MagicToken`-shaped object with `expiresAt` 15 minutes from now. All tests fail.
-- [ ] 4.2 [GREEN] Create `lib/magicLink.ts`. Implement `generateMagicToken()` (32 random bytes → hex via `crypto.randomBytes`), `isTokenExpired()`, and `createTokenRecord()`. Tests pass.
+- [x] 4.1 [RED] Create `tests/magicLink.test.ts`. Pure function tests — no Prisma, works in node env.
+- [x] 4.2 [GREEN] Create `lib/magicLink.ts`. Implement `generateMagicToken()`, `isTokenExpired()`, `createTokenRecord()`. Tests pass.
 
 ### 4.1 Send magic link route
 `Model: Sonnet`
 
-- [ ] 4.3 Add `resend` package: `npm install resend`. Add `RESEND_API_KEY` to `.env` and `.env.example`.
-- [ ] 4.4 [RED] In `tests/magicLink.test.ts`, add tests for a `sendMagicLinkEmail(email, token)` function: given a valid email and token, it constructs the correct magic link URL (`/api/auth/verify?token=<token>`). Test that the email subject and body contain the link. Mock the Resend client. Tests fail.
-- [ ] 4.5 [GREEN] Create `app/api/auth/magic-link/route.ts`. Implement `POST /api/auth/magic-link`: validate email format, create `MagicToken` row (with `sessionId` if provided), call `sendMagicLinkEmail`. Always return `{ ok: true }` (never reveal whether email exists). Tests pass.
+- [x] 4.3 Add `resend` package: `npm install resend`. Add `RESEND_API_KEY` to `.env.local` and `.env.example`.
+- [x] 4.4 [RED] Add `sendMagicLinkEmail` tests with mocked Resend client. Tests fail.
+- [x] 4.5 [GREEN] Create `app/api/auth/magic-link/route.ts`. Tests pass.
 
 ### 4.2 Verify route
 `Model: Opus`
