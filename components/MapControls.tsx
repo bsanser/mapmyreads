@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { THEMES, ThemeKey } from '../lib/themeManager'
+import { FeedbackButton } from './FeedbackButton'
 
 interface MapControlsProps {
   currentTheme: ThemeKey
@@ -12,50 +13,67 @@ export function MapControls({
   currentTheme,
   themes,
   onThemeChange,
-  layout = 'stacked'
 }: MapControlsProps) {
-  const [isThemeDropdownOpen, setIsThemeDropdownOpen] = useState(false)
-  const themeDropdownRef = useRef<HTMLDivElement>(null)
+  const [isOverflowOpen, setIsOverflowOpen] = useState(false)
+  const [feedbackOpen, setFeedbackOpen] = useState(false)
+  const overflowRef = useRef<HTMLDivElement>(null)
 
+  // Close on click-outside and Escape
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (!themeDropdownRef.current?.contains(event.target as Node)) {
-        setIsThemeDropdownOpen(false)
+      if (!overflowRef.current?.contains(event.target as Node)) {
+        setIsOverflowOpen(false)
       }
     }
-
-    if (isThemeDropdownOpen) {
-      document.addEventListener('mousedown', handleClickOutside)
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setIsOverflowOpen(false)
     }
 
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [isThemeDropdownOpen])
+    if (isOverflowOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+      document.addEventListener('keydown', handleKeyDown)
+    }
 
-  const size = layout === 'inline' ? 'w-8 h-8 rounded-lg' : 'w-10 h-10 rounded-2xl'
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [isOverflowOpen])
 
   return (
-    <div className="flex items-center gap-3">
-      <div className="relative" ref={themeDropdownRef}>
-        <button
-          onClick={() => setIsThemeDropdownOpen(prev => !prev)}
-          className={`map-control-btn ${size}`}
-          title="Select theme"
-        >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" style={{ color: 'var(--color-ink-2)' }}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9.53 16.122a3 3 0 0 0-5.78 1.128 2.25 2.25 0 0 1-2.4 2.245 4.5 4.5 0 0 0 8.4-2.245c0-.399-.078-.78-.22-1.128Zm0 0a15.998 15.998 0 0 0 3.388-1.62m-5.043-.025a15.994 15.994 0 0 1 1.622-3.395m3.42 3.42a15.995 15.995 0 0 0 4.764-4.648l3.876-5.814a1.151 1.151 0 0 0-1.597-1.597L14.146 6.32a15.996 15.996 0 0 0-4.649 4.763m3.42 3.42a6.776 6.776 0 0 0-3.42-3.42" />
-          </svg>
-        </button>
+    <div className="relative" ref={overflowRef}>
+      {/* Overflow trigger button */}
+      <button
+        onClick={() => setIsOverflowOpen(prev => !prev)}
+        className="map-control-btn w-10 h-10 rounded-2xl"
+        title="More options"
+        aria-label="More options"
+        aria-expanded={isOverflowOpen}
+      >
+        {/* Settings icon */}
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" viewBox="0 0 24 24" style={{ color: 'var(--color-ink-2)' }}>
+          <line x1="4" y1="6" x2="20" y2="6" />
+          <line x1="4" y1="12" x2="20" y2="12" />
+          <line x1="4" y1="18" x2="20" y2="18" />
+          <circle cx="9" cy="6" r="2" fill="var(--color-surface)" />
+          <circle cx="15" cy="12" r="2" fill="var(--color-surface)" />
+          <circle cx="9" cy="18" r="2" fill="var(--color-surface)" />
+        </svg>
+      </button>
 
-        {isThemeDropdownOpen && (
-          <div className="map-theme-dropdown map-dropdown">
+      {isOverflowOpen && (
+        <div className="overflow-menu">
+          {/* Theme section */}
+          <div className="overflow-menu-section">
+            <div className="overflow-menu-label">Map theme</div>
             {Object.entries(themes).map(([key, theme]) => (
               <button
                 key={key}
                 onClick={() => {
                   onThemeChange?.(key as ThemeKey)
-                  setIsThemeDropdownOpen(false)
+                  setIsOverflowOpen(false)
                 }}
-                className="map-dropdown-item"
+                className="overflow-menu-item"
                 style={key === currentTheme ? { color: 'var(--color-accent)', fontWeight: 600 } : {}}
               >
                 <div
@@ -69,8 +87,32 @@ export function MapControls({
               </button>
             ))}
           </div>
-        )}
-      </div>
+
+          {/* Divider */}
+          <div className="overflow-menu-divider" />
+
+          {/* Feedback row */}
+          <button
+            className="overflow-menu-item"
+            onClick={() => {
+              setIsOverflowOpen(false)
+              setFeedbackOpen(true)
+            }}
+          >
+            <svg className="feedback-btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--color-ink-2)' }}>
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            </svg>
+            <span className="type-ui">Send feedback</span>
+          </button>
+        </div>
+      )}
+
+      {/* Always mounted so modal survives overflow close */}
+      <FeedbackButton
+        externalOpen={feedbackOpen}
+        onExternalClose={() => setFeedbackOpen(false)}
+        className="sr-only"
+      />
     </div>
   )
 }

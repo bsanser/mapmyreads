@@ -3,6 +3,8 @@ import { Book } from '../types/book'
 import { getCountryFlag, mapISO2ToDisplayName } from '../lib/mapUtilities'
 import { COUNTRIES } from '../lib/countries'
 
+const VALID_ISO2 = new Set(COUNTRIES.map(c => c.iso2))
+
 
 interface BookCardProps {
   book: Book
@@ -165,13 +167,17 @@ export const BookCard = memo(function BookCard({
                 )}
               </div>
             </div>
+          ) : b.isResolvingCountry ? (
+            <div className="book-country-tags">
+              <div className="shimmer" style={{ width: '80px', height: '20px' }} />
+            </div>
           ) : (
             <div className="book-country-tags">
-              {b.authorCountries.map((country) => (
+              {b.authorCountries.filter(c => VALID_ISO2.has(c)).map((country) => (
                 <button
                   key={country}
                   onClick={() => onCountryClick(country)}
-                  className="country-tag"
+                  className={`country-tag animate-slide-up`}
                 >
                   <span className="country-tag-name">{mapISO2ToDisplayName(country)}</span>
                   <span>{getCountryFlag(country)}</span>

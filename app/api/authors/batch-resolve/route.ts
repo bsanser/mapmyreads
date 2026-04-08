@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '../../../../lib/prisma'
 import { detectAuthorCountriesByName } from '../../../../lib/countryDetection'
 import { normalizeAuthorName } from '../../../../lib/authorUtils'
+import { COUNTRIES } from '../../../../lib/countries'
+
+const VALID_ISO2 = new Set(COUNTRIES.map(c => c.iso2))
 
 export const dynamic = 'force-dynamic'
 
@@ -77,8 +80,9 @@ export async function POST(request: NextRequest) {
         })
 
         if (cached && cached.resolved) {
-          results[authorName] = cached.countries
-          console.log(`✅ Cache hit: ${authorName} → ${cached.countries.join(', ')}`)
+          const validCodes = cached.countries.filter(c => VALID_ISO2.has(c))
+          results[authorName] = validCodes
+          console.log(`✅ Cache hit: ${authorName} → ${validCodes.join(', ')}`)
         } else {
           cacheMisses.push(authorName)
         }

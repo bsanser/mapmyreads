@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 300">
+  <!-- Warm cream book cover -->
+  <rect width="200" height="300" fill="#f7efe0" rx="2"/>
+
+  <!-- Book spine (left edge) -->
+  <rect width="16" height="300" fill="#ecdbb8" rx="2 0 0 2"/>
+  <line x1="16" y1="0" x2="16" y2="300" stroke="#d9c49c" stroke-width="0.75"/>
+
+  <!-- Accent top band (terracotta — matches --color-accent) -->
+  <rect x="16" y="0" width="184" height="7" fill="#c97d45"/>
+
+  <!-- Inner decorative frame -->
+  <rect x="24" y="20" width="164" height="252" fill="none" stroke="#ddc9a4" stroke-width="0.75" rx="1"/>
+
+  <!-- Logo (open book + globe) at reduced opacity -->
+  <image href="/logo.png" x="60" y="52" width="80" height="80" opacity="0.32"/>
+
+  <!-- Divider -->
+  <line x1="44" y1="155" x2="164" y2="155" stroke="#ddc9a4" stroke-width="0.75"/>
+
+  <!-- No cover label -->
+  <text x="108" y="177"
+        text-anchor="middle"
+        font-family="Georgia, 'Times New Roman', serif"
+        font-size="10.5"
+        fill="#9a8268"
+        letter-spacing="0.3">No cover available</text>
+
+  <!-- Three decorative dots -->
+  <circle cx="86"  cy="197" r="1.5" fill="#ddc9a4"/>
+  <circle cx="108" cy="197" r="1.5" fill="#c97d45" opacity="0.55"/>
+  <circle cx="130" cy="197" r="1.5" fill="#ddc9a4"/>
+
+  <!-- Wordmark -->
+  <text x="108" y="254"
+        text-anchor="middle"
+        font-family="Georgia, 'Times New Roman', serif"
+        font-size="8"
+        fill="#b5987a"
+        letter-spacing="2">MAP MY READS</text>
+
+  <!-- Outer border -->
+  <rect x="0.5" y="0.5" width="199" height="299" fill="none" stroke="#d9c49c" stroke-width="0.75" rx="2"/>
+</svg>

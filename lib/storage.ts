@@ -13,15 +13,18 @@ export const STORAGE_KEYS = {
 // Save processed books to localStorage
 export const saveProcessedBooks = (books: Book[]): void => {
   if (typeof window === 'undefined') return
-  
+
+  // Strip transient UI fields that must never be persisted
+  const clean = books.map(({ isResolvingCountry, ...rest }) => rest)
+
   try {
-    localStorage.setItem(STORAGE_KEYS.PROCESSED_BOOKS, JSON.stringify(books))
+    localStorage.setItem(STORAGE_KEYS.PROCESSED_BOOKS, JSON.stringify(clean))
     localStorage.setItem(STORAGE_KEYS.LAST_PROCESSED, new Date().toISOString())
   } catch (error) {
     console.error('❌ Error saving to localStorage:', error)
     // Fallback to sessionStorage if localStorage is full
     try {
-      sessionStorage.setItem(STORAGE_KEYS.PROCESSED_BOOKS, JSON.stringify(books))
+      sessionStorage.setItem(STORAGE_KEYS.PROCESSED_BOOKS, JSON.stringify(clean))
       sessionStorage.setItem(STORAGE_KEYS.LAST_PROCESSED, new Date().toISOString())
     } catch (fallbackError) {
       console.error('❌ Error saving to sessionStorage:', fallbackError)

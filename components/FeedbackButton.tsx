@@ -9,10 +9,16 @@ const feedbackSubject = 'Map my reads feedback'
 interface FeedbackButtonProps {
   className?: string
   iconOnly?: boolean
+  externalOpen?: boolean
+  onExternalClose?: () => void
 }
 
-export const FeedbackButton = ({ className = '', iconOnly = false }: FeedbackButtonProps) => {
+export const FeedbackButton = ({ className = '', iconOnly = false, externalOpen, onExternalClose }: FeedbackButtonProps) => {
   const [showFeedbackModal, setShowFeedbackModal] = useState(false)
+
+  useEffect(() => {
+    if (externalOpen) setShowFeedbackModal(true)
+  }, [externalOpen])
   const [feedback, setFeedback] = useState('')
   const [deviceDetails, setDeviceDetails] = useState({
     os: 'Unknown',
@@ -57,12 +63,16 @@ export const FeedbackButton = ({ className = '', iconOnly = false }: FeedbackBut
   const handleClose = () => {
     setShowFeedbackModal(false)
     setFeedback('')
+    onExternalClose?.()
   }
 
   return (
     <>
       <button
-        onClick={() => setShowFeedbackModal(true)}
+        onClick={(e) => {
+          e.stopPropagation()
+          setShowFeedbackModal(true)
+        }}
         className={iconOnly ? `feedback-btn-inline ${className}` : `feedback-btn ${className}`}
         title="Send feedback"
       >

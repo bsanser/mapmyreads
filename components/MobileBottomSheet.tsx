@@ -1,7 +1,6 @@
 import { useRef } from 'react'
 import { mapISO2ToDisplayName } from '../lib/mapUtilities'
 import { BookList } from './BookList'
-import { FeedbackButton } from './FeedbackButton'
 import { useBooks } from '../contexts/BooksContext'
 
 interface MobileBottomSheetProps {
@@ -112,7 +111,6 @@ export function MobileBottomSheet({
                 </button>
               )}
             </div>
-            <FeedbackButton iconOnly />
           </div>
         </div>
 

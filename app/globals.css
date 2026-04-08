@@ -245,11 +245,11 @@ body {
     touch-action: none;
   }
 
-  /* On mobile the bottom sheet occupies 40vh — cap the map to the remaining space */
+  /* On mobile the bottom sheet occupies 33vh — cap the map to the remaining space */
   @media (max-width: 1023px) {
     .map-container-root,
     .map-canvas-wrapper {
-      height: 60vh;
+      height: 67vh;
       transition: height 0.35s cubic-bezier(0.32, 0.72, 0, 1);
     }
 
@@ -799,7 +799,7 @@ body {
 
   .mobile-bottom-sheet-wrapper {
     @apply lg:hidden fixed bottom-0 left-0 right-0 shadow-lg z-40;
-    height: 40vh;
+    height: 33vh;
     overflow: hidden;
     background-color: var(--color-surface);
     border-top: 1px solid var(--color-border);
@@ -1000,6 +1000,450 @@ button:focus-visible,
 a:focus-visible {
   outline: 2px solid var(--color-accent-border);
   outline-offset: 2px;
+}
+
+/* ── Shimmer loading placeholder ──────────────────── */
+
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--color-border-light) 25%,
+    var(--color-border) 50%,
+    var(--color-border-light) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+  border-radius: 4px;
+}
+
+/* ── FAB: Add Book ─────────────────────────────────── */
+
+.fab-add-book {
+  position: fixed;
+  z-index: 55;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.6rem 1rem;
+  background: var(--color-ink);
+  color: var(--color-surface);
+  border: none;
+  border-radius: 9999px;
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+  transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
+
+  /* Desktop: bottom-left below sidebar */
+  bottom: 1.5rem;
+  left: 1rem;
+}
+
+.fab-add-book:hover {
+  background: var(--color-accent);
+  transform: translateY(-1px);
+}
+
+.fab-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex-shrink: 0;
+}
+
+/* Desktop: hide fixed FAB (inline button in sidebar used instead) */
+@media (min-width: 1024px) {
+  .fab-add-book {
+    display: none;
+  }
+}
+
+/* ── Sidebar inline add book button ──────────────────── */
+
+.sidebar-add-book-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.2rem 0.5rem;
+  background: transparent;
+  border: 1px solid var(--color-ink-3);
+  border-radius: 9999px;
+  color: var(--color-ink-2);
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+  white-space: nowrap;
+}
+
+.sidebar-add-book-btn:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+  background: color-mix(in oklch, var(--color-accent) 8%, transparent);
+}
+
+/* Tablet: circle icon-only, same as mobile */
+@media (min-width: 640px) and (max-width: 1023px) {
+  .fab-add-book {
+    right: 1.25rem;
+    left: auto;
+    bottom: calc(33vh - 1.5rem);
+    width: 3rem;
+    height: 3rem;
+    padding: 0;
+    border-radius: 50%;
+    box-shadow: 0 0 0 3px var(--color-bg), 0 2px 10px rgba(0, 0, 0, 0.22);
+    transition: background 0.15s, transform 0.1s, bottom 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+  }
+  .fab-label {
+    display: none;
+  }
+}
+
+/* Tablet: follow sheet when it collapses */
+@media (min-width: 640px) and (max-width: 1023px) {
+  .sheet-collapsed .fab-add-book {
+    bottom: calc(4.5rem - 1.5rem);
+  }
+}
+
+/* Mobile: circle floating at top-right of bottom sheet */
+@media (max-width: 639px) {
+  .fab-add-book {
+    right: 1.25rem;
+    left: auto;
+    bottom: calc(33vh - 1.5rem);
+    width: 3rem;
+    height: 3rem;
+    padding: 0;
+    border-radius: 50%;
+    box-shadow: 0 0 0 3px var(--color-bg), 0 2px 10px rgba(0, 0, 0, 0.22);
+    transition: background 0.15s, transform 0.1s, bottom 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+  }
+  .fab-label {
+    display: none;
+  }
+}
+
+/* Mobile: follow sheet when it collapses */
+@media (max-width: 639px) {
+  .sheet-collapsed .fab-add-book {
+    bottom: calc(4.5rem - 1.5rem);
+  }
+}
+
+/* ── Add Book Modal ────────────────────────────────── */
+
+.add-book-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.add-book-panel {
+  background: var(--color-surface);
+  border-radius: 12px;
+  padding: 1.5rem;
+  width: 90%;
+  max-width: 480px;
+  max-height: 80vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+}
+
+@media (max-width: 639px) {
+  .add-book-backdrop {
+    align-items: flex-end;
+  }
+  .add-book-panel {
+    width: 100%;
+    max-width: 100%;
+    border-radius: 16px 16px 0 0;
+    max-height: 92vh;
+  }
+}
+
+.add-book-close {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  background: none;
+  border: none;
+  font-size: 1.4rem;
+  cursor: pointer;
+  color: var(--color-ink-muted);
+  line-height: 1;
+  padding: 0.25rem 0.5rem;
+}
+
+.add-book-title {
+  font-family: var(--font-serif);
+  font-size: 1.2rem;
+  margin: 0 0 1rem;
+  color: var(--color-ink);
+}
+
+.add-book-duplicate {
+  margin: 0.5rem 0;
+  color: var(--color-accent);
+  font-size: 0.875rem;
+}
+
+/* ── Book Search Input ─────────────────────────────── */
+
+.book-search-input-wrapper {
+  position: relative;
+  margin-bottom: 0.75rem;
+}
+
+.book-search-input {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border: 1.5px solid var(--color-border);
+  border-radius: 8px;
+  font-size: 1rem;
+  background: var(--color-surface);
+  color: var(--color-ink);
+}
+
+.book-search-input:focus {
+  outline: none;
+  border-color: var(--color-accent-border);
+}
+
+.book-search-spinner {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--color-border);
+  border-top-color: var(--color-ink);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: translateY(-50%) rotate(360deg); }
+}
+
+/* ── Book Search Results ───────────────────────────── */
+
+.book-search-results {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.book-search-result {
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.book-search-result:last-child {
+  border-bottom: none;
+}
+
+.book-search-result-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.25rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  border-radius: 6px;
+  transition: background 0.1s;
+}
+
+.book-search-result-btn:hover {
+  background: var(--color-surface-warm);
+}
+
+.book-search-cover {
+  width: 32px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.book-search-result-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.book-search-result-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
+.book-search-result-author {
+  font-size: 0.8rem;
+  color: var(--color-ink-muted);
+}
+
+.book-search-empty {
+  padding: 0.75rem 0;
+  text-align: center;
+  color: var(--color-ink-muted);
+  font-size: 0.875rem;
+}
+
+.manual-fallback-link {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-accent);
+  font-size: 0.875rem;
+  text-decoration: underline;
+  margin-top: 0.25rem;
+}
+
+/* ── Manual Add Form ───────────────────────────────── */
+
+.manual-add-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.form-field label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-ink-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.form-field input {
+  padding: 0.5rem 0.75rem;
+  border: 1.5px solid var(--color-border);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  background: var(--color-surface);
+  color: var(--color-ink);
+}
+
+.form-field input:focus {
+  outline: none;
+  border-color: var(--color-accent-border);
+}
+
+.field-error {
+  font-size: 0.78rem;
+  color: #c0392b;
+}
+
+/* ── Toast ─────────────────────────────────────────── */
+
+.toast {
+  position: fixed;
+  bottom: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  background: var(--color-ink);
+  color: var(--color-surface);
+  padding: 0.65rem 1.25rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  animation: slide-up 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+}
+
+.toast-dismiss {
+  background: none;
+  border: none;
+  color: var(--color-surface);
+  cursor: pointer;
+  font-size: 1rem;
+  opacity: 0.7;
+  padding: 0;
+  line-height: 1;
+}
+
+.toast-dismiss:hover {
+  opacity: 1;
+}
+
+/* ── Overflow Menu ─────────────────────────────────── */
+
+.overflow-menu {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  min-width: 200px;
+  z-index: 50;
+  padding: 0.5rem 0;
+}
+
+.overflow-menu-item {
+  padding: 0.6rem 1rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  color: var(--color-ink);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background 0.1s;
+}
+
+.overflow-menu-item:hover {
+  background: var(--color-surface-warm);
+}
+
+.overflow-menu-section {
+  padding: 0.25rem 0;
+}
+
+.overflow-menu-label {
+  padding: 0.25rem 1rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-ink-muted);
+}
+
+.overflow-menu-divider {
+  height: 1px;
+  background: var(--color-border-light);
+  margin: 0.25rem 0;
 }
 
 /* ── EnrichmentProgress: clear of mobile bottom sheet */

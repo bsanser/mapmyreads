@@ -3,6 +3,7 @@
 import { createContext, useContext, useMemo, useState, ReactNode } from 'react'
 import { Book } from '../types/book'
 import { saveProcessedBooks } from '../lib/storage'
+import { tryAddBook } from '../lib/deduplication'
 
 interface SummaryStats {
   readBooksCount: number
@@ -18,6 +19,7 @@ interface BooksContextValue {
   setSelectedCountry: (country: string | null) => void
   summaryStats: SummaryStats
   updateBookCountries: (book: Book, countries: string[]) => void
+  addBook: (book: Book) => 'added' | 'duplicate'
 }
 
 const BooksContext = createContext<BooksContextValue | null>(null)
@@ -64,8 +66,18 @@ export function BooksProvider({ children }: { children: ReactNode }) {
     })
   }
 
+  const addBook = (book: Book): 'added' | 'duplicate' => {
+    let outcome: 'added' | 'duplicate' = 'duplicate'
+    setBooks(prev => {
+      const { result, books: updated } = tryAddBook(book, prev)
+      outcome = result
+      return updated
+    })
+    return outcome
+  }
+
   return (
-    <BooksContext.Provider value={{ books, setBooks, selectedCountry, setSelectedCountry, summaryStats, updateBookCountries }}>
+    <BooksContext.Provider value={{ books, setBooks, selectedCountry, setSelectedCountry, summaryStats, updateBookCountries, addBook }}>
       {children}
     </BooksContext.Provider>
   )

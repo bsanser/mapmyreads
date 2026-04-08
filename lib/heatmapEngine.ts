@@ -4,6 +4,12 @@ import { darkenColor } from './themeManager';
 // Cache for generated heatmap styles — keyed on actual country distribution + theme
 const heatmapCache = new Map<string, ReturnType<typeof buildHeatmapStyle>>();
 
+// Build a lookup from ISO2 code → country name for GeoJSON name-based matching.
+// Some countries (France, Norway, Kosovo…) have ISO3166-1-Alpha-2 = "-99" in the
+// Natural Earth–derived GeoJSON, so we fall back to matching on the `name` field.
+const iso2ToName: Record<string, string> = {};
+COUNTRIES.forEach(c => { iso2ToName[c.iso2] = c.name; });
+
 // Calculate country book counts for heatmap
 export const getCountryBookCounts = (books: any[]) => {
   const countryCounts: Record<string, number> = {};
@@ -52,7 +58,11 @@ function buildHeatmapStyle(countryCounts: Record<string, number>, currentTheme: 
         count === 1 ? baseColor :
         count === 2 ? darkenColor(baseColor, 0.15) :
         outlineColor;
-      return [["==", ["get", "ISO3166-1-Alpha-2"], iso2], color];
+      const countryName = iso2ToName[iso2];
+      const matchExpr = countryName
+        ? ["any", ["==", ["get", "ISO3166-1-Alpha-2"], iso2], ["==", ["get", "name"], countryName]]
+        : ["==", ["get", "ISO3166-1-Alpha-2"], iso2];
+      return [matchExpr, color];
     }),
     emptyColor
   ];

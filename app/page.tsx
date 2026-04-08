@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Papa from 'papaparse'
+import { Book } from '../types/book'
 import { HeroScreen } from '../components/HeroScreen'
 import { MapContainer } from '../components/MapContainer'
 import { DesktopSidebar } from '../components/DesktopSidebar'
@@ -21,16 +22,20 @@ import {
 } from '../lib/csvParser'
 import { generateCsvSummary } from '../lib/csvSummary'
 import { mapDisplayNameToISO2 } from '../lib/mapUtilities'
+import { deduplicateBooks } from '../lib/deduplication'
 import { resolveAuthorCountriesBackend, applyAuthorCountriesToBooks } from '../lib/authorCountryService'
 import { enrichBooksWithCoversBatched, applyCoverResultsToBooks } from '../lib/bookCoverService'
 import { enrichmentMetrics } from '../lib/enrichmentMetrics'
 import { useBooks } from '../contexts/BooksContext'
 import { useTheme } from '../contexts/ThemeContext'
 import { useEnrichment } from '../contexts/EnrichmentContext'
+import AddBookFAB from '../components/AddBookFAB'
+import AddBookModal from '../components/AddBookModal'
+import Toast from '../components/Toast'
 
 export default function Home() {
   // Context state
-  const { books, setBooks, selectedCountry, setSelectedCountry } = useBooks()
+  const { books, setBooks, selectedCountry, setSelectedCountry, addBook } = useBooks()
   const { currentTheme, setCurrentTheme } = useTheme()
   const {
     setIsEnriching,
@@ -46,8 +51,64 @@ export default function Home() {
   const [booksToShow, setBooksToShow] = useState<number>(10)
   const [showMissingAuthorCountry, setShowMissingAuthorCountry] = useState(false)
   const [isSheetExpanded, setIsSheetExpanded] = useState(true)
+  const [isAddBookModalOpen, setIsAddBookModalOpen] = useState(false)
+  const [toastMessage, setToastMessage] = useState<string | null>(null)
 
   const booksLoadedRef = useRef(false)
+
+  // Task 4.1-4.3: Optimistic book add with background enrichment
+  const handleManualBookAdd = async (book: Book) => {
+    // Book is already in state via addBook() called from AddBookModal
+    // Save immediately (isResolvingCountry will be stripped by saveProcessedBooks)
+    setBooks(prev => {
+      saveProcessedBooks(prev)
+      return prev
+    })
+
+    // 10-second timeout: if enrichment doesn't resolve, clear the resolving flag
+    const timeoutId = setTimeout(() => {
+      setBooks(prev =>
+        prev.map(b =>
+          (b.isbn13 && book.isbn13 ? b.isbn13 === book.isbn13 : b.title === book.title && b.authors === book.authors)
+            ? { ...b, isResolvingCountry: false }
+            : b
+        )
+      )
+    }, 10000)
+
+    // Background: resolve author country
+    resolveAuthorCountriesBackend(
+      [book],
+      undefined,
+      (batchResults) => {
+        clearTimeout(timeoutId)
+        setBooks(prev => {
+          const updated = applyAuthorCountriesToBooks(prev, batchResults)
+          return updated.map(b =>
+            (b.isbn13 && book.isbn13 ? b.isbn13 === book.isbn13 : b.title === book.title && b.authors === book.authors)
+              ? { ...b, isResolvingCountry: false }
+              : b
+          )
+        })
+      }
+    ).catch(() => {
+      clearTimeout(timeoutId)
+      setBooks(prev =>
+        prev.map(b =>
+          (b.isbn13 && book.isbn13 ? b.isbn13 === book.isbn13 : b.title === book.title && b.authors === book.authors)
+            ? { ...b, isResolvingCountry: false }
+            : b
+        )
+      )
+    })
+
+    // Background: fetch cover if not already present
+    if (!book.coverImage) {
+      enrichBooksWithCoversBatched([book], (_loaded, _total, coverMap) => {
+        setBooks(prev => applyCoverResultsToBooks(prev, coverMap))
+      }).catch(() => {})
+    }
+  }
 
   const handleToggleMissingAuthorCountry = () => {
     setShowMissingAuthorCountry(prev => !prev)
@@ -95,8 +156,20 @@ export default function Home() {
             const parsedBooks = parseCSVData(data, format)
             const csvSummary = generateCsvSummary(parsedBooks)
 
-            // SHOW MAP IMMEDIATELY with parsed books (no countries yet)
-            setBooks(parsedBooks)
+            // Deduplicate against existing library
+            const existingBooks = loadProcessedBooks() ?? []
+            const { newBooks, skipped } = deduplicateBooks(parsedBooks, existingBooks)
+            const mergedBooks = [...existingBooks, ...newBooks]
+
+            // Show toast
+            if (skipped > 0) {
+              setToastMessage(`${newBooks.length} new books added. ${skipped} already in your library.`)
+            } else {
+              setToastMessage(`${newBooks.length} books added.`)
+            }
+
+            // SHOW MAP IMMEDIATELY with merged books (no countries yet for new ones)
+            setBooks(mergedBooks)
             setBooksToShow(10)
             setIsProcessing(false)
             enrichmentMetrics.mapShown()
@@ -106,12 +179,12 @@ export default function Home() {
             setEnrichmentProgress({ current: 0, total: 1, stage: 'Discovering author countries...' })
 
             // Start cover loading immediately — covers don't depend on author countries
-            const booksNeedingCovers = parsedBooks.filter(b => b.readStatus === 'read' && !b.coverImage)
+            const booksNeedingCovers = newBooks.filter(b => b.readStatus === 'read' && !b.coverImage)
             if (booksNeedingCovers.length > 0) {
               setIsLoadingCovers(true)
               setCoverProgress({ current: 0, total: booksNeedingCovers.length, stage: 'Downloading book covers...' })
 
-              enrichBooksWithCoversBatched(parsedBooks, (loaded, total, coverMap) => {
+              enrichBooksWithCoversBatched(mergedBooks, (loaded, total, coverMap) => {
                 enrichmentMetrics.firstCoverBatch()
                 setBooks(prev => {
                   const updated = applyCoverResultsToBooks(prev, coverMap)
@@ -130,9 +203,9 @@ export default function Home() {
               })
             }
 
-            // Resolve author countries incrementally (runs concurrently with covers)
+            // Resolve author countries incrementally (only new books)
             const { summary: authorSummary } = await resolveAuthorCountriesBackend(
-              parsedBooks,
+              newBooks,
               (current, total) => {
                 setEnrichmentProgress({ current, total, stage: `Mapping authors: ${current}/${total} resolved` })
               },
@@ -277,6 +350,7 @@ export default function Home() {
       <DesktopSidebar
         booksToShow={booksToShow}
         onLoadMore={handleLoadMore}
+        onAddBook={() => setIsAddBookModalOpen(true)}
       />
 
       <MobileBottomSheet
@@ -294,6 +368,25 @@ export default function Home() {
       />
 
       <EnrichmentProgress />
+
+      <AddBookFAB
+        onClick={() => {
+          setIsSheetExpanded(false)
+          setIsAddBookModalOpen(true)
+        }}
+        themeColor={THEMES[currentTheme].outline}
+      />
+
+      <AddBookModal
+        isOpen={isAddBookModalOpen}
+        onClose={() => setIsAddBookModalOpen(false)}
+        addBook={addBook}
+        onBookAdded={handleManualBookAdd}
+      />
+
+      {toastMessage && (
+        <Toast message={toastMessage} onDismiss={() => setToastMessage(null)} />
+      )}
     </div>
   )
 }

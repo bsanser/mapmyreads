@@ -40,10 +40,10 @@ export const setupMapEventHandlers = (props: MapEventHandlersProps) => {
       const feature = e.features[0];
       const properties = feature.properties;
       
-      // Extract country name from various possible property names
-      const countryName = 
-        properties?.ADMIN || 
-        properties?.name || 
+      // Extract country name — GeoJSON uses `name`, ADMIN is a fallback for other sources
+      const countryName =
+        properties?.name ||
+        properties?.ADMIN ||
         properties?.Name ||
         properties?.COUNTRY ||
         properties?.country ||
