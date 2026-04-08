@@ -22,6 +22,7 @@ import {
 } from '../lib/csvParser'
 import { generateCsvSummary } from '../lib/csvSummary'
 import { mapDisplayNameToISO2 } from '../lib/mapUtilities'
+import { deduplicateBooks } from '../lib/deduplication'
 import { resolveAuthorCountriesBackend, applyAuthorCountriesToBooks } from '../lib/authorCountryService'
 import { enrichBooksWithCoversBatched, applyCoverResultsToBooks } from '../lib/bookCoverService'
 import { enrichmentMetrics } from '../lib/enrichmentMetrics'
@@ -30,6 +31,7 @@ import { useTheme } from '../contexts/ThemeContext'
 import { useEnrichment } from '../contexts/EnrichmentContext'
 import AddBookFAB from '../components/AddBookFAB'
 import AddBookModal from '../components/AddBookModal'
+import Toast from '../components/Toast'
 
 export default function Home() {
   // Context state
@@ -50,6 +52,7 @@ export default function Home() {
   const [showMissingAuthorCountry, setShowMissingAuthorCountry] = useState(false)
   const [isSheetExpanded, setIsSheetExpanded] = useState(true)
   const [isAddBookModalOpen, setIsAddBookModalOpen] = useState(false)
+  const [toastMessage, setToastMessage] = useState<string | null>(null)
 
   const booksLoadedRef = useRef(false)
 
@@ -153,8 +156,20 @@ export default function Home() {
             const parsedBooks = parseCSVData(data, format)
             const csvSummary = generateCsvSummary(parsedBooks)
 
-            // SHOW MAP IMMEDIATELY with parsed books (no countries yet)
-            setBooks(parsedBooks)
+            // Deduplicate against existing library
+            const existingBooks = loadProcessedBooks() ?? []
+            const { newBooks, skipped } = deduplicateBooks(parsedBooks, existingBooks)
+            const mergedBooks = [...existingBooks, ...newBooks]
+
+            // Show toast
+            if (skipped > 0) {
+              setToastMessage(`${newBooks.length} new books added. ${skipped} already in your library.`)
+            } else {
+              setToastMessage(`${newBooks.length} books added.`)
+            }
+
+            // SHOW MAP IMMEDIATELY with merged books (no countries yet for new ones)
+            setBooks(mergedBooks)
             setBooksToShow(10)
             setIsProcessing(false)
             enrichmentMetrics.mapShown()
@@ -164,12 +179,12 @@ export default function Home() {
             setEnrichmentProgress({ current: 0, total: 1, stage: 'Discovering author countries...' })
 
             // Start cover loading immediately — covers don't depend on author countries
-            const booksNeedingCovers = parsedBooks.filter(b => b.readStatus === 'read' && !b.coverImage)
+            const booksNeedingCovers = newBooks.filter(b => b.readStatus === 'read' && !b.coverImage)
             if (booksNeedingCovers.length > 0) {
               setIsLoadingCovers(true)
               setCoverProgress({ current: 0, total: booksNeedingCovers.length, stage: 'Downloading book covers...' })
 
-              enrichBooksWithCoversBatched(parsedBooks, (loaded, total, coverMap) => {
+              enrichBooksWithCoversBatched(mergedBooks, (loaded, total, coverMap) => {
                 enrichmentMetrics.firstCoverBatch()
                 setBooks(prev => {
                   const updated = applyCoverResultsToBooks(prev, coverMap)
@@ -188,9 +203,9 @@ export default function Home() {
               })
             }
 
-            // Resolve author countries incrementally (runs concurrently with covers)
+            // Resolve author countries incrementally (only new books)
             const { summary: authorSummary } = await resolveAuthorCountriesBackend(
-              parsedBooks,
+              newBooks,
               (current, total) => {
                 setEnrichmentProgress({ current, total, stage: `Mapping authors: ${current}/${total} resolved` })
               },
@@ -366,6 +381,10 @@ export default function Home() {
         addBook={addBook}
         onBookAdded={handleManualBookAdd}
       />
+
+      {toastMessage && (
+        <Toast message={toastMessage} onDismiss={() => setToastMessage(null)} />
+      )}
     </div>
   )
 }
