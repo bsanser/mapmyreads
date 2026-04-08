@@ -1,9 +1,10 @@
 'use client'
 
-import { createContext, useContext, useMemo, useState, ReactNode } from 'react'
+import { createContext, useContext, useEffect, useMemo, useRef, useState, ReactNode } from 'react'
 import { Book } from '../types/book'
 import { saveProcessedBooks } from '../lib/storage'
 import { tryAddBook } from '../lib/deduplication'
+import { useSession } from './SessionContext'
 
 interface SummaryStats {
   readBooksCount: number
@@ -27,6 +28,20 @@ const BooksContext = createContext<BooksContextValue | null>(null)
 export function BooksProvider({ children }: { children: ReactNode }) {
   const [books, setBooks] = useState<Book[]>([])
   const [selectedCountry, setSelectedCountry] = useState<string | null>(null)
+  const { syncBooks } = useSession()
+
+  // Sync to DB whenever books change, but skip the initial empty state on mount
+  // to avoid wiping the DB before localStorage books are loaded.
+  const hasBooks = useRef(false)
+  useEffect(() => {
+    if (books.length > 0) {
+      hasBooks.current = true
+      syncBooks(books)
+    } else if (hasBooks.current) {
+      // Books were cleared intentionally — sync the empty state
+      syncBooks(books)
+    }
+  }, [books])
 
   const summaryStats = useMemo(() => {
     const readBooksAll = books.filter(b => b.readStatus === 'read')

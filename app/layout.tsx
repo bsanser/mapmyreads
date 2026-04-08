@@ -4,6 +4,7 @@ import './globals.css'
 import { BooksProvider } from '../contexts/BooksContext'
 import { ThemeProvider } from '../contexts/ThemeContext'
 import { EnrichmentProvider } from '../contexts/EnrichmentContext'
+import { SessionProvider } from '../contexts/SessionContext'
 
 const fraunces = Fraunces({
   subsets: ['latin'],
@@ -47,13 +48,15 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${fraunces.variable} ${dmSans.variable}`} suppressHydrationWarning={true}>
-        <BooksProvider>
-          <ThemeProvider>
-            <EnrichmentProvider>
-              {children}
-            </EnrichmentProvider>
-          </ThemeProvider>
-        </BooksProvider>
+        <SessionProvider>
+          <BooksProvider>
+            <ThemeProvider>
+              <EnrichmentProvider>
+                {children}
+              </EnrichmentProvider>
+            </ThemeProvider>
+          </BooksProvider>
+        </SessionProvider>
       </body>
     </html>
   )
