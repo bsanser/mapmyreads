@@ -1366,6 +1366,25 @@ a:focus-visible {
   background: var(--color-surface-warm);
 }
 
+.overflow-menu-section {
+  padding: 0.25rem 0;
+}
+
+.overflow-menu-label {
+  padding: 0.25rem 1rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-ink-muted);
+}
+
+.overflow-menu-divider {
+  height: 1px;
+  background: var(--color-border-light);
+  margin: 0.25rem 0;
+}
+
 /* ── EnrichmentProgress: clear of mobile bottom sheet */
 
 @media (max-width: 1023px) {
