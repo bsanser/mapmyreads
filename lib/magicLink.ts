@@ -1,5 +1,6 @@
 import crypto from 'crypto'
 import { Resend } from 'resend'
+import { prisma } from './prisma'
 
 // ─── Token generation ─────────────────────────────────────────────────────────
 
@@ -22,6 +23,23 @@ export function createTokenRecord(email: string, sessionId?: string) {
     sessionId: sessionId ?? null,
     expiresAt,
   }
+}
+
+// ─── Token verification ──────────────────────────────────────────────────────
+
+type VerifyResult =
+  | { valid: true; email: string; sessionId: string | null }
+  | { valid: false; reason: 'not_found' | 'expired' | 'used' }
+
+/** Looks up a magic token in the DB and checks validity. */
+export async function verifyMagicToken(token: string): Promise<VerifyResult> {
+  const record = await prisma.magicToken.findUnique({ where: { token } })
+
+  if (!record) return { valid: false, reason: 'not_found' }
+  if (record.usedAt) return { valid: false, reason: 'used' }
+  if (isTokenExpired(record.expiresAt)) return { valid: false, reason: 'expired' }
+
+  return { valid: true, email: record.email, sessionId: record.sessionId }
 }
 
 // ─── Email sending ────────────────────────────────────────────────────────────

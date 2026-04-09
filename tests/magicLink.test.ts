@@ -4,7 +4,20 @@ import {
   isTokenExpired,
   createTokenRecord,
   sendMagicLinkEmail,
+  verifyMagicToken,
 } from '../lib/magicLink'
+
+// ─── Mock Prisma (used by verifyMagicToken) ───────────────────────────────────
+
+const mockFindUnique = vi.fn()
+
+vi.mock('../lib/prisma', () => ({
+  prisma: {
+    magicToken: {
+      findUnique: (...args: any[]) => mockFindUnique(...args),
+    },
+  },
+}))
 
 // ─── generateMagicToken ───────────────────────────────────────────────────────
 
@@ -104,5 +117,63 @@ describe('sendMagicLinkEmail', () => {
     await sendMagicLinkEmail('target@test.com', 'sometoken')
     const callArgs = mockSend.mock.calls[0][0]
     expect(callArgs.to).toBe('target@test.com')
+  })
+})
+
+// ─── verifyMagicToken ─────────────────────────────────────────────────────────
+
+describe('verifyMagicToken', () => {
+  beforeEach(() => {
+    mockFindUnique.mockReset()
+  })
+
+  it('returns { valid: true, email, sessionId } for a valid unused non-expired token', async () => {
+    mockFindUnique.mockResolvedValue({
+      token: 'good-token',
+      email: 'user@example.com',
+      sessionId: 'sess-abc',
+      expiresAt: new Date(Date.now() + 60_000),
+      usedAt: null,
+    })
+
+    const result = await verifyMagicToken('good-token')
+    expect(result).toEqual({
+      valid: true,
+      email: 'user@example.com',
+      sessionId: 'sess-abc',
+    })
+  })
+
+  it('returns { valid: false, reason: "not_found" } for an unknown token', async () => {
+    mockFindUnique.mockResolvedValue(null)
+
+    const result = await verifyMagicToken('nonexistent')
+    expect(result).toEqual({ valid: false, reason: 'not_found' })
+  })
+
+  it('returns { valid: false, reason: "expired" } for an expired token', async () => {
+    mockFindUnique.mockResolvedValue({
+      token: 'expired-token',
+      email: 'user@example.com',
+      sessionId: null,
+      expiresAt: new Date(Date.now() - 1000), // in the past
+      usedAt: null,
+    })
+
+    const result = await verifyMagicToken('expired-token')
+    expect(result).toEqual({ valid: false, reason: 'expired' })
+  })
+
+  it('returns { valid: false, reason: "used" } for an already-used token', async () => {
+    mockFindUnique.mockResolvedValue({
+      token: 'used-token',
+      email: 'user@example.com',
+      sessionId: null,
+      expiresAt: new Date(Date.now() + 60_000),
+      usedAt: new Date(), // already used
+    })
+
+    const result = await verifyMagicToken('used-token')
+    expect(result).toEqual({ valid: false, reason: 'used' })
   })
 })

@@ -145,9 +145,9 @@ Model key:
 ### 4.2 Verify route
 `Model: Opus`
 
-- [ ] 4.6 [RED] In `tests/magicLink.test.ts`, add tests for a `verifyMagicToken(token)` function: given a valid unused non-expired token, returns `{ valid: true, email, sessionId }`. Given an expired token, returns `{ valid: false, reason: 'expired' }`. Given an already-used token, returns `{ valid: false, reason: 'used' }`. Given an unknown token, returns `{ valid: false, reason: 'not_found' }`. Tests fail.
-- [ ] 4.7 [GREEN] Implement `verifyMagicToken()` in `lib/magicLink.ts`. Tests pass.
-- [ ] 4.8 Create `app/api/auth/verify/route.ts`. Implement `GET /api/auth/verify?token=<token>`: call `verifyMagicToken`, if invalid redirect to `/?auth_error=<reason>`. If valid: find or create `User` by email, set `emailVerified` if first time, mark token `usedAt`, set httpOnly cookie `mmr_uid=<userId>` (sameSite: lax, secure in prod, maxAge: 30 days), redirect to `/`.
+- [x] 4.6 [RED] In `tests/magicLink.test.ts`, add tests for a `verifyMagicToken(token)` function: given a valid unused non-expired token, returns `{ valid: true, email, sessionId }`. Given an expired token, returns `{ valid: false, reason: 'expired' }`. Given an already-used token, returns `{ valid: false, reason: 'used' }`. Given an unknown token, returns `{ valid: false, reason: 'not_found' }`. Tests fail. ✓ 4 tests added with mocked Prisma client.
+- [x] 4.7 [GREEN] Implement `verifyMagicToken()` in `lib/magicLink.ts`. Tests pass. ✓ All 16 magicLink tests pass.
+- [x] 4.8 Create `app/api/auth/verify/route.ts`. Implement `GET /api/auth/verify?token=<token>`: call `verifyMagicToken`, if invalid redirect to `/?auth_error=<reason>`. If valid: find or create `User` by email, set `emailVerified` if first time, mark token `usedAt`, set httpOnly cookie `mmr_uid=<userId>` (sameSite: lax, secure in prod, maxAge: 30 days), redirect to `/`. ✓
 
 ### 4.3 Me + logout routes
 `Model: Haiku`
