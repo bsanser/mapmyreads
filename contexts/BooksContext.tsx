@@ -28,7 +28,19 @@ const BooksContext = createContext<BooksContextValue | null>(null)
 export function BooksProvider({ children }: { children: ReactNode }) {
   const [books, setBooks] = useState<Book[]>([])
   const [selectedCountry, setSelectedCountry] = useState<string | null>(null)
-  const { syncBooks } = useSession()
+  const { syncBooks, remoteBooks } = useSession()
+
+  // Hydrate from remote books when user is logged in (cross-device load)
+  useEffect(() => {
+    if (!remoteBooks) return
+    setBooks(prev => {
+      if (prev.length === 0 || remoteBooks.length > prev.length) {
+        console.log('[BooksContext] hydrating from remote books:', remoteBooks.length)
+        return remoteBooks
+      }
+      return prev
+    })
+  }, [remoteBooks])
 
   // Sync to DB whenever books change, but:
   // - Skip initial empty state (avoid wiping DB before localStorage hydration)

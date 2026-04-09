@@ -175,8 +175,8 @@ Model key:
 ### 6.0 Load books from DB on login
 `Model: Sonnet`
 
-- [ ] 6.1 In `SessionContext`, after resolving `userId` from `GET /api/auth/me`: if `isLoggedIn`, call `GET /api/sessions/<userId's session uuid>/books` and return the books to the consumer. Expose a `remoteBooks: Book[] | null` value from the context.
-- [ ] 6.2 In `BooksContext` (or `app/page.tsx`), on mount: if `SessionContext.remoteBooks` is non-null and localStorage is empty (or remote has more books), hydrate `setBooks` from `remoteBooks`. This handles the "new device" case. Log to console when remote books are used so it's easy to verify during dev.
+- [x] 6.1 In `SessionContext`, after resolving `userId` from `GET /api/auth/me`: if `isLoggedIn`, call `GET /api/sessions/<userId's session uuid>/books` and return the books to the consumer. Expose a `remoteBooks: Book[] | null` value from the context. ✓ Updated /api/auth/me to return sessionUuid; SessionContext fetches books and exposes remoteBooks.
+- [x] 6.2 In `BooksContext` (or `app/page.tsx`), on mount: if `SessionContext.remoteBooks` is non-null and localStorage is empty (or remote has more books), hydrate `setBooks` from `remoteBooks`. This handles the "new device" case. Log to console when remote books are used so it's easy to verify during dev. ✓
 
 ---
 

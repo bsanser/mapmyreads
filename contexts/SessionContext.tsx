@@ -24,6 +24,7 @@ interface SessionContextValue {
   userId: string | null
   isLoggedIn: boolean
   syncBooks: (books: Book[]) => void
+  remoteBooks: Book[] | null
 }
 
 const SessionContext = createContext<SessionContextValue | null>(null)
@@ -31,6 +32,7 @@ const SessionContext = createContext<SessionContextValue | null>(null)
 export function SessionProvider({ children }: { children: ReactNode }) {
   const [sessionId, setSessionId] = useState('')
   const [userId, setUserId] = useState<string | null>(null)
+  const [remoteBooks, setRemoteBooks] = useState<Book[] | null>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
@@ -44,12 +46,20 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       body: JSON.stringify({ sessionId: id }),
     }).catch(err => console.warn('[SessionContext] session upsert failed:', err))
 
-    // Check if user is logged in
+    // Check if user is logged in; if so, fetch their remote books for cross-device hydration
     fetch('/api/auth/me')
       .then(res => res.json())
-      .then(data => {
+      .then(async data => {
         if (data.user?.id) {
           setUserId(data.user.id)
+          if (data.sessionUuid) {
+            const booksRes = await fetch(`/api/sessions/${data.sessionUuid}/books`)
+            const booksData = await booksRes.json()
+            if (booksData.sessionExists && Array.isArray(booksData.books)) {
+              console.log('[SessionContext] loaded remote books:', booksData.books.length)
+              setRemoteBooks(booksData.books)
+            }
+          }
         }
       })
       .catch(err => console.warn('[SessionContext] auth check failed:', err))
@@ -70,7 +80,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   }, [sessionId])
 
   return (
-    <SessionContext.Provider value={{ sessionId, userId, isLoggedIn: userId !== null, syncBooks }}>
+    <SessionContext.Provider value={{ sessionId, userId, isLoggedIn: userId !== null, syncBooks, remoteBooks }}>
       {children}
     </SessionContext.Provider>
   )

@@ -13,5 +13,15 @@ export async function GET(request: NextRequest) {
     select: { id: true, email: true },
   })
 
-  return NextResponse.json({ user })
+  if (!user) {
+    return NextResponse.json({ user: null, sessionUuid: null })
+  }
+
+  const session = await prisma.session.findFirst({
+    where: { userId },
+    orderBy: { lastSyncedAt: 'desc' },
+    select: { sessionId: true },
+  })
+
+  return NextResponse.json({ user, sessionUuid: session?.sessionId ?? null })
 }
