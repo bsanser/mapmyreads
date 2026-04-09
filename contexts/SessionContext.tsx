@@ -22,6 +22,7 @@ export function getOrCreateSessionId(): string {
 interface SessionContextValue {
   sessionId: string
   userId: string | null
+  userEmail: string | null
   isLoggedIn: boolean
   syncBooks: (books: Book[]) => void
   remoteBooks: Book[] | null
@@ -32,6 +33,7 @@ const SessionContext = createContext<SessionContextValue | null>(null)
 export function SessionProvider({ children }: { children: ReactNode }) {
   const [sessionId, setSessionId] = useState('')
   const [userId, setUserId] = useState<string | null>(null)
+  const [userEmail, setUserEmail] = useState<string | null>(null)
   const [remoteBooks, setRemoteBooks] = useState<Book[] | null>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -52,6 +54,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       .then(async data => {
         if (data.user?.id) {
           setUserId(data.user.id)
+          setUserEmail(data.user.email)
           if (data.sessionUuid) {
             const booksRes = await fetch(`/api/sessions/${data.sessionUuid}/books`)
             const booksData = await booksRes.json()
@@ -80,7 +83,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   }, [sessionId])
 
   return (
-    <SessionContext.Provider value={{ sessionId, userId, isLoggedIn: userId !== null, syncBooks, remoteBooks }}>
+    <SessionContext.Provider value={{ sessionId, userId, userEmail, isLoggedIn: userId !== null, syncBooks, remoteBooks }}>
       {children}
     </SessionContext.Provider>
   )

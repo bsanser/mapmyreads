@@ -191,7 +191,7 @@ Model key:
 ### 7.1 AccountStatus component
 `Model: Haiku`
 
-- [ ] 7.3 Create `components/AccountStatus.tsx`. If `isLoggedIn`: show email address (truncated if long) + "Sign out" button that calls `POST /api/auth/logout` then reloads. If not logged in: render nothing (the `SavePrompt` handles the CTA). Place in `DesktopSidebar` above the book list, below `ReadingAtlasSummary`.
+- [x] 7.3 Create `components/AccountStatus.tsx`. If `isLoggedIn`: show email address (truncated if long) + "Sign out" button that calls `POST /api/auth/logout` then reloads. If not logged in: render nothing (the `SavePrompt` handles the CTA). Place in `DesktopSidebar` above the book list, below `ReadingAtlasSummary`. ✓ Added SessionContext.userEmail; AccountStatus placed in DesktopSidebar.
 
 ---
 

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { getCountryFlag, mapISO2ToDisplayName } from '../lib/mapUtilities'
 import { ReadingAtlasSummary } from './ReadingAtlasSummary'
+import { AccountStatus } from './AccountStatus'
 import { BookList } from './BookList'
 import { useBooks } from '../contexts/BooksContext'
 import { useTheme } from '../contexts/ThemeContext'
@@ -71,6 +72,8 @@ export function DesktopSidebar({ booksToShow, onLoadMore, onAddBook, isReadOnly 
         isEnriching={isEnriching}
         className="mb-4"
       />
+
+      <AccountStatus />
 
       {selectedCountry && (
         <div className="type-caption mb-3">
