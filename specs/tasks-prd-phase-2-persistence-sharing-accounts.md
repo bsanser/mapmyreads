@@ -163,10 +163,10 @@ Model key:
 ### 5.0 Claim route
 `Model: Opus`
 
-- [ ] 5.1 [RED] Create `tests/sessionMigration.test.ts`. Write tests for a `claimSession(sessionId, userId)` helper: given a valid sessionId and userId, it sets `Session.userId = userId` and updates `Book.userId = userId` for all books in that session — in a single transaction. Given a sessionId that's already claimed by a different userId, it throws `'session_already_claimed'`. Given a sessionId that doesn't exist, it throws `'session_not_found'`. All tests fail.
-- [ ] 5.2 [GREEN] Create `lib/sessionMigration.ts`. Implement `claimSession()` using a Prisma `$transaction`. Tests pass.
-- [ ] 5.3 Create `app/api/sessions/[uuid]/claim/route.ts`. Implement `PATCH /api/sessions/[uuid]/claim`: read `mmr_uid` cookie for userId, call `claimSession(uuid, userId)`, return `{ ok: true }`. Return 401 if not authenticated, 409 if already claimed by different user.
-- [ ] 5.4 In `app/api/auth/verify/route.ts`, after setting the cookie: if `sessionId` was stored on the `MagicToken`, call `claimSession(sessionId, userId)` before redirecting. Wrap in try/catch — a failed claim should not block login.
+- [x] 5.1 [RED] Create `tests/sessionMigration.test.ts`. Write tests for a `claimSession(sessionId, userId)` helper: given a valid sessionId and userId, it sets `Session.userId = userId` and updates `Book.userId = userId` for all books in that session — in a single transaction. Given a sessionId that's already claimed by a different userId, it throws `'session_already_claimed'`. Given a sessionId that doesn't exist, it throws `'session_not_found'`. All tests fail. ✓ 4 tests with mocked Prisma (callback-based $transaction).
+- [x] 5.2 [GREEN] Create `lib/sessionMigration.ts`. Implement `claimSession()` using a Prisma `$transaction`. Tests pass. ✓ All 4 tests pass.
+- [x] 5.3 Create `app/api/sessions/[uuid]/claim/route.ts`. Implement `PATCH /api/sessions/[uuid]/claim`: read `mmr_uid` cookie for userId, call `claimSession(uuid, userId)`, return `{ ok: true }`. Return 401 if not authenticated, 409 if already claimed by different user. ✓
+- [x] 5.4 In `app/api/auth/verify/route.ts`, after setting the cookie: if `sessionId` was stored on the `MagicToken`, call `claimSession(sessionId, userId)` before redirecting. Wrap in try/catch — a failed claim should not block login. ✓
 
 ---
 

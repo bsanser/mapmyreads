@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '../../../../lib/prisma'
 import { verifyMagicToken } from '../../../../lib/magicLink'
+import { claimSession } from '../../../../lib/sessionMigration'
 
 export async function GET(request: NextRequest) {
   const token = request.nextUrl.searchParams.get('token')
@@ -38,6 +39,15 @@ export async function GET(request: NextRequest) {
     where: { token },
     data: { usedAt: new Date() },
   })
+
+  // Claim anonymous session if sessionId was stored on the magic token
+  if (result.sessionId) {
+    try {
+      await claimSession(result.sessionId, user.id)
+    } catch (err) {
+      console.warn('[verify] session claim failed (non-blocking):', err)
+    }
+  }
 
   // Set auth cookie
   const isProduction = process.env.NODE_ENV === 'production'
