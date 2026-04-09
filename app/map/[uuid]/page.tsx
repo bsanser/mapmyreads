@@ -6,6 +6,7 @@ import { MapContainer } from '../../../components/MapContainer'
 import { DesktopSidebar } from '../../../components/DesktopSidebar'
 import { MobileBottomSheet } from '../../../components/MobileBottomSheet'
 import { THEMES } from '../../../lib/themeManager'
+import { mapDisplayNameToISO2 } from '../../../lib/mapUtilities'
 import { useBooks } from '../../../contexts/BooksContext'
 import { useTheme } from '../../../contexts/ThemeContext'
 import type { Book } from '../../../types/book'
@@ -64,7 +65,10 @@ export default function SharedMapPage() {
     <div className="map-page-layout">
       {/* Map */}
       <MapContainer
-        onCountryClick={(country) => setSelectedCountry(selectedCountry === country ? null : country)}
+        onCountryClick={(countryName) => {
+          const iso2 = mapDisplayNameToISO2(countryName)
+          setSelectedCountry(selectedCountry === iso2 ? null : iso2)
+        }}
         currentTheme={currentTheme}
         onThemeChange={setCurrentTheme}
         themes={THEMES}
