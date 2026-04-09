@@ -416,7 +416,7 @@ body {
   .hero-screen {
     @apply relative min-h-screen overflow-hidden;
     background-image: url('/vintage_world_map.webp');
-    background-size: cover;
+    background-size:Be cover;
     background-position: center;
   }
 

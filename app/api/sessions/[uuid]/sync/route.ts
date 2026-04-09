@@ -38,6 +38,9 @@ export async function POST(
     // Upsert books sequentially (Promise.all inside interactive transactions
     // exhausts the single connection Neon provides, causing timeouts)
     const upsertedBooks = []
+    const coversInPayload = books.filter(b => b.coverImage).length
+    console.log(`[sync] ${books.length} books, ${coversInPayload} with coverImage`)
+
     for (const book of books) {
       let existingBook
 
@@ -64,6 +67,7 @@ export async function POST(
               readDate,
               author_countries: book.authorCountries?.length ? book.authorCountries : existingBook.author_countries,
               book_countries: book.bookCountries?.length ? book.bookCountries : existingBook.book_countries,
+              coverUrl: book.coverImage || existingBook.coverUrl,
             },
           })
         : await prisma.book.create({
@@ -75,6 +79,7 @@ export async function POST(
               readDate,
               author_countries: book.authorCountries || [],
               book_countries: book.bookCountries || [],
+              coverUrl: book.coverImage || undefined,
               userId: null,
             },
           })

@@ -22,20 +22,6 @@ export async function GET(
       return NextResponse.json({ books: [], sessionExists: false })
     }
 
-    // Batch-lookup covers from cache for books with isbn13
-    const isbn13List = session.books
-      .map(({ book: b }) => b.isbn13)
-      .filter((v): v is string => !!v)
-
-    const coverCache = isbn13List.length > 0
-      ? await prisma.bookMetadataCache.findMany({
-          where: { isbn13: { in: isbn13List } },
-          select: { isbn13: true, coverUrl: true },
-        })
-      : []
-
-    const coverByIsbn = new Map(coverCache.map(c => [c.isbn13, c.coverUrl ?? null]))
-
     // Map DB rows back to the frontend Book type
     const books: Book[] = session.books.map(({ book: b }) => ({
       title: b.title,
@@ -50,7 +36,7 @@ export async function GET(
       myRating: null,
       numberOfPages: null,
       bookshelves: [],
-      coverImage: b.isbn13 ? (coverByIsbn.get(b.isbn13) ?? null) : null,
+      coverImage: b.coverUrl ?? null,
       source: 'manual' as const,
       originalData: {},
     }))

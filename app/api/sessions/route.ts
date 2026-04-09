@@ -23,12 +23,24 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Upsert session: create if not exists, return existing if it does
-    const session = await prisma.session.upsert({
-      where: { sessionId: sessionId },
-      update: {}, // No updates needed on existing sessions
-      create: { sessionId: sessionId },
-    })
+    // Create session, falling back to findUnique on concurrent duplicate inserts
+    let session
+    try {
+      session = await prisma.session.upsert({
+        where: { sessionId },
+        update: {},
+        create: { sessionId },
+      })
+    } catch (e: any) {
+      if (e?.code === 'P2002') {
+        // Unique constraint — session was created by a concurrent request, just fetch it
+        session = await prisma.session.findUnique({ where: { sessionId } })
+      } else {
+        throw e
+      }
+    }
+
+    if (!session) throw new Error('Session not found after upsert conflict')
 
     return NextResponse.json({
       sessionId: session.sessionId,

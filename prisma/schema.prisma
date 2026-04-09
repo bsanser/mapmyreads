@@ -33,6 +33,7 @@ model Book {
   readDate         DateTime
   author_countries String[] // Countries where authors are from
   book_countries   String[] // Countries where the book is set/takes place
+  coverUrl         String?  // Cover image URL, populated from bookMetadataCache
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
