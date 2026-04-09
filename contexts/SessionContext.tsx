@@ -43,6 +43,16 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ sessionId: id }),
     }).catch(err => console.warn('[SessionContext] session upsert failed:', err))
+
+    // Check if user is logged in
+    fetch('/api/auth/me')
+      .then(res => res.json())
+      .then(data => {
+        if (data.user?.id) {
+          setUserId(data.user.id)
+        }
+      })
+      .catch(err => console.warn('[SessionContext] auth check failed:', err))
   }, [])
 
   const syncBooks = useCallback((books: Book[]) => {

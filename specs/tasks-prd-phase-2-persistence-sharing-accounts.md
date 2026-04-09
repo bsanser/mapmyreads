@@ -152,9 +152,9 @@ Model key:
 ### 4.3 Me + logout routes
 `Model: Haiku`
 
-- [ ] 4.9 Create `app/api/auth/me/route.ts`. Implement `GET /api/auth/me`: read `mmr_uid` cookie, look up `User` by id, return `{ user: { id, email } }` or `{ user: null }` if cookie absent/invalid.
-- [ ] 4.10 Create `app/api/auth/logout/route.ts`. Implement `POST /api/auth/logout`: clear `mmr_uid` cookie, return `{ ok: true }`.
-- [ ] 4.11 In `SessionContext`, call `GET /api/auth/me` on mount and set `userId` + `isLoggedIn` from the result.
+- [x] 4.9 Create `app/api/auth/me/route.ts`. Implement `GET /api/auth/me`: read `mmr_uid` cookie, look up `User` by id, return `{ user: { id, email } }` or `{ user: null }` if cookie absent/invalid. ✓
+- [x] 4.10 Create `app/api/auth/logout/route.ts`. Implement `POST /api/auth/logout`: clear `mmr_uid` cookie, return `{ ok: true }`. ✓
+- [x] 4.11 In `SessionContext`, call `GET /api/auth/me` on mount and set `userId` + `isLoggedIn` from the result. ✓ Added to mount effect after session registration.
 
 ---
 
