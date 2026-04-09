@@ -1429,6 +1429,7 @@ a:focus-visible {
 }
 
 .overflow-menu-item {
+  width: 100%;
   padding: 0.6rem 1rem;
   cursor: pointer;
   font-size: 0.875rem;
@@ -1437,6 +1438,7 @@ a:focus-visible {
   align-items: center;
   gap: 0.5rem;
   transition: background 0.1s;
+  box-sizing: border-box;
 }
 
 .overflow-menu-item:hover {
