@@ -185,8 +185,8 @@ Model key:
 ### 7.0 SavePrompt component
 `Model: Sonnet`
 
-- [ ] 7.1 [RED] Create `components/SavePrompt.test.tsx` (jsdom). Write tests: component does not render when `manualBookCount < 2`. Component renders when `manualBookCount >= 2` and `isLoggedIn = false`. Component does not render when `isLoggedIn = true`. Component does not render after the user clicks dismiss (reads from `sessionStorage`). All tests fail.
-- [ ] 7.2 [GREEN] Create `components/SavePrompt.tsx`. Trigger conditions: books where `source === 'manual'` count ≥ 2, `isLoggedIn` false, `sessionStorage.getItem('save_prompt_dismissed')` not set. UI: small card at bottom of sidebar — single-line email input + "Send magic link" button + dismiss ×. On submit: call `POST /api/auth/magic-link` with email + sessionId, show "Check your email" confirmation inline. On dismiss: set `sessionStorage.getItem('save_prompt_dismissed') = '1'`. Tests pass.
+- [x] 7.1 [RED] Create `components/SavePrompt.test.tsx` (jsdom). Write tests: component does not render when `manualBookCount < 2`. Component renders when `manualBookCount >= 2` and `isLoggedIn = false`. Component does not render when `isLoggedIn = true`. Component does not render after the user clicks dismiss (reads from `sessionStorage`). All tests fail. ✓ 6 tests with mocked contexts.
+- [x] 7.2 [GREEN] Create `components/SavePrompt.tsx`. Trigger conditions: books where `source === 'manual'` count ≥ 2, `isLoggedIn` false, `sessionStorage.getItem('save_prompt_dismissed')` not set. UI: small card at bottom of sidebar — single-line email input + "Send magic link" button + dismiss ×. On submit: call `POST /api/auth/magic-link` with email + sessionId, show "Check your email" confirmation inline. On dismiss: set `sessionStorage.getItem('save_prompt_dismissed') = '1'`. Tests pass. ✓ All 6 tests pass.
 
 ### 7.1 AccountStatus component
 `Model: Haiku`
