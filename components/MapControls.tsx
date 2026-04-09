@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { THEMES, ThemeKey } from '../lib/themeManager'
 import { FeedbackButton } from './FeedbackButton'
+import { ShareButton } from './ShareButton'
 
 interface MapControlsProps {
   currentTheme: ThemeKey
@@ -16,6 +17,7 @@ export function MapControls({
 }: MapControlsProps) {
   const [isOverflowOpen, setIsOverflowOpen] = useState(false)
   const [feedbackOpen, setFeedbackOpen] = useState(false)
+  const [shareOpen, setShareOpen] = useState(false)
   const overflowRef = useRef<HTMLDivElement>(null)
 
   // Close on click-outside and Escape
@@ -91,6 +93,20 @@ export function MapControls({
           {/* Divider */}
           <div className="overflow-menu-divider" />
 
+          {/* Share row */}
+          <button
+            className="overflow-menu-item"
+            onClick={() => {
+              setIsOverflowOpen(false)
+              setShareOpen(true)
+            }}
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--color-ink-2)' }}>
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
+            </svg>
+            <span className="type-ui">Share map</span>
+          </button>
+
           {/* Feedback row */}
           <button
             className="overflow-menu-item"
@@ -107,7 +123,12 @@ export function MapControls({
         </div>
       )}
 
-      {/* Always mounted so modal survives overflow close */}
+      {/* Always mounted so modals survive overflow close */}
+      <ShareButton
+        externalOpen={shareOpen}
+        onExternalClose={() => setShareOpen(false)}
+        className="sr-only"
+      />
       <FeedbackButton
         externalOpen={feedbackOpen}
         onExternalClose={() => setFeedbackOpen(false)}

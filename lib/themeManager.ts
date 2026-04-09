@@ -7,7 +7,11 @@ export const THEMES = {
     hover: "#D49AAA",     // Deeper blush on hover
     selected: "#FDF0F3",  // Very light rose glow
     background: "#F0E8EC",// Barely-there rose, ocean
-    empty: "#F0EBE0"      // Warm cream, unread
+    empty: "#F0EBE0",     // Warm cream, unread
+    accent: "#6B1F3A",
+    accentHover: "#4E1629",
+    accentSoft: "#F8ECF0",
+    accentBorder: "#D49AAA",
   },
   amber: {
     name: "Amber Road",
@@ -16,7 +20,11 @@ export const THEMES = {
     hover: "#D4A855",     // Deeper amber
     selected: "#FDF3DC",  // Very light amber glow
     background: "#F5ECD5",// Warm sand
-    empty: "#F0EBE0"      // Warm cream, unread
+    empty: "#F0EBE0",     // Warm cream, unread
+    accent: "#8B4513",
+    accentHover: "#6B3410",
+    accentSoft: "#FDF3DC",
+    accentBorder: "#D4A855",
   },
   sage: {
     name: "Sage & Stone",
@@ -25,7 +33,11 @@ export const THEMES = {
     hover: "#A8C098",     // Deeper sage
     selected: "#EBF2E6",  // Very light sage glow
     background: "#EDF2E8",// Pale green mist
-    empty: "#F0EBE0"      // Warm cream, unread
+    empty: "#F0EBE0",     // Warm cream, unread
+    accent: "#4A6741",
+    accentHover: "#374E30",
+    accentSoft: "#EBF2E6",
+    accentBorder: "#A8C098",
   },
   dusk: {
     name: "Dusk Atlas",
@@ -34,7 +46,11 @@ export const THEMES = {
     hover: "#C0A8B8",     // Deeper mauve
     selected: "#F5EEF2",  // Very light rose glow
     background: "#F2EBF0",// Pale dusty rose
-    empty: "#F0EBE0"      // Warm cream, unread
+    empty: "#F0EBE0",     // Warm cream, unread
+    accent: "#7A5068",
+    accentHover: "#5C3C4F",
+    accentSoft: "#F5EEF2",
+    accentBorder: "#C0A8B8",
   },
   sepia: {
     name: "Sepia & Salt",
@@ -43,8 +59,12 @@ export const THEMES = {
     hover: "#C0A07A",     // Deeper sepia
     selected: "#F5EAD8",  // Very light sepia glow
     background: "#EDE0C8",// Aged parchment
-    empty: "#F0EBE0"      // Warm cream, unread
-  }
+    empty: "#F0EBE0",     // Warm cream, unread
+    accent: "#6B4423",
+    accentHover: "#4E3019",
+    accentSoft: "#F5EAD8",
+    accentBorder: "#C0A07A",
+  },
 };
 
 export type ThemeKey = keyof typeof THEMES;

@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams } from 'next/navigation'
 import { MapContainer } from '../../../components/MapContainer'
 import { DesktopSidebar } from '../../../components/DesktopSidebar'
 import { MobileBottomSheet } from '../../../components/MobileBottomSheet'
@@ -10,12 +10,12 @@ import { useBooks } from '../../../contexts/BooksContext'
 import { useTheme } from '../../../contexts/ThemeContext'
 import type { Book } from '../../../types/book'
 
+
 export default function SharedMapPage() {
   const params = useParams()
-  const router = useRouter()
   const uuid = params.uuid as string
 
-  const { setBooks, books, selectedCountry, setSelectedCountry } = useBooks()
+  const { setBooks, selectedCountry, setSelectedCountry } = useBooks()
   const { currentTheme, setCurrentTheme } = useTheme()
 
   const [status, setStatus] = useState<'loading' | 'found' | 'not_found' | 'error'>('loading')
@@ -43,8 +43,6 @@ export default function SharedMapPage() {
     load()
   }, [uuid])
 
-  const readCount = books.filter(b => b.readStatus === 'read').length
-
   if (status === 'loading') {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -63,23 +61,14 @@ export default function SharedMapPage() {
   }
 
   return (
-    <div className="app-layout">
-      {/* Read-only banner */}
-      <div className="read-only-banner">
-        <span className="type-caption">
-          You&apos;re viewing {readCount} {readCount === 1 ? 'book' : 'books'} on this reading map.
-        </span>
-        <a href="/" className="link-accent ml-2 type-caption">
-          Build your own →
-        </a>
-      </div>
-
+    <div className="map-page-layout">
       {/* Map */}
       <MapContainer
         onCountryClick={(country) => setSelectedCountry(selectedCountry === country ? null : country)}
         currentTheme={currentTheme}
         onThemeChange={setCurrentTheme}
         themes={THEMES}
+        cta={<a href="/" className="btn-accent whitespace-nowrap">Create your own maps of books</a>}
       />
 
       {/* Desktop sidebar — read-only: no add button */}

@@ -3,9 +3,22 @@
 import { useState } from 'react'
 import { useSession } from '../contexts/SessionContext'
 
-export const ShareButton = ({ className = '' }: { className?: string }) => {
+interface ShareButtonProps {
+  className?: string
+  externalOpen?: boolean
+  onExternalClose?: () => void
+}
+
+export const ShareButton = ({ className = '', externalOpen, onExternalClose }: ShareButtonProps) => {
   const [showShareModal, setShowShareModal] = useState(false)
   const { sessionId } = useSession()
+
+  const isOpen = externalOpen ?? showShareModal
+
+  const handleClose = () => {
+    setShowShareModal(false)
+    onExternalClose?.()
+  }
 
   const handleShare = () => {
     setShowShareModal(true)
@@ -47,13 +60,13 @@ export const ShareButton = ({ className = '' }: { className?: string }) => {
       </button>
 
       {/* Share Modal */}
-      {showShareModal && (
+      {isOpen && (
         <div className="modal-overlay">
           <div className="modal-surface">
             <div className="flex items-center justify-between mb-4">
               <h3 className="type-heading">Share Your Reading Map</h3>
               <button
-                onClick={() => setShowShareModal(false)}
+                onClick={handleClose}
                 style={{ color: 'var(--color-ink-3)' }}
                 className="hover:text-[var(--color-ink)] transition-colors"
               >
@@ -89,7 +102,7 @@ export const ShareButton = ({ className = '' }: { className?: string }) => {
 
             <div className="flex justify-end">
               <button
-                onClick={() => setShowShareModal(false)}
+                onClick={handleClose}
                 className="btn-ghost"
               >
                 Close

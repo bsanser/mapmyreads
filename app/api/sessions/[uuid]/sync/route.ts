@@ -35,83 +35,64 @@ export async function POST(
     // 1. Upsert all books
     // 2. Delete all existing SessionBook rows for this session
     // 3. Create new SessionBook rows
-    const result = await prisma.$transaction(async (tx) => {
-      // Upsert books
-      const upsertedBooks = await Promise.all(
-        books.map(async (book) => {
-          let existingBook
+    // Upsert books sequentially (Promise.all inside interactive transactions
+    // exhausts the single connection Neon provides, causing timeouts)
+    const upsertedBooks = []
+    for (const book of books) {
+      let existingBook
 
-          // Search for existing book by isbn13 if available
-          if (book.isbn13) {
-            existingBook = await tx.book.findFirst({
-              where: { isbn13: book.isbn13 },
-            })
-          }
-
-          // If not found by isbn13, search by title + author
-          if (!existingBook) {
-            existingBook = await tx.book.findFirst({
-              where: {
-                title: book.title,
-                author: book.authors,
-              },
-            })
-          }
-
-          // Create or update the book
-          // Note: Book type uses camelCase; DB schema uses snake_case
-          const readDate = book.readDate ? new Date(book.readDate) : new Date()
-          const yearStr = book.yearPublished ? String(book.yearPublished) : null
-
-          if (existingBook) {
-            return tx.book.update({
-              where: { id: existingBook.id },
-              data: {
-                title: book.title,
-                author: book.authors,
-                isbn13: book.isbn13 || existingBook.isbn13,
-                year: yearStr || existingBook.year,
-                readDate,
-                author_countries: book.authorCountries?.length ? book.authorCountries : existingBook.author_countries,
-                book_countries: book.bookCountries?.length ? book.bookCountries : existingBook.book_countries,
-              },
-            })
-          } else {
-            return tx.book.create({
-              data: {
-                title: book.title,
-                author: book.authors,
-                isbn13: book.isbn13 || undefined,
-                year: yearStr,
-                readDate,
-                author_countries: book.authorCountries || [],
-                book_countries: book.bookCountries || [],
-                userId: null, // anonymous books have no user
-              },
-            })
-          }
+      if (book.isbn13) {
+        existingBook = await prisma.book.findFirst({ where: { isbn13: book.isbn13 } })
+      }
+      if (!existingBook) {
+        existingBook = await prisma.book.findFirst({
+          where: { title: book.title, author: book.authors },
         })
-      )
+      }
 
-      // Delete all existing SessionBook rows for this session
-      await tx.sessionBook.deleteMany({
-        where: { sessionId: session.id },
-      })
+      const readDate = book.readDate ? new Date(book.readDate) : new Date()
+      const yearStr = book.yearPublished ? String(book.yearPublished) : null
 
-      // Create new SessionBook rows for each book
-      await Promise.all(
-        upsertedBooks.map((book) =>
-          tx.sessionBook.create({
+      const upserted = existingBook
+        ? await prisma.book.update({
+            where: { id: existingBook.id },
             data: {
-              sessionId: session.id,
-              bookId: book.id,
+              title: book.title,
+              author: book.authors,
+              isbn13: book.isbn13 || existingBook.isbn13,
+              year: yearStr || existingBook.year,
+              readDate,
+              author_countries: book.authorCountries?.length ? book.authorCountries : existingBook.author_countries,
+              book_countries: book.bookCountries?.length ? book.bookCountries : existingBook.book_countries,
             },
           })
-        )
-      )
+        : await prisma.book.create({
+            data: {
+              title: book.title,
+              author: book.authors,
+              isbn13: book.isbn13 || undefined,
+              year: yearStr,
+              readDate,
+              author_countries: book.authorCountries || [],
+              book_countries: book.bookCountries || [],
+              userId: null,
+            },
+          })
 
-      return { synced: upsertedBooks.length }
-    })
+      upsertedBooks.push(upserted)
+    }
+
+    // Rebuild SessionBook links in a single lightweight transaction
+    await prisma.$transaction([
+      prisma.sessionBook.deleteMany({ where: { sessionId: session.id } }),
+      ...upsertedBooks.map(book =>
+        prisma.sessionBook.create({
+          data: { sessionId: session.id, bookId: book.id },
+        })
+      ),
+    ])
+
+    const result = { synced: upsertedBooks.length }
 
     // Update lastSyncedAt timestamp
     await prisma.session.update({

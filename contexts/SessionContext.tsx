@@ -24,7 +24,7 @@ interface SessionContextValue {
   userId: string | null
   userEmail: string | null
   isLoggedIn: boolean
-  syncBooks: (books: Book[]) => void
+  syncBooks: (books: Book[], immediate?: boolean) => void
   remoteBooks: Book[] | null
 }
 
@@ -68,18 +68,24 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       .catch(err => console.warn('[SessionContext] auth check failed:', err))
   }, [])
 
-  const syncBooks = useCallback((books: Book[]) => {
+  const syncBooks = useCallback((books: Book[], immediate = false) => {
     if (!sessionId) return
 
-    // Clear any pending sync and schedule a new one (debounced 1s)
-    if (debounceRef.current) clearTimeout(debounceRef.current)
-    debounceRef.current = setTimeout(() => {
+    const doSync = () =>
       fetch(`/api/sessions/${sessionId}/sync`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ books }),
       }).catch(err => console.warn('[SessionContext] book sync failed:', err))
-    }, 1000)
+
+    if (immediate) {
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+      doSync()
+    } else {
+      // Debounce interactive mutations at 1s to batch rapid changes
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+      debounceRef.current = setTimeout(doSync, 1000)
+    }
   }, [sessionId])
 
   return (

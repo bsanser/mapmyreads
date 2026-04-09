@@ -28,11 +28,13 @@ const BooksContext = createContext<BooksContextValue | null>(null)
 export function BooksProvider({ children }: { children: ReactNode }) {
   const [books, setBooks] = useState<Book[]>([])
   const [selectedCountry, setSelectedCountry] = useState<string | null>(null)
-  const { syncBooks, remoteBooks } = useSession()
+  const { syncBooks, remoteBooks, sessionId } = useSession()
 
   // Hydrate from remote books when user is logged in (cross-device load)
   useEffect(() => {
     if (!remoteBooks) return
+    const isReadOnlyPage = typeof window !== 'undefined' && window.location.pathname.startsWith('/map/')
+    if (isReadOnlyPage) return
     setBooks(prev => {
       if (prev.length === 0 || remoteBooks.length > prev.length) {
         console.log('[BooksContext] hydrating from remote books:', remoteBooks.length)
@@ -42,21 +44,26 @@ export function BooksProvider({ children }: { children: ReactNode }) {
     })
   }, [remoteBooks])
 
-  // Sync to DB whenever books change, but:
-  // - Skip initial empty state (avoid wiping DB before localStorage hydration)
-  // - Skip on /map/[uuid] pages (read-only views of someone else's session)
+  // Sync books to DB. First non-empty state (localStorage load or CSV upload) syncs
+  // immediately so the share URL works right away. Subsequent mutations are debounced.
   const hasBooks = useRef(false)
+  const isFirstLoad = useRef(true)
   useEffect(() => {
     const isReadOnlyPage = typeof window !== 'undefined' && window.location.pathname.startsWith('/map/')
     if (isReadOnlyPage) return
+    if (!sessionId) return
 
-    if (books.length > 0) {
+    const readBooks = books.filter(b => b.readStatus === 'read')
+    if (readBooks.length > 0) {
       hasBooks.current = true
-      syncBooks(books)
+      const immediate = isFirstLoad.current
+      isFirstLoad.current = false
+      syncBooks(readBooks, immediate)
     } else if (hasBooks.current) {
-      syncBooks(books)
+      isFirstLoad.current = false
+      syncBooks([])
     }
-  }, [books])
+  }, [books, sessionId])
 
   const summaryStats = useMemo(() => {
     const readBooksAll = books.filter(b => b.readStatus === 'read')

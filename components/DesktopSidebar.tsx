@@ -56,9 +56,16 @@ export function DesktopSidebar({ booksToShow, onLoadMore, onAddBook, isReadOnly 
   const displayedBookLabel = displayedBookCount === 1 ? 'book' : 'books'
 
   return (
-    <div
-      className="desktop-sidebar sidebar-surface custom-scrollbar"
-      onScroll={(e) => {
+    <div className="desktop-sidebar">
+      {/* Folder tab label */}
+      <div className="sidebar-folder-tab">
+        <img src="/logo.png" alt="" className="w-12 h-12" />
+        <span className="type-ui" style={{ fontWeight: 700, color: 'var(--color-ink)' }}>Map My Reads</span>
+      </div>
+
+      <div
+        className="sidebar-surface sidebar-panel custom-scrollbar"
+        onScroll={(e) => {
         const target = e.target as HTMLDivElement
         const { scrollTop, scrollHeight, clientHeight } = target
         if (scrollHeight - scrollTop - clientHeight < 100) {
@@ -126,6 +133,7 @@ export function DesktopSidebar({ booksToShow, onLoadMore, onAddBook, isReadOnly 
         showMissingAuthorCountry={showMissingAuthorCountry}
         booksToShow={booksToShow}
       />
+      </div>
     </div>
   )
 }
