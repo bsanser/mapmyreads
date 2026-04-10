@@ -42,6 +42,24 @@ export async function verifyMagicToken(token: string): Promise<VerifyResult> {
   return { valid: true, email: record.email, sessionId: record.sessionId }
 }
 
+// ─── Rate limiting ────────────────────────────────────────────────────────────
+
+const EMAIL_RATE_LIMIT = 3
+const EMAIL_RATE_WINDOW_MS = 30 * 60 * 1000 // 30 minutes
+
+/** Returns true if the email has reached the token creation limit in the rolling window. */
+export async function isEmailRateLimited(email: string): Promise<boolean> {
+  const windowStart = new Date(Date.now() - EMAIL_RATE_WINDOW_MS)
+  const count = await prisma.magicToken.count({
+    where: {
+      email,
+      createdAt: { gte: windowStart },
+      usedAt: null,
+    },
+  })
+  return count >= EMAIL_RATE_LIMIT
+}
+
 // ─── Email sending ────────────────────────────────────────────────────────────
 
 /** Sends a magic link email via Resend. */

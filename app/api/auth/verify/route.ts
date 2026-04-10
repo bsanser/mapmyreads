@@ -2,19 +2,20 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '../../../../lib/prisma'
 import { verifyMagicToken } from '../../../../lib/magicLink'
 import { claimSession } from '../../../../lib/sessionMigration'
+import { normalizeAuthError } from '../../../../lib/security'
 
 export async function GET(request: NextRequest) {
   const token = request.nextUrl.searchParams.get('token')
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
 
   if (!token) {
-    return NextResponse.redirect(`${baseUrl}/?auth_error=not_found`)
+    return NextResponse.redirect(`${baseUrl}/?auth_error=${normalizeAuthError('not_found')}`)
   }
 
   const result = await verifyMagicToken(token)
 
   if (result.valid === false) {
-    return NextResponse.redirect(`${baseUrl}/?auth_error=${result.reason}`)
+    return NextResponse.redirect(`${baseUrl}/?auth_error=${normalizeAuthError(result.reason)}`)
   }
 
   // Find or create user by email

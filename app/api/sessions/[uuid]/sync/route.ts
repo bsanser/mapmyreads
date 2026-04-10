@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '../../../../../lib/prisma'
+import { validateSessionOwnership } from '../../../../../lib/security'
 import type { Book } from '../../../../../types/book'
 
 export async function POST(
@@ -20,6 +21,15 @@ export async function POST(
       return NextResponse.json(
         { error: 'Session not found' },
         { status: 404 }
+      )
+    }
+
+    // Ownership check: claimed sessions can only be synced by their owner
+    const cookieUserId = request.cookies.get('mmr_uid')?.value ?? null
+    if (!validateSessionOwnership(session.userId, cookieUserId)) {
+      return NextResponse.json(
+        { error: 'Forbidden' },
+        { status: 403 }
       )
     }
 
