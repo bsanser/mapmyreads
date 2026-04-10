@@ -1141,6 +1141,36 @@ a:focus-visible {
   background: color-mix(in oklch, var(--color-accent) 8%, transparent);
 }
 
+/* ── Sidebar empty state ──────────────────────────────── */
+
+.sidebar-empty-state {
+  @apply flex flex-col gap-4 py-6 px-2;
+}
+
+.sidebar-empty-heading {
+  @apply type-heading;
+  color: var(--color-ink);
+}
+
+.sidebar-empty-desc {
+  @apply type-caption;
+  color: var(--color-ink-2);
+  line-height: 1.5;
+}
+
+.sidebar-empty-cta {
+  /* Inherits sidebar-add-book-btn — bump size slightly for primary empty-state CTA */
+  padding: 0.35rem 0.75rem !important;
+  font-size: 0.8125rem !important;
+}
+
+/* ── Mobile bottom sheet empty state ─────────────────── */
+
+.bottom-sheet-empty-bar {
+  @apply flex items-center justify-between px-6 py-3 flex-shrink-0;
+  border-bottom: 1px solid var(--color-border-light);
+}
+
 /* Tablet: circle icon-only, same as mobile */
 @media (min-width: 640px) and (max-width: 1023px) {
   .fab-add-book {

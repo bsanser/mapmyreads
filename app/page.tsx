@@ -366,6 +366,7 @@ export default function Home() {
         showMissingAuthorCountry={showMissingAuthorCountry}
         onToggleMissingAuthorCountry={handleToggleMissingAuthorCountry}
         onClearMissingAuthorCountry={handleClearMissingAuthorCountry}
+        onAddBook={() => setIsAddBookModalOpen(true)}
       />
 
       <DeveloperTools

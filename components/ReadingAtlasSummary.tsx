@@ -29,6 +29,8 @@ export const ReadingAtlasSummary = memo(function ReadingAtlasSummary({
     onToggleMissingAuthorCountry?.(event)
   }
 
+  if (stats.readBooksCount === 0) return null
+
   return (
     <div className={`space-y-4 ${className}`}>
       <div className="space-y-1">

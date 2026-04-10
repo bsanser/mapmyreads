@@ -73,66 +73,89 @@ export function DesktopSidebar({ booksToShow, onLoadMore, onAddBook, isReadOnly 
         }
       }}
     >
-      <ReadingAtlasSummary
-        showMissingAuthorCountry={showMissingAuthorCountry}
-        onToggleMissingAuthorCountry={handleMissingAuthorCountryFilter}
-        isEnriching={isEnriching}
-        className="mb-4"
-      />
-
-      <AccountStatus />
-
-      {selectedCountry && (
-        <div className="type-caption mb-3">
-          Filtering by {getCountryFlag(selectedCountry)} {mapISO2ToDisplayName(selectedCountry)}{' '}
-          <button
-            onClick={() => setSelectedCountry(null)}
-            className="link-accent"
-            style={{ marginLeft: '0.25rem' }}
-          >
-            Show all
-          </button>
-        </div>
-      )}
-
-      <div className="type-caption mb-3 flex items-center justify-between gap-2">
-        <span>
-          Showing {displayedBookCount} {displayedBookLabel}
-        </span>
-        <div className="flex items-center gap-2">
-          {showMissingAuthorCountry && (
-            <button
-              type="button"
-              className="link-accent"
-              onClick={() => {
-                setShowMissingAuthorCountry(false)
-                setSelectedCountry(null)
-              }}
-            >
-              Show all
-            </button>
-          )}
+      {readBooksAll.length === 0 ? (
+        <div className="sidebar-empty-state">
+          <p className="sidebar-empty-heading">Your map is waiting</p>
+          <p className="sidebar-empty-desc">Add your first book to start mapping where your reads come from.</p>
           {onAddBook && !isReadOnly && (
             <button
               type="button"
-              className="sidebar-add-book-btn"
+              className="sidebar-add-book-btn sidebar-empty-cta"
               onClick={onAddBook}
-              aria-label="Add book"
             >
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                 <line x1="12" y1="5" x2="12" y2="19" />
                 <line x1="5" y1="12" x2="19" y2="12" />
               </svg>
-              Add book
+              Add a book
             </button>
           )}
+          <AccountStatus />
         </div>
-      </div>
+      ) : (
+        <>
+          <ReadingAtlasSummary
+            showMissingAuthorCountry={showMissingAuthorCountry}
+            onToggleMissingAuthorCountry={handleMissingAuthorCountryFilter}
+            isEnriching={isEnriching}
+            className="mb-4"
+          />
 
-      <BookList
-        showMissingAuthorCountry={showMissingAuthorCountry}
-        booksToShow={booksToShow}
-      />
+          <AccountStatus />
+
+          {selectedCountry && (
+            <div className="type-caption mb-3">
+              Filtering by {getCountryFlag(selectedCountry)} {mapISO2ToDisplayName(selectedCountry)}{' '}
+              <button
+                onClick={() => setSelectedCountry(null)}
+                className="link-accent"
+                style={{ marginLeft: '0.25rem' }}
+              >
+                Show all
+              </button>
+            </div>
+          )}
+
+          <div className="type-caption mb-3 flex items-center justify-between gap-2">
+            <span>
+              Showing {displayedBookCount} {displayedBookLabel}
+            </span>
+            <div className="flex items-center gap-2">
+              {showMissingAuthorCountry && (
+                <button
+                  type="button"
+                  className="link-accent"
+                  onClick={() => {
+                    setShowMissingAuthorCountry(false)
+                    setSelectedCountry(null)
+                  }}
+                >
+                  Show all
+                </button>
+              )}
+              {onAddBook && !isReadOnly && (
+                <button
+                  type="button"
+                  className="sidebar-add-book-btn"
+                  onClick={onAddBook}
+                  aria-label="Add book"
+                >
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                    <line x1="12" y1="5" x2="12" y2="19" />
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                  </svg>
+                  Add book
+                </button>
+              )}
+            </div>
+          </div>
+
+          <BookList
+            showMissingAuthorCountry={showMissingAuthorCountry}
+            booksToShow={booksToShow}
+          />
+        </>
+      )}
       </div>
     </div>
   )
