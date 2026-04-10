@@ -27,12 +27,14 @@ import { enrichmentMetrics } from '../lib/enrichmentMetrics'
 import { useBooks } from '../contexts/BooksContext'
 import { useTheme } from '../contexts/ThemeContext'
 import { useEnrichment } from '../contexts/EnrichmentContext'
+import { useSession } from '../contexts/SessionContext'
 import AddBookFAB from '../components/AddBookFAB'
 import AddBookModal from '../components/AddBookModal'
 import Toast from '../components/Toast'
 
 export default function Home() {
   // Context state
+  const { isAuthChecking } = useSession()
   const { books, setBooks, selectedCountry, setSelectedCountry, addBook } = useBooks()
   const { currentTheme, setCurrentTheme } = useTheme()
   const {
@@ -51,6 +53,7 @@ export default function Home() {
   const [isSheetExpanded, setIsSheetExpanded] = useState(true)
   const [isAddBookModalOpen, setIsAddBookModalOpen] = useState(false)
   const [toastMessage, setToastMessage] = useState<string | null>(null)
+  const [hasEnteredApp, setHasEnteredApp] = useState(false)
 
   const booksLoadedRef = useRef(false)
 
@@ -322,10 +325,19 @@ export default function Home() {
   }, [])
 
   // Render logic
-  if (books.length === 0) {
+  if (isAuthChecking) {
+    return (
+      <div className="hero-screen">
+        <div className="hero-overlay" />
+      </div>
+    )
+  }
+
+  if (!hasEnteredApp && books.length === 0) {
     return (
       <HeroScreen
         onFileUpload={handleFile}
+        onExplore={() => setHasEnteredApp(true)}
         isProcessing={isProcessing}
         error={error}
       />

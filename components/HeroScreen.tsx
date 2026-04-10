@@ -1,16 +1,24 @@
+'use client'
+
+import { useState } from 'react'
 import { StorageStatus } from './StorageStatus'
+import { MagicLinkForm } from './MagicLinkForm'
 
 interface HeroScreenProps {
   onFileUpload: (e: React.ChangeEvent<HTMLInputElement>) => void
+  onExplore: () => void
   isProcessing: boolean
   error: string
 }
 
 export function HeroScreen({
   onFileUpload,
+  onExplore,
   isProcessing,
   error,
 }: HeroScreenProps) {
+  const [showSignIn, setShowSignIn] = useState(false)
+
   return (
     <div className="hero-screen">
       {/* Warm sepia gradient — creates the readable stage */}
@@ -99,6 +107,42 @@ export function HeroScreen({
           </label>
 
           <StorageStatus />
+
+          {/* Secondary entry paths */}
+          <div className="hero-secondary-actions">
+            {showSignIn ? (
+              <div className="hero-signin-form">
+                <MagicLinkForm
+                  label="Welcome back"
+                  description="Enter your email and we'll send you a sign-in link."
+                />
+                <button
+                  type="button"
+                  className="hero-secondary-link"
+                  onClick={() => setShowSignIn(false)}
+                >
+                  ← Back
+                </button>
+              </div>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  className="hero-secondary-link"
+                  onClick={() => setShowSignIn(true)}
+                >
+                  Sign in to your account
+                </button>
+                <button
+                  type="button"
+                  className="hero-secondary-link"
+                  onClick={onExplore}
+                >
+                  I'm just looking 👀
+                </button>
+              </>
+            )}
+          </div>
         </div>
 
       </div>

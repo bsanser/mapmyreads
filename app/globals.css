@@ -610,6 +610,41 @@ body {
     font-size: 0.9375rem;
   }
 
+  /* Secondary entry paths below upload zone */
+  .hero-secondary-actions {
+    @apply flex flex-col items-center gap-2 pt-1;
+  }
+
+  .hero-secondary-link {
+    @apply type-caption transition-all;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: oklch(from var(--color-surface) l c h / 0.5);
+    text-decoration: underline;
+    text-decoration-color: transparent;
+    text-underline-offset: 2px;
+  }
+
+  .hero-secondary-link:hover {
+    color: oklch(from var(--color-surface) l c h / 0.85);
+    text-decoration-color: oklch(from var(--color-surface) l c h / 0.4);
+  }
+
+  /* Inline sign-in form — adapt save-prompt text colours for hero background */
+  .hero-signin-form {
+    @apply w-full flex flex-col gap-3;
+  }
+
+  .hero-signin-form .save-prompt-label,
+  .hero-signin-form .save-prompt-confirm {
+    color: var(--color-surface);
+  }
+
+  .hero-signin-form .save-prompt-desc {
+    color: oklch(from var(--color-surface) l c h / 0.7);
+  }
+
   /* ── Storage status bar (hero screen) ────────── */
 
   .storage-status-bar {
