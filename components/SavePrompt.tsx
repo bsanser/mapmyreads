@@ -4,7 +4,12 @@ import { useState } from 'react'
 import { useSession } from '../contexts/SessionContext'
 import { useBooks } from '../contexts/BooksContext'
 
-export function SavePrompt() {
+interface SavePromptProps {
+  open?: boolean
+  onClose?: () => void
+}
+
+export function SavePrompt({ open, onClose }: SavePromptProps = {}) {
   const { isLoggedIn, sessionId } = useSession()
   const { books } = useBooks()
   const [dismissed, setDismissed] = useState(
@@ -13,13 +18,20 @@ export function SavePrompt() {
   const [email, setEmail] = useState('')
   const [sent, setSent] = useState(false)
 
-  const manualBookCount = books.filter(b => b.source === 'manual').length
+  const readBookCount = books.filter(b => b.readStatus === 'read').length
+  const autoShow = !isLoggedIn && !dismissed && readBookCount >= 2
 
-  if (isLoggedIn || dismissed || manualBookCount < 2) return null
+  const isVisible = open ?? autoShow
+
+  if (isLoggedIn || !isVisible) return null
 
   const handleDismiss = () => {
-    sessionStorage.setItem('save_prompt_dismissed', '1')
-    setDismissed(true)
+    if (onClose) {
+      onClose()
+    } else {
+      sessionStorage.setItem('save_prompt_dismissed', '1')
+      setDismissed(true)
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -46,7 +58,8 @@ export function SavePrompt() {
         <p className="save-prompt-confirm">Check your email for a sign-in link.</p>
       ) : (
         <form onSubmit={handleSubmit} className="save-prompt-form">
-          <p className="save-prompt-label">Save your map across devices</p>
+          <p className="save-prompt-label">Keep your reading map</p>
+          <p className="save-prompt-desc">Sign in to sync your books across devices. Your map stays with you everywhere.</p>
           <input
             type="email"
             className="save-prompt-input"
@@ -55,7 +68,7 @@ export function SavePrompt() {
             onChange={e => setEmail(e.target.value)}
             required
           />
-          <button type="submit" className="save-prompt-btn">Send magic link</button>
+          <button type="submit" className="save-prompt-btn">Send sign-in link</button>
         </form>
       )}
     </div>

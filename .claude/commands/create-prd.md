@@ -8,7 +8,6 @@ description: Generating a Product Requirements Document (PRD)
 **$ARGUMENTS**
 
 ## Goal
-
 To guide an AI assistant in creating a detailed Product Requirements Document (PRD) in Markdown format, based on an initial user prompt. 
 The PRD should be clear, actionable, and suitable for a junior developer to understand and implement the feature.
 

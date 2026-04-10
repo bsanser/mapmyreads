@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
     httpOnly: true,
     sameSite: 'lax',
     secure: isProduction,
-    maxAge: 30 * 24 * 60 * 60, // 30 days
+    maxAge: 90 * 24 * 60 * 60, // 90 days
     path: '/',
   })
 
