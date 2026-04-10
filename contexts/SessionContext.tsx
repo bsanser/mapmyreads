@@ -24,6 +24,7 @@ interface SessionContextValue {
   userId: string | null
   userEmail: string | null
   isLoggedIn: boolean
+  isAuthChecking: boolean
   syncBooks: (books: Book[], immediate?: boolean) => void
   remoteBooks: Book[] | null
 }
@@ -35,6 +36,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const [userId, setUserId] = useState<string | null>(null)
   const [userEmail, setUserEmail] = useState<string | null>(null)
   const [remoteBooks, setRemoteBooks] = useState<Book[] | null>(null)
+  const [isAuthChecking, setIsAuthChecking] = useState(true)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
@@ -66,6 +68,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         }
       })
       .catch(err => console.warn('[SessionContext] auth check failed:', err))
+      .finally(() => setIsAuthChecking(false))
   }, [])
 
   const syncBooks = useCallback((books: Book[], immediate = false) => {
@@ -89,7 +92,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   }, [sessionId])
 
   return (
-    <SessionContext.Provider value={{ sessionId, userId, userEmail, isLoggedIn: userId !== null, syncBooks, remoteBooks }}>
+    <SessionContext.Provider value={{ sessionId, userId, userEmail, isLoggedIn: userId !== null, isAuthChecking, syncBooks, remoteBooks }}>
       {children}
     </SessionContext.Provider>
   )
