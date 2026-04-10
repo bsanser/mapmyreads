@@ -2,19 +2,22 @@ import { MapLibreMap } from './MapLibreMap'
 import { MapControls } from './MapControls'
 import { ThemeKey, THEMES } from '../lib/themeManager'
 import { useBooks } from '../contexts/BooksContext'
+import type { ReactNode } from 'react'
 
 interface MapContainerProps {
   onCountryClick: (country: string) => void
   currentTheme: ThemeKey
   onThemeChange: (theme: ThemeKey) => void
   themes: typeof THEMES
+  cta?: ReactNode
 }
 
 export function MapContainer({
   onCountryClick,
   currentTheme,
   onThemeChange,
-  themes
+  themes,
+  cta,
 }: MapContainerProps) {
   const { books } = useBooks()
   const readBooks = books.filter((book) => book.readStatus === 'read')
@@ -30,7 +33,8 @@ export function MapContainer({
         />
       </div>
 
-      <div className="map-controls-bar">
+      <div className="map-controls-bar flex items-center gap-2">
+        {cta}
         <MapControls
           currentTheme={currentTheme}
           onThemeChange={onThemeChange}

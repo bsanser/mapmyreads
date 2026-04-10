@@ -81,6 +81,7 @@ export function EnrichmentProgress() {
   return (
     <div className="surface-float fixed bottom-6 right-6 z-50 animate-slide-up space-y-3">
       <p className="type-ui">Enriching your data...</p>
+      <p className="type-caption" style={{ color: 'var(--color-ink-2)' }}>Your file had books. We&apos;re adding the world — looking up where every author comes from.</p>
 
       {isEnriching && (
         <ProgressBar

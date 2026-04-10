@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { getCountryFlag, mapISO2ToDisplayName } from '../lib/mapUtilities'
 import { ReadingAtlasSummary } from './ReadingAtlasSummary'
+import { AccountStatus } from './AccountStatus'
 import { BookList } from './BookList'
 import { useBooks } from '../contexts/BooksContext'
 import { useTheme } from '../contexts/ThemeContext'
@@ -10,9 +11,10 @@ interface DesktopSidebarProps {
   booksToShow: number
   onLoadMore: () => void
   onAddBook?: () => void
+  isReadOnly?: boolean
 }
 
-export function DesktopSidebar({ booksToShow, onLoadMore, onAddBook }: DesktopSidebarProps) {
+export function DesktopSidebar({ booksToShow, onLoadMore, onAddBook, isReadOnly = false }: DesktopSidebarProps) {
   const { books, selectedCountry, setSelectedCountry, summaryStats } = useBooks()
   const { currentTheme } = useTheme()
   const { isEnriching } = useEnrichment()
@@ -54,9 +56,16 @@ export function DesktopSidebar({ booksToShow, onLoadMore, onAddBook }: DesktopSi
   const displayedBookLabel = displayedBookCount === 1 ? 'book' : 'books'
 
   return (
-    <div
-      className="desktop-sidebar sidebar-surface custom-scrollbar"
-      onScroll={(e) => {
+    <div className="desktop-sidebar">
+      {/* Folder tab label */}
+      <div className="sidebar-folder-tab">
+        <img src="/logo.png" alt="" className="w-12 h-12" />
+        <span className="type-ui" style={{ fontWeight: 700, color: 'var(--color-ink)' }}>Map My Reads</span>
+      </div>
+
+      <div
+        className="sidebar-surface sidebar-panel custom-scrollbar"
+        onScroll={(e) => {
         const target = e.target as HTMLDivElement
         const { scrollTop, scrollHeight, clientHeight } = target
         if (scrollHeight - scrollTop - clientHeight < 100) {
@@ -70,6 +79,8 @@ export function DesktopSidebar({ booksToShow, onLoadMore, onAddBook }: DesktopSi
         isEnriching={isEnriching}
         className="mb-4"
       />
+
+      <AccountStatus />
 
       {selectedCountry && (
         <div className="type-caption mb-3">
@@ -101,7 +112,7 @@ export function DesktopSidebar({ booksToShow, onLoadMore, onAddBook }: DesktopSi
               Show all
             </button>
           )}
-          {onAddBook && (
+          {onAddBook && !isReadOnly && (
             <button
               type="button"
               className="sidebar-add-book-btn"
@@ -122,6 +133,7 @@ export function DesktopSidebar({ booksToShow, onLoadMore, onAddBook }: DesktopSi
         showMissingAuthorCountry={showMissingAuthorCountry}
         booksToShow={booksToShow}
       />
+      </div>
     </div>
   )
 }

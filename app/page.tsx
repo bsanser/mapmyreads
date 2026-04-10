@@ -12,9 +12,7 @@ import { EnrichmentProgress } from '../components/EnrichmentProgress'
 import { THEMES } from '../lib/themeManager'
 import {
   loadProcessedBooks,
-  saveProcessedBooks,
-  hasShareableData,
-  saveShareableData
+  saveProcessedBooks
 } from '../lib/storage'
 import {
   detectCSVFormat,
@@ -292,10 +290,6 @@ export default function Home() {
     booksLoadedRef.current = true
 
     try {
-      if (hasShareableData()) {
-        saveShareableData()
-      }
-
       const processedBooks = loadProcessedBooks()
       if (processedBooks && processedBooks.length > 0) {
         setBooks(processedBooks)

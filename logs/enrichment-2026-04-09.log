@@ -1,0 +1,6 @@
+{"timestamp":"2026-04-09T17:19:26.461Z","source":"storygraph","total_books":207,"read_books":80,"books_with_countries":75,"books_coverage_pct":"93.8","unique_authors":69,"cache_hits":62,"cache_misses":7,"duration_sec":"42.93"}
+{"timestamp":"2026-04-09T18:14:36.082Z","source":"storygraph","total_books":207,"read_books":80,"books_with_countries":62,"books_coverage_pct":"77.5","unique_authors":69,"cache_hits":0,"cache_misses":69,"duration_sec":"70.57"}
+{"timestamp":"2026-04-09T20:18:58.357Z","source":"storygraph","total_books":207,"read_books":80,"books_with_countries":75,"books_coverage_pct":"93.8","unique_authors":69,"cache_hits":52,"cache_misses":17,"duration_sec":"32.19"}
+{"timestamp":"2026-04-09T20:22:34.294Z","source":"storygraph","total_books":207,"read_books":80,"books_with_countries":75,"books_coverage_pct":"93.8","unique_authors":69,"cache_hits":61,"cache_misses":8,"duration_sec":"48.42"}
+{"timestamp":"2026-04-09T20:24:40.647Z","source":"storygraph","total_books":207,"read_books":80,"books_with_countries":75,"books_coverage_pct":"93.8","unique_authors":69,"cache_hits":61,"cache_misses":8,"duration_sec":"48.74"}
+{"timestamp":"2026-04-09T20:26:36.903Z","source":"storygraph","total_books":207,"read_books":80,"books_with_countries":75,"books_coverage_pct":"93.8","unique_authors":69,"cache_hits":61,"cache_misses":8,"duration_sec":"49.41"}

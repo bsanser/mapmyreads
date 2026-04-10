@@ -9,6 +9,7 @@ interface MobileBottomSheetProps {
   showMissingAuthorCountry: boolean
   onToggleMissingAuthorCountry: () => void
   onClearMissingAuthorCountry: () => void
+  isReadOnly?: boolean
 }
 
 export function MobileBottomSheet({
@@ -16,7 +17,8 @@ export function MobileBottomSheet({
   onToggleExpanded,
   showMissingAuthorCountry,
   onToggleMissingAuthorCountry,
-  onClearMissingAuthorCountry
+  onClearMissingAuthorCountry,
+  isReadOnly = false,
 }: MobileBottomSheetProps) {
   const { books, selectedCountry, setSelectedCountry, summaryStats } = useBooks()
   const touchStartY = useRef<number>(0)

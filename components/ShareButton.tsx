@@ -1,25 +1,31 @@
 'use client'
 
 import { useState } from 'react'
+import { useSession } from '../contexts/SessionContext'
 
-export const ShareButton = ({ books, className = '' }: { books: any[], className?: string }) => {
+interface ShareButtonProps {
+  className?: string
+  externalOpen?: boolean
+  onExternalClose?: () => void
+}
+
+export const ShareButton = ({ className = '', externalOpen, onExternalClose }: ShareButtonProps) => {
   const [showShareModal, setShowShareModal] = useState(false)
+  const { sessionId } = useSession()
+
+  const isOpen = externalOpen ?? showShareModal
+
+  const handleClose = () => {
+    setShowShareModal(false)
+    onExternalClose?.()
+  }
 
   const handleShare = () => {
     setShowShareModal(true)
   }
 
   const generateShareableLink = () => {
-    // Create a shareable link with the current book data
-    const shareableData = {
-      books: books.filter(book => book.readStatus === 'read'),
-      timestamp: new Date().toISOString()
-    }
-    
-    const encodedData = btoa(JSON.stringify(shareableData))
-    const shareableUrl = `${window.location.origin}?data=${encodedData}`
-    
-    return shareableUrl
+    return `${window.location.origin}/map/${sessionId}`
   }
 
   const copyToClipboard = async (text: string) => {
@@ -54,13 +60,13 @@ export const ShareButton = ({ books, className = '' }: { books: any[], className
       </button>
 
       {/* Share Modal */}
-      {showShareModal && (
+      {isOpen && (
         <div className="modal-overlay">
           <div className="modal-surface">
             <div className="flex items-center justify-between mb-4">
               <h3 className="type-heading">Share Your Reading Map</h3>
               <button
-                onClick={() => setShowShareModal(false)}
+                onClick={handleClose}
                 style={{ color: 'var(--color-ink-3)' }}
                 className="hover:text-[var(--color-ink)] transition-colors"
               >
@@ -96,7 +102,7 @@ export const ShareButton = ({ books, className = '' }: { books: any[], className
 
             <div className="flex justify-end">
               <button
-                onClick={() => setShowShareModal(false)}
+                onClick={handleClose}
                 className="btn-ghost"
               >
                 Close

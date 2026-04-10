@@ -266,6 +266,8 @@ body {
     right: 4rem; /* clears MapLibre nav controls (~40px) at all sizes */
   }
 
+  /* ── Shared map overlays ───────────────────────── */
+
   /* ── Feedback button (bottom-left of map) ─────── */
 
   .feedback-btn {
@@ -384,15 +386,29 @@ body {
   /* ── Sidebar ──────────────────────────────────── */
 
   .desktop-sidebar {
-    @apply hidden lg:block absolute top-20 left-4;
+    @apply hidden lg:flex lg:flex-col absolute top-16 left-4;
     z-index: 50;
   }
 
+  .sidebar-folder-tab {
+    @apply inline-flex items-center gap-3 self-start py-2.5;
+    padding: 0 1.2rem;
+    background-color: oklch(from var(--color-surface) l c h / 0.96);
+    border: 1px solid var(--color-border);
+    border-bottom: none;
+    border-radius: 0.75rem 0.75rem 0 0;
+    backdrop-filter: blur(12px);
+  }
+
   .sidebar-surface {
-    @apply rounded-xl shadow-xl p-6 w-80 max-h-[calc(100vh-120px)] overflow-auto;
+    @apply shadow-xl p-6 w-80 max-h-[calc(100vh-112px)] overflow-auto;
     background-color: oklch(from var(--color-surface) l c h / 0.96);
     border: 1px solid var(--color-border);
     backdrop-filter: blur(12px);
+  }
+
+  .sidebar-panel {
+    border-radius: 0 0.75rem 0.75rem 0.75rem;
   }
 
   /* ── Hero — poster layout ─────────────────────── */
@@ -1413,6 +1429,7 @@ a:focus-visible {
 }
 
 .overflow-menu-item {
+  width: 100%;
   padding: 0.6rem 1rem;
   cursor: pointer;
   font-size: 0.875rem;
@@ -1421,6 +1438,7 @@ a:focus-visible {
   align-items: center;
   gap: 0.5rem;
   transition: background 0.1s;
+  box-sizing: border-box;
 }
 
 .overflow-menu-item:hover {
@@ -1452,4 +1470,131 @@ a:focus-visible {
   .surface-float {
     bottom: calc(28vh + 1rem) !important;
   }
+}
+
+/* ── Save/Sign-in Prompt ──────────────────────────── */
+
+.save-prompt {
+  @apply fixed bottom-6 right-6 z-40 w-80 rounded-xl shadow-lg p-4 animate-slide-up;
+  background-color: oklch(from var(--color-surface) l c h / 0.96);
+  border: 1px solid var(--color-border);
+  backdrop-filter: blur(12px);
+}
+
+.save-prompt-dismiss {
+  @apply absolute top-2 right-3 text-2xl leading-none transition-opacity;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-ink-2);
+}
+
+.save-prompt-dismiss:hover {
+  opacity: 0.7;
+}
+
+.save-prompt-form {
+  @apply space-y-3;
+}
+
+.save-prompt-label {
+  @apply type-heading text-base;
+  color: var(--color-ink);
+}
+
+.save-prompt-desc {
+  @apply type-caption;
+  color: var(--color-ink-2);
+  line-height: 1.4;
+}
+
+.save-prompt-input {
+  @apply w-full px-3 py-2 rounded-lg type-body;
+  background-color: var(--color-bg);
+  border: 1px solid var(--color-border);
+  color: var(--color-ink);
+}
+
+.save-prompt-input::placeholder {
+  color: var(--color-ink-3);
+}
+
+.save-prompt-input:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px var(--color-accent-soft);
+}
+
+.save-prompt-btn {
+  @apply w-full py-2 rounded-lg type-ui font-semibold transition-colors;
+  background-color: var(--color-accent);
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.save-prompt-btn:hover {
+  background-color: var(--color-accent-hover);
+}
+
+.save-prompt-confirm {
+  @apply type-body;
+  color: var(--color-ink);
+}
+
+/* ── Account Nudge Dot ────────────────────────────── */
+
+.account-nudge-dot {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: var(--color-accent);
+  border: 1.5px solid var(--color-surface);
+}
+
+/* ── Account Status ───────────────────────────────── */
+
+.account-status {
+  @apply flex items-center justify-between gap-2 mb-4 pb-4;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.account-status-email {
+  @apply type-caption;
+  color: var(--color-ink-2);
+}
+
+.account-status-logout {
+  @apply type-caption link-accent;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.account-status-guest {
+  @apply mb-4 pb-4;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.account-status-signin {
+  @apply type-caption w-full text-left;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  color: var(--color-accent);
+  text-decoration: underline;
+  text-decoration-color: var(--color-accent-border);
+}
+
+.account-status-signin:hover {
+  color: var(--color-accent-hover);
+}
+
+.account-status-form {
+  @apply w-full;
 }
