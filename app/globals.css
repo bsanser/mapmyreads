@@ -1253,6 +1253,31 @@ a:focus-visible {
   font-size: 0.875rem;
 }
 
+.add-book-bulk-option {
+  @apply flex flex-col items-center gap-1.5 py-2 my-3;
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.add-book-divider {
+  @apply type-caption;
+  color: var(--color-ink-3);
+  font-weight: 500;
+}
+
+.add-book-bulk-link {
+  @apply type-caption transition-colors;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-accent);
+  text-decoration: none;
+}
+
+.add-book-bulk-link:hover {
+  color: var(--color-accent-hover);
+}
+
 /* ── Book Search Input ─────────────────────────────── */
 
 .book-search-input-wrapper {

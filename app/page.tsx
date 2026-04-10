@@ -56,6 +56,7 @@ export default function Home() {
   const [hasEnteredApp, setHasEnteredApp] = useState(false)
 
   const booksLoadedRef = useRef(false)
+  const csvFileInputRef = useRef<HTMLInputElement>(null)
 
   // Task 4.1-4.3: Optimistic book add with background enrichment
   const handleManualBookAdd = async (book: Book) => {
@@ -388,6 +389,16 @@ export default function Home() {
         onClose={() => setIsAddBookModalOpen(false)}
         addBook={addBook}
         onBookAdded={handleManualBookAdd}
+        onBulkUpload={() => csvFileInputRef.current?.click()}
+      />
+
+      {/* Hidden CSV file input for bulk upload flow */}
+      <input
+        ref={csvFileInputRef}
+        type="file"
+        accept=".csv"
+        onChange={handleFile}
+        className="sr-only"
       />
 
       {toastMessage && (
