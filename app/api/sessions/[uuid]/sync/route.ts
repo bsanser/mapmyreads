@@ -97,17 +97,26 @@ export async function POST(
       upsertedBooks.push(upserted)
     }
 
+    // Deduplicate by bookId — two books with the same title+author map to the
+    // same DB row, and inserting both would violate the session_books unique constraint.
+    const seenBookIds = new Set<string>()
+    const uniqueBooks = upsertedBooks.filter(b => {
+      if (seenBookIds.has(b.id)) return false
+      seenBookIds.add(b.id)
+      return true
+    })
+
     // Rebuild SessionBook links in a single lightweight transaction
     await prisma.$transaction([
       prisma.sessionBook.deleteMany({ where: { sessionId: session.id } }),
-      ...upsertedBooks.map(book =>
+      ...uniqueBooks.map(book =>
         prisma.sessionBook.create({
           data: { sessionId: session.id, bookId: book.id },
         })
       ),
     ])
 
-    const result = { synced: upsertedBooks.length }
+    const result = { synced: uniqueBooks.length }
 
     // Update lastSyncedAt timestamp
     await prisma.session.update({
