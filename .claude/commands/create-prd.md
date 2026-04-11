@@ -16,7 +16,7 @@ The PRD should be clear, actionable, and suitable for a junior developer to unde
 1.  **Receive Initial Prompt:** The user provides a brief description or request for a new feature or functionality 
 2.  **Ask Clarifying Questions:** Before writing the PRD, the AI *must* ask clarifying questions to gather sufficient detail. The goal is to understand the "what" and "why" of the feature, not necessarily the "how" (which the developer will figure out). Make sure to provide options in letter/number lists so I can respond easily with my selections.
 3.  **Generate PRD:** Based on the initial prompt and the user's answers to the clarifying questions, generate a PRD using the structure outlined below.
-4.  **Save PRD:** Save the generated document as `prd-[feature-name].md` inside the `/tasks` directory.
+4.  **Save PRD:** Save the generated document as `prd-[feature-name].md` inside the `_prds` directory.
 
 ## Clarifying Questions (Examples)
 
@@ -43,9 +43,33 @@ The generated PRD should include the following sections:
 5.  **Non-Goals (Out of Scope):** Clearly state what this feature will *not* include to manage scope.
 6.  **Design Considerations (Optional):** Link to mockups, describe UI/UX requirements, or mention relevant components/styles if applicable.
 7.  **Technical Considerations (Optional):** Mention any known technical constraints, dependencies, or suggestions (e.g., "Should integrate with the existing Auth module").
-8.  **Success Metrics:** How will the success of this feature be measured? (e.g., "Increase user engagement by 10%", "Reduce support tickets related to X").
-9.  **New analytics events:** Do we need to define and create new analytics events to track usage and/or perfomance of the feature? Suggest name of the event, parameters and types of values expected.
-10.  **Open Questions:** List any remaining questions or areas needing further clarification.
+8.  **Acceptance Criteria & Testability:** Define acceptance criteria in a way that enables Test-Driven Development (TDD). Each criterion should answer: *"How would a test verify this?"* Make acceptance criteria specific and testable, not vague.
+9.  **Success Metrics:** How will the success of this feature be measured? (e.g., "Increase user engagement by 10%", "Reduce support tickets related to X").
+10.  **New analytics events:** Do we need to define and create new analytics events to track usage and/or perfomance of the feature? Suggest name of the event, parameters and types of values expected.
+11.  **Open Questions:** List any remaining questions or areas needing further clarification.
+
+## Acceptance Criteria & Test-Driven Development (TDD)
+
+When defining acceptance criteria, structure them to be **testable** — this enables Test-Driven Development (TDD):
+
+- **Testable criterion**: "The system **must** validate email format before submission and show error 'Invalid email format' if invalid" ✅
+- **Not testable**: "Email validation should be robust" ❌
+
+Each acceptance criterion should answer: *"How would a test verify this?"*
+
+**Example testable criterion**:
+```
+Given a user enters an invalid email (e.g., "user@"),
+When they click submit,
+Then the form shows error message "Invalid email format" and prevents submission.
+```
+
+This allows developers to:
+1. **RED**: Write failing tests that verify the criterion
+2. **GREEN**: Implement minimal code to pass the tests
+3. **REFACTOR**: Improve code quality without breaking tests
+
+Structure acceptance criteria using the **Given-When-Then** (GWT) format for clarity.
 
 ## Target Audience
 
@@ -54,7 +78,7 @@ Assume the primary reader of the PRD is a **junior developer**. Therefore, requi
 ## Output
 
 *   **Format:** Markdown (`.md`)
-*   **Location:** `/_tasks/`
+*   **Location:** `/_prds/`
 *   **Filename:** `prd-[feature-name].md`
 
 ## Final instructions
