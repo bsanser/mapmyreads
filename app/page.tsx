@@ -27,12 +27,14 @@ import { enrichmentMetrics } from '../lib/enrichmentMetrics'
 import { useBooks } from '../contexts/BooksContext'
 import { useTheme } from '../contexts/ThemeContext'
 import { useEnrichment } from '../contexts/EnrichmentContext'
+import { useSession } from '../contexts/SessionContext'
 import AddBookFAB from '../components/AddBookFAB'
 import AddBookModal from '../components/AddBookModal'
 import Toast from '../components/Toast'
 
 export default function Home() {
   // Context state
+  const { isAuthChecking, isLoggedIn } = useSession()
   const { books, setBooks, selectedCountry, setSelectedCountry, addBook } = useBooks()
   const { currentTheme, setCurrentTheme } = useTheme()
   const {
@@ -51,8 +53,10 @@ export default function Home() {
   const [isSheetExpanded, setIsSheetExpanded] = useState(true)
   const [isAddBookModalOpen, setIsAddBookModalOpen] = useState(false)
   const [toastMessage, setToastMessage] = useState<string | null>(null)
+  const [hasEnteredApp, setHasEnteredApp] = useState(false)
 
   const booksLoadedRef = useRef(false)
+  const csvFileInputRef = useRef<HTMLInputElement>(null)
 
   // Task 4.1-4.3: Optimistic book add with background enrichment
   const handleManualBookAdd = async (book: Book) => {
@@ -322,10 +326,19 @@ export default function Home() {
   }, [])
 
   // Render logic
-  if (books.length === 0) {
+  if (isAuthChecking) {
+    return (
+      <div className="hero-screen">
+        <div className="hero-overlay" />
+      </div>
+    )
+  }
+
+  if (!isLoggedIn && !hasEnteredApp && books.length === 0) {
     return (
       <HeroScreen
         onFileUpload={handleFile}
+        onExplore={() => setHasEnteredApp(true)}
         isProcessing={isProcessing}
         error={error}
       />
@@ -353,6 +366,7 @@ export default function Home() {
         showMissingAuthorCountry={showMissingAuthorCountry}
         onToggleMissingAuthorCountry={handleToggleMissingAuthorCountry}
         onClearMissingAuthorCountry={handleClearMissingAuthorCountry}
+        onAddBook={() => setIsAddBookModalOpen(true)}
       />
 
       <DeveloperTools
@@ -376,6 +390,16 @@ export default function Home() {
         onClose={() => setIsAddBookModalOpen(false)}
         addBook={addBook}
         onBookAdded={handleManualBookAdd}
+        onBulkUpload={() => csvFileInputRef.current?.click()}
+      />
+
+      {/* Hidden CSV file input for bulk upload flow */}
+      <input
+        ref={csvFileInputRef}
+        type="file"
+        accept=".csv"
+        onChange={handleFile}
+        className="sr-only"
       />
 
       {toastMessage && (

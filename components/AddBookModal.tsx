@@ -13,9 +13,10 @@ interface AddBookModalProps {
   onClose: () => void
   addBook: (book: Book) => 'added' | 'duplicate'
   onBookAdded?: (book: Book) => void
+  onBulkUpload?: () => void
 }
 
-export default function AddBookModal({ isOpen, onClose, addBook, onBookAdded }: AddBookModalProps) {
+export default function AddBookModal({ isOpen, onClose, addBook, onBookAdded, onBulkUpload }: AddBookModalProps) {
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<SearchBookResult[]>([])
   const [isLoading, setIsLoading] = useState(false)
@@ -116,6 +117,22 @@ export default function AddBookModal({ isOpen, onClose, addBook, onBookAdded }: 
         <h2 className="add-book-title">Add a book</h2>
 
         <BookSearchInput onSearch={handleSearch} isLoading={isLoading} />
+
+        {onBulkUpload && (
+          <div className="add-book-bulk-option">
+            <span className="add-book-divider">or</span>
+            <button
+              type="button"
+              className="add-book-bulk-link"
+              onClick={() => {
+                onClose()
+                onBulkUpload()
+              }}
+            >
+              📤 Bulk upload from Goodreads or StoryGraph
+            </button>
+          </div>
+        )}
 
         {duplicateMessage && (
           <p className="add-book-duplicate">{duplicateMessage}</p>

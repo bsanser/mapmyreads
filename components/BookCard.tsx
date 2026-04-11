@@ -1,4 +1,4 @@
-import { memo, useState, useEffect } from 'react'
+import { memo, useState, useEffect, useCallback } from 'react'
 import { Book } from '../types/book'
 import { getCountryFlag, mapISO2ToDisplayName } from '../lib/mapUtilities'
 import { COUNTRIES } from '../lib/countries'
@@ -34,6 +34,13 @@ export const BookCard = memo(function BookCard({
   onBlur,
 }: BookCardProps) {
   const [focusedSuggestionIndex, setFocusedSuggestionIndex] = useState<number>(-1)
+  const [coverSrc, setCoverSrc] = useState(b.coverImage ?? '/book-placeholder.svg')
+
+  useEffect(() => {
+    setCoverSrc(b.coverImage ?? '/book-placeholder.svg')
+  }, [b.coverImage])
+
+  const handleCoverError = useCallback(() => setCoverSrc('/book-placeholder.svg'), [])
 
   // Reset focused index when dropdown closes
   useEffect(() => {
@@ -56,9 +63,10 @@ export const BookCard = memo(function BookCard({
     <div className="book-card">
       <div className="book-card-cover">
         <img
-          src={b.coverImage ?? '/book-placeholder.png'}
+          src={coverSrc}
           alt={`Cover of ${b.title}`}
           className="book-cover-img"
+          onError={handleCoverError}
         />
         <img
           src="/paperclip.svg"

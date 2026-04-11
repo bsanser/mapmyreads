@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '../../../../lib/prisma'
-import { createTokenRecord, sendMagicLinkEmail } from '../../../../lib/magicLink'
+import { createTokenRecord, sendMagicLinkEmail, isEmailRateLimited } from '../../../../lib/magicLink'
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -11,12 +11,21 @@ export async function POST(request: NextRequest) {
 
     // Validate email — always return { ok: true } to avoid leaking whether email exists
     if (!email || typeof email !== 'string' || !EMAIL_REGEX.test(email)) {
-      // Still return 200 with ok: true to not reveal anything
+      // Timing delay: equalize response time with the full DB-write path
+      await new Promise(r => setTimeout(r, 200 + Math.random() * 200))
+      return NextResponse.json({ ok: true })
+    }
+
+    const normalizedEmail = email.toLowerCase().trim()
+
+    // Rate limit: max 3 unused tokens per email in a 30-min window
+    if (await isEmailRateLimited(normalizedEmail)) {
+      // Return ok: true — never reveal rate limiting to the caller
       return NextResponse.json({ ok: true })
     }
 
     // Create token record
-    const tokenRecord = createTokenRecord(email.toLowerCase().trim(), sessionId ?? undefined)
+    const tokenRecord = createTokenRecord(normalizedEmail, sessionId ?? undefined)
 
     // Persist token to DB
     await prisma.magicToken.create({

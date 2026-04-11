@@ -400,6 +400,29 @@ body {
     backdrop-filter: blur(12px);
   }
 
+  .sidebar-logo-wrap {
+    position: relative;
+    display: inline-flex;
+  }
+
+  .sidebar-login-badge {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 1.1rem;
+    height: 1.1rem;
+    border-radius: 50%;
+    background: var(--color-accent);
+    color: #fff;
+    font-size: 0.55rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1.5px solid var(--color-surface);
+    letter-spacing: 0;
+  }
+
   .sidebar-surface {
     @apply shadow-xl p-6 w-80 max-h-[calc(100vh-112px)] overflow-auto;
     background-color: oklch(from var(--color-surface) l c h / 0.96);
@@ -608,6 +631,41 @@ body {
   /* Larger brand text on hero */
   .hero-eyebrow {
     font-size: 0.9375rem;
+  }
+
+  /* Secondary entry paths below upload zone */
+  .hero-secondary-actions {
+    @apply flex flex-col items-center gap-2 pt-1;
+  }
+
+  .hero-secondary-link {
+    @apply type-caption transition-all;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: oklch(from var(--color-surface) l c h / 0.5);
+    text-decoration: underline;
+    text-decoration-color: transparent;
+    text-underline-offset: 2px;
+  }
+
+  .hero-secondary-link:hover {
+    color: oklch(from var(--color-surface) l c h / 0.85);
+    text-decoration-color: oklch(from var(--color-surface) l c h / 0.4);
+  }
+
+  /* Inline sign-in form — adapt save-prompt text colours for hero background */
+  .hero-signin-form {
+    @apply w-full flex flex-col gap-3;
+  }
+
+  .hero-signin-form .save-prompt-label,
+  .hero-signin-form .save-prompt-confirm {
+    color: var(--color-surface);
+  }
+
+  .hero-signin-form .save-prompt-desc {
+    color: oklch(from var(--color-surface) l c h / 0.7);
   }
 
   /* ── Storage status bar (hero screen) ────────── */
@@ -1106,6 +1164,36 @@ a:focus-visible {
   background: color-mix(in oklch, var(--color-accent) 8%, transparent);
 }
 
+/* ── Sidebar empty state ──────────────────────────────── */
+
+.sidebar-empty-state {
+  @apply flex flex-col gap-4 py-6 px-2;
+}
+
+.sidebar-empty-heading {
+  @apply type-heading;
+  color: var(--color-ink);
+}
+
+.sidebar-empty-desc {
+  @apply type-caption;
+  color: var(--color-ink-2);
+  line-height: 1.5;
+}
+
+.sidebar-empty-cta {
+  /* Inherits sidebar-add-book-btn — bump size slightly for primary empty-state CTA */
+  padding: 0.35rem 0.75rem !important;
+  font-size: 0.8125rem !important;
+}
+
+/* ── Mobile bottom sheet empty state ─────────────────── */
+
+.bottom-sheet-empty-bar {
+  @apply flex items-center justify-between px-6 py-3 flex-shrink-0;
+  border-bottom: 1px solid var(--color-border-light);
+}
+
 /* Tablet: circle icon-only, same as mobile */
 @media (min-width: 640px) and (max-width: 1023px) {
   .fab-add-book {
@@ -1218,6 +1306,31 @@ a:focus-visible {
   font-size: 0.875rem;
 }
 
+.add-book-bulk-option {
+  @apply flex flex-col items-center gap-1.5 py-2 my-3;
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.add-book-divider {
+  @apply type-caption;
+  color: var(--color-ink-3);
+  font-weight: 500;
+}
+
+.add-book-bulk-link {
+  @apply type-caption transition-colors;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-accent);
+  text-decoration: none;
+}
+
+.add-book-bulk-link:hover {
+  color: var(--color-accent-hover);
+}
+
 /* ── Book Search Input ─────────────────────────────── */
 
 .book-search-input-wrapper {
@@ -1265,6 +1378,12 @@ a:focus-visible {
   padding: 0;
   max-height: 320px;
   overflow-y: auto;
+  transition: opacity 0.15s ease;
+}
+
+.book-search-results--loading {
+  opacity: 0.5;
+  pointer-events: none;
 }
 
 .book-search-result {
