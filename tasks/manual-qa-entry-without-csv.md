@@ -19,6 +19,7 @@ Use an incognito window to start each flow from a clean state.
 - [ ] Clicking "I'm just looking 👀" enters the app without a CSV (map renders, no crash)
 - [ ] Uploading a CSV from the hero screen still works as before
 
+
 ---
 
 ## 2. Returning User — New Device Flow

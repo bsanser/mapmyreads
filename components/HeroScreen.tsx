@@ -138,7 +138,7 @@ export function HeroScreen({
                   className="hero-secondary-link"
                   onClick={onExplore}
                 >
-                  I'm just looking 👀
+                  I&apos;m just looking 👀
                 </button>
               </>
             )}
