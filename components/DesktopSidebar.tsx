@@ -6,6 +6,7 @@ import { BookList } from './BookList'
 import { useBooks } from '../contexts/BooksContext'
 import { useTheme } from '../contexts/ThemeContext'
 import { useEnrichment } from '../contexts/EnrichmentContext'
+import { useSession } from '../contexts/SessionContext'
 
 interface DesktopSidebarProps {
   booksToShow: number
@@ -18,6 +19,7 @@ export function DesktopSidebar({ booksToShow, onLoadMore, onAddBook, isReadOnly 
   const { books, selectedCountry, setSelectedCountry, summaryStats } = useBooks()
   const { currentTheme } = useTheme()
   const { isEnriching } = useEnrichment()
+  const { isLoggedIn, userEmail } = useSession()
 
   const [showMissingAuthorCountry, setShowMissingAuthorCountry] = useState(false)
 

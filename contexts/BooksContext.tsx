@@ -75,7 +75,7 @@ export function BooksProvider({ children }: { children: ReactNode }) {
       if (book.authors) authorSet.add(book.authors.trim())
       if (book.authorCountries && book.authorCountries.length > 0) {
         book.authorCountries.forEach(code => countrySet.add(code))
-      } else {
+      } else if (!book.isResolvingCountry) {
         missingAuthorCountry += 1
       }
     })

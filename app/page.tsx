@@ -34,7 +34,7 @@ import Toast from '../components/Toast'
 
 export default function Home() {
   // Context state
-  const { isAuthChecking } = useSession()
+  const { isAuthChecking, isLoggedIn } = useSession()
   const { books, setBooks, selectedCountry, setSelectedCountry, addBook } = useBooks()
   const { currentTheme, setCurrentTheme } = useTheme()
   const {
@@ -334,7 +334,7 @@ export default function Home() {
     )
   }
 
-  if (!hasEnteredApp && books.length === 0) {
+  if (!isLoggedIn && !hasEnteredApp && books.length === 0) {
     return (
       <HeroScreen
         onFileUpload={handleFile}
